@@ -1,140 +1,152 @@
 name: Release Build
 
 on:
-#  push:
-#    branches:
-#      - master
-#    paths:
-#      - 'CHANGELOG.md'
   workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   prepare:
+    name: 准备版本号
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
     outputs:
-      version: ${{ steps.set-ver.outputs.version }}
-      play: ${{ steps.check.outputs.play }}
-      sign: ${{ steps.check.outputs.sign }}
+      version: ${{ steps.version.outputs.value }}
     steps:
-      - id: set-ver
-        run: |
-          echo "version=$(date -d "8 hour" -u +3.%y.%m%d%H)" >> $GITHUB_OUTPUT
-      - id: check
-        run: |
-          if [ ! -z "${{ secrets.RELEASE_KEY_STORE }}" ]; then
-            echo "sign=yes" >> $GITHUB_OUTPUT
-          fi
-          if [ ! -z "${{ secrets.SERVICE_ACCOUNT_JSON }}" ]; then
-            echo "play=yes" >> $GITHUB_OUTPUT
-          fi
+      - name: 生成版本号
+        id: version
+        shell: bash
+        run: echo "value=$(TZ=Asia/Shanghai date +3.%y.%m%d%H)" >> "$GITHUB_OUTPUT"
 
   build:
+    name: 构建 ${{ matrix.variant }} APK
     needs: prepare
-    if: ${{ needs.prepare.outputs.sign }}
     strategy:
+      fail-fast: true
       matrix:
-        product: [ app, google ]
-      fail-fast: false
+        variant: [release, releaseA]
     runs-on: ubuntu-latest
     env:
-      product: ${{ matrix.product }}
       VERSION: ${{ needs.prepare.outputs.version }}
-      play: ${{ needs.prepare.outputs.play }}
+      VARIANT: ${{ matrix.variant }}
+      KEYSTORE_BASE64: ${{ secrets.RELEASE_KEY_STORE }}
+      ORG_GRADLE_PROJECT_RELEASE_STORE_FILE: ./legado-release.p12
+      ORG_GRADLE_PROJECT_RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+      ORG_GRADLE_PROJECT_RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+      ORG_GRADLE_PROJECT_RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up JDK 17
+      - name: 配置 JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: 17
 
-      - name: Release Apk Sign
+      - name: 检查并恢复签名密钥
+        shell: bash
         run: |
-          # not use this output
-          # echo "KeyStore=yes" >> $GITHUB_OUTPUT
-          echo -e "\n" >> gradle.properties
-          echo RELEASE_KEY_ALIAS='${{ secrets.RELEASE_KEY_ALIAS }}' >> gradle.properties
-          echo RELEASE_KEY_PASSWORD='${{ secrets.RELEASE_KEY_PASSWORD }}' >> gradle.properties
-          echo RELEASE_STORE_PASSWORD='${{ secrets.RELEASE_STORE_PASSWORD }}' >> gradle.properties
-          echo RELEASE_STORE_FILE='./key.jks' >> gradle.properties
-          echo ${{ secrets.RELEASE_KEY_STORE }} | base64 --decode > $GITHUB_WORKSPACE/app/key.jks
+          set -euo pipefail
+          required=(
+            KEYSTORE_BASE64
+            ORG_GRADLE_PROJECT_RELEASE_STORE_PASSWORD
+            ORG_GRADLE_PROJECT_RELEASE_KEY_ALIAS
+            ORG_GRADLE_PROJECT_RELEASE_KEY_PASSWORD
+          )
+          for name in "${required[@]}"; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "缺少 GitHub Actions Secret: ${name#ORG_GRADLE_PROJECT_}"
+              exit 1
+            fi
+          done
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/legado-release.p12
+          chmod 600 app/legado-release.p12
+          keytool -list \
+            -keystore app/legado-release.p12 \
+            -storepass:env ORG_GRADLE_PROJECT_RELEASE_STORE_PASSWORD \
+            -alias "$ORG_GRADLE_PROJECT_RELEASE_KEY_ALIAS" \
+            > /dev/null
 
-      - name: Unify Version Name
+      - name: 配置版本与包名
+        shell: bash
         run: |
-          echo "统一版本号"
-          sed "/def version/c def version = \"${{ env.VERSION }}\"" $GITHUB_WORKSPACE/app/build.gradle  -i
+          set -euo pipefail
+          sed -i "/^def version =/c\\def version = \"$VERSION\"" app/build.gradle
+          if [[ "$VARIANT" == "releaseA" ]]; then
+            sed -i "s/applicationIdSuffix '.release'/applicationIdSuffix '.releaseA'/" app/build.gradle
+            sed -i 's/\.release/\.releaseA/g' app/google-services.json
+          fi
 
-      - name: Set up Gradle
+      - name: 配置 Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build With Gradle
-        run: |
-          echo "开始进行${{ env.product }}构建"
-          chmod +x gradlew
-          ./gradlew assemble${{ env.product }}release --build-cache --parallel --daemon --warning-mode all
+      - name: 构建 APK
+        run: ./gradlew :app:assembleAppRelease --build-cache --no-daemon --warning-mode all
 
-      - name: Organize the Files
+      - name: 整理构建产物
+        shell: bash
         run: |
-          mkdir -p ${{ github.workspace }}/apk/
-          cp -rf ${{ github.workspace }}/app/build/outputs/apk/*/*/*.apk ${{ github.workspace }}/apk/
-          
-      - name: Upload App To Artifact
+          set -euo pipefail
+          apk_path="$(find app/build/outputs/apk/app/release -type f -name '*.apk' -print -quit)"
+          if [[ -z "$apk_path" ]]; then
+            echo "未找到构建完成的 APK"
+            exit 1
+          fi
+          mkdir -p dist
+          cp "$apk_path" "dist/legado_app_${VERSION}_${VARIANT}.apk"
+          sha256sum dist/*.apk
+
+      - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
-          name: legado_${{ env.product }}
-          path: ${{ github.workspace }}/apk/*.apk
+          name: release-apk-${{ matrix.variant }}
+          path: dist/*.apk
+          if-no-files-found: error
+          retention-days: 30
 
-      - name: Release
-        if: ${{ env.product == 'app' }}
-        uses: softprops/action-gh-release@v2
+  draft-release:
+    name: 创建草稿 Release
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: 下载 APK
+        uses: actions/download-artifact@v4
         with:
-          name: legado_app_${{ env.VERSION }}
-          tag_name: ${{ env.VERSION }}
-          body_path: ${{ github.workspace }}/CHANGELOG.md
-          draft: false
-          prerelease: false
-          files: ${{ github.workspace }}/apk/legado_app_*.apk
+          pattern: release-apk-*
+          path: dist
+          merge-multiple: true
+
+      - name: 核对 APK
+        run: sha256sum dist/*.apk
+
+      - name: 创建草稿 Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Prepare For GooglePlay
-        if: env.product == 'google' && env.play == 'yes'
-        run: |
-          mkdir -p ReleaseNotes
-          ln -s ${{ github.workspace }}/CHANGELOG.md ReleaseNotes/whatsnew-en-US
-          ln -s ${{ github.workspace }}/CHANGELOG.md ReleaseNotes/whatsnew-zh-CN
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_NOTES: |
+            这是 coding-back01/legado 仓库的首次公开构建。
 
-      - name: Release To GooglePlay
-        if: env.product == 'google' && env.play == 'yes'
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          packageName: io.legado.play
-          releaseFiles: ${{ github.workspace }}/apk/legado_google_*.apk
-          track: production
-          whatsNewDirectory: ${{ github.workspace }}/ReleaseNotes
+            - `release` 为普通版本，包名为 `io.legado.app.release`。
+            - `releaseA` 为共存版本，包名为 `io.legado.app.releaseA`。
+            - 两个 APK 均使用本仓库独立保管的私有密钥签名。
+            - 对应提交：`${{ github.sha }}`。
 
-      - name: Push Assets To "release" Branch
-        if: ${{ github.actor == 'gedoor' }}
+            本构建的签名与其他 Legado 发行版不同，不能直接覆盖安装其他签名的同包名版本。安装或迁移前请先备份数据。
+        shell: bash
         run: |
-          cd $GITHUB_WORKSPACE/apk/
-          git init
-          git checkout -b release
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote add origin "https://${{ github.actor }}:${{ secrets.ACTIONS_TOKEN }}@github.com/${{ github.actor }}/release"
-          git add *.apk
-          git commit -m "${{ env.VERSION }}"
-          git push -f -u origin release
-          
-      - name: Purge Jsdelivr Cache
-        if: ${{ github.actor == 'gedoor' }}
-        run: |
-          result=$(curl -s https://purge.jsdelivr.net/gh/${{ github.actor }}/release@release/)
-          if echo $result |grep -q 'success.*true'; then
-            echo "jsdelivr缓存更新成功"
-          else
-            echo $result
-          fi
+          set -euo pipefail
+          gh release create "$VERSION" dist/*.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "legado_app_${VERSION}" \
+            --notes "$RELEASE_NOTES" \
+            --draft
