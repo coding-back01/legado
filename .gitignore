@@ -15,6 +15,13 @@ node_modules/
 package-lock.json
 .idea/
 .signing/
+# Firebase 客户端配置由仓库所有者按需提供
+/app/google-services.json
+# 本地签名材料不得提交
+*.jks
+*.keystore
+*.p12
+*.pfx
 # OpenSpec 为本地智能体生成的上游工作流指令
 .agents/skills/
 # Kotlin 2.0

@@ -82,7 +82,6 @@ jobs:
           sed -i "/^def version =/c\\def version = \"$VERSION\"" app/build.gradle
           if [[ "$VARIANT" == "releaseA" ]]; then
             sed -i "s/applicationIdSuffix '.release'/applicationIdSuffix '.releaseA'/" app/build.gradle
-            sed -i 's/\.release/\.releaseA/g' app/google-services.json
           fi
 
       - name: 配置 Gradle
