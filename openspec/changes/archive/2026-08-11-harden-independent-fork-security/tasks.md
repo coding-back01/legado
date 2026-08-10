@@ -24,4 +24,4 @@
 - [x] 4.2 运行 `./gradlew :app:testAppDebugUnitTest` 和 `./gradlew :app:assembleAppDebug`，记录实际结果；不把未运行的设备测试描述为通过。
 - [x] 4.3 检查 GitHub Actions YAML 语法及工作流 job、依赖和条件，确认 Debug artifact 仅在验证成功后上传，正式发布仍在签名 Secrets 缺失时失败。
 - [x] 4.4 运行 `openspec validate --all --strict`、`git diff --check`、`git diff --stat`，确认工件与实现一致且没有无关改动。
-- [ ] 4.5 通过 Pull Request 合并后，按“上游 Firebase 客户端配置已从当前分支移除且本仓库不再使用”的事实说明关闭历史 Secret scanning 告警；不声称上游 Key 已被撤销。
+- [x] 4.5 通过 Pull Request 合并后，按“上游 Firebase 客户端配置已从当前分支移除且本仓库不再使用”的事实说明关闭历史 Secret scanning 告警；不声称上游 Key 已被撤销。
