@@ -1233,4 +1233,14 @@
     <string name="auto_check_new_backup_t">自动检查新备份</string>
     <string name="auto_check_new_backup_s">打开软件时检查是否有新备份，有新备份时提示是否更新</string>
     <string name="sys_image_picker">系统图片选择器</string>
+    <string name="reading_time_read_minutes">%1$d min read</string>
+    <string name="reading_time_read_hours_minutes">%1$d h %2$d min read</string>
+    <string name="reading_time_remaining_minutes">%1$d min left</string>
+    <string name="reading_time_remaining_hours_minutes">%1$d h %2$d min left</string>
+    <string name="reading_time_learning">Learning</string>
+    <string name="reading_time_unavailable">—</string>
+    <string name="reading_time_combined">%1$s · %2$s</string>
+    <string name="reset_reading_time_estimation">Reset reading time estimate</string>
+    <string name="reset_reading_time_estimation_message">Reset the learned reading speed for this book? Reading history and cached content will be kept.</string>
+    <string name="reading_time_estimation_reset">Reading time estimate reset</string>
 </resources>

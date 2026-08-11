@@ -11,13 +11,16 @@ import io.legado.app.constant.EventBus
 import io.legado.app.databinding.DialogTipConfigBinding
 import io.legado.app.help.config.ReadBookConfig
 import io.legado.app.help.config.ReadTipConfig
+import io.legado.app.lib.dialogs.alert
 import io.legado.app.lib.dialogs.selector
+import io.legado.app.model.ReadBook
 import io.legado.app.utils.checkByIndex
 import io.legado.app.utils.getIndexById
 import io.legado.app.utils.hexString
 import io.legado.app.utils.observeEvent
 import io.legado.app.utils.postEvent
 import io.legado.app.utils.setLayout
+import io.legado.app.utils.toastOnUi
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 
 
@@ -76,6 +79,7 @@ class TipConfigDialog : BaseDialogFragment(R.layout.dialog_tip_config) {
         }
         upTvTipColor()
         upTvTipDividerColor()
+        binding.llResetReadingTimeEstimation.isEnabled = ReadBook.book != null
     }
 
     private fun upTvTipColor() {
@@ -136,6 +140,7 @@ class TipConfigDialog : BaseDialogFragment(R.layout.dialog_tip_config) {
                 clearRepeat(tipValue)
                 ReadTipConfig.tipHeaderLeft = tipValue
                 tvHeaderLeft.text = ReadTipConfig.tipNames[i]
+                ReadBook.onReadingTimeTipConfigChanged()
                 postEvent(EventBus.UP_CONFIG, arrayListOf(2, 6))
             }
         }
@@ -145,6 +150,7 @@ class TipConfigDialog : BaseDialogFragment(R.layout.dialog_tip_config) {
                 clearRepeat(tipValue)
                 ReadTipConfig.tipHeaderMiddle = tipValue
                 tvHeaderMiddle.text = ReadTipConfig.tipNames[i]
+                ReadBook.onReadingTimeTipConfigChanged()
                 postEvent(EventBus.UP_CONFIG, arrayListOf(2, 6))
             }
         }
@@ -154,6 +160,7 @@ class TipConfigDialog : BaseDialogFragment(R.layout.dialog_tip_config) {
                 clearRepeat(tipValue)
                 ReadTipConfig.tipHeaderRight = tipValue
                 tvHeaderRight.text = ReadTipConfig.tipNames[i]
+                ReadBook.onReadingTimeTipConfigChanged()
                 postEvent(EventBus.UP_CONFIG, arrayListOf(2, 6))
             }
         }
@@ -163,6 +170,7 @@ class TipConfigDialog : BaseDialogFragment(R.layout.dialog_tip_config) {
                 clearRepeat(tipValue)
                 ReadTipConfig.tipFooterLeft = tipValue
                 tvFooterLeft.text = ReadTipConfig.tipNames[i]
+                ReadBook.onReadingTimeTipConfigChanged()
                 postEvent(EventBus.UP_CONFIG, arrayListOf(2, 6))
             }
         }
@@ -172,6 +180,7 @@ class TipConfigDialog : BaseDialogFragment(R.layout.dialog_tip_config) {
                 clearRepeat(tipValue)
                 ReadTipConfig.tipFooterMiddle = tipValue
                 tvFooterMiddle.text = ReadTipConfig.tipNames[i]
+                ReadBook.onReadingTimeTipConfigChanged()
                 postEvent(EventBus.UP_CONFIG, arrayListOf(2, 6))
             }
         }
@@ -181,6 +190,7 @@ class TipConfigDialog : BaseDialogFragment(R.layout.dialog_tip_config) {
                 clearRepeat(tipValue)
                 ReadTipConfig.tipFooterRight = tipValue
                 tvFooterRight.text = ReadTipConfig.tipNames[i]
+                ReadBook.onReadingTimeTipConfigChanged()
                 postEvent(EventBus.UP_CONFIG, arrayListOf(2, 6))
             }
         }
@@ -215,6 +225,20 @@ class TipConfigDialog : BaseDialogFragment(R.layout.dialog_tip_config) {
                         .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
                         .setDialogId(TIP_DIVIDER_COLOR)
                         .show(requireActivity())
+                }
+            }
+        }
+        llResetReadingTimeEstimation.setOnClickListener {
+            alert(
+                titleResource = R.string.reset_reading_time_estimation,
+                messageResource = R.string.reset_reading_time_estimation_message,
+            ) {
+                noButton()
+                yesButton {
+                    if (ReadBook.resetReadingTimeEstimation()) {
+                        postEvent(EventBus.UP_CONFIG, arrayListOf(6))
+                        context?.toastOnUi(R.string.reading_time_estimation_reset)
+                    }
                 }
             }
         }

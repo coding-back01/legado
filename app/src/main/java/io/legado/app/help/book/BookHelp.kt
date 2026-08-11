@@ -63,14 +63,20 @@ object BookHelp {
     val cachePath = FileUtils.getPath(downloadDir, cacheFolderName)
 
     fun clearCache() {
+        ReadingTimeIndexManager.onAllCachesCleared()
         FileUtils.delete(
             FileUtils.getPath(downloadDir, cacheFolderName)
         )
     }
 
     fun clearCache(book: Book) {
+        ReadingTimeIndexManager.onBookCacheCleared(book)
         val filePath = FileUtils.getPath(downloadDir, cacheFolderName, book.getFolderName())
         FileUtils.delete(filePath)
+    }
+
+    fun getBookCacheDirectory(book: Book): File {
+        return downloadDir.getFile(cacheFolderName, book.getFolderName())
     }
 
     fun updateCacheFolder(oldBook: Book, newBook: Book) {
@@ -180,12 +186,14 @@ object BookHelp {
     ) {
         if (content.isEmpty()) return
         //保存文本
-        FileUtils.createFileIfNotExist(
+        val contentFile = FileUtils.createFileIfNotExist(
             downloadDir,
             cacheFolderName,
             book.getFolderName(),
             bookChapter.getFileName(),
-        ).writeText(content)
+        )
+        contentFile.writeText(content)
+        ReadingTimeIndexManager.onContentSaved(book, bookChapter, contentFile.length())
         if (book.isOnLineTxt && AppConfig.tocCountWords) {
             val wordCount = StringUtils.wordCountFormat(content.length)
             bookChapter.wordCount = wordCount
@@ -430,6 +438,7 @@ object BookHelp {
             book.getFolderName(),
             bookChapter.getFileName()
         ).delete()
+        ReadingTimeIndexManager.onContentDeleted(book, bookChapter)
     }
 
     /**

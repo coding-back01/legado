@@ -82,6 +82,9 @@
         <item>页数及进度</item>
         <item>时间及电量</item>
         <item>时间及电量%</item>
+        <item>累计阅读时长</item>
+        <item>预计剩余阅读时间</item>
+        <item>累计与剩余阅读时间</item>
     </string-array>
 
     <string-array name="text_font_weight">

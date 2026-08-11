@@ -1231,4 +1231,14 @@
     <string name="auto_check_new_backup_t">自动检查新备份</string>
     <string name="auto_check_new_backup_s">打开软件时检查是否有新备份，有新备份时提示是否更新</string>
     <string name="sys_image_picker">系统图片选择器</string>
+    <string name="reading_time_read_minutes">已读%1$d分</string>
+    <string name="reading_time_read_hours_minutes">已读%1$d时%2$d分</string>
+    <string name="reading_time_remaining_minutes">剩余%1$d分</string>
+    <string name="reading_time_remaining_hours_minutes">剩余%1$d时%2$d分</string>
+    <string name="reading_time_learning">学习中</string>
+    <string name="reading_time_unavailable">—</string>
+    <string name="reading_time_combined">%1$s·%2$s</string>
+    <string name="reset_reading_time_estimation">重置本书阅读速度估算</string>
+    <string name="reset_reading_time_estimation_message">确定重置本书已经学习的阅读速度吗？累计阅读记录和正文缓存将会保留。</string>
+    <string name="reading_time_estimation_reset">已重置本书阅读速度估算</string>
 </resources>
