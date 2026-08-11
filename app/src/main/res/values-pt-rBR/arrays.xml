@@ -97,6 +97,9 @@
 		<item>Páginas e progresso</item>
 		<item>Tempo e Bateria</item>
 		<item>Tempo e Bateria%</item>
+		<item>Tempo de leitura acumulado</item>
+		<item>Tempo de leitura restante estimado</item>
+		<item>Tempo lido e restante</item>
 	</string-array>
 
 	<string-array name="text_font_weight">

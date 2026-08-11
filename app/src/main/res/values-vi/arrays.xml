@@ -75,6 +75,9 @@
         <item>Số trang và Tiến độ</item>
         <item>Thời gian và Pin</item>
         <item>Thời gian và Pin %</item>
+        <item>Thời lượng đã đọc</item>
+        <item>Thời gian đọc còn lại dự kiến</item>
+        <item>Đã đọc và thời gian còn lại</item>
     </string-array>
 
     <string-array name="text_font_weight">

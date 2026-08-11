@@ -1,5 +1,6 @@
 package io.legado.app.model
 
+import android.os.SystemClock
 import io.legado.app.constant.AppLog
 import io.legado.app.constant.EventBus
 import io.legado.app.constant.PageAnim.scrollPageAnim
@@ -12,6 +13,9 @@ import io.legado.app.data.entities.ReadRecord
 import io.legado.app.help.AppWebDav
 import io.legado.app.help.book.BookHelp
 import io.legado.app.help.book.ContentProcessor
+import io.legado.app.help.book.ReadingTimeIndexManager
+import io.legado.app.help.book.ReadingTimeIndexUpdate
+import io.legado.app.help.book.isAudio
 import io.legado.app.help.book.isImage
 import io.legado.app.help.book.isLocal
 import io.legado.app.help.book.isPdf
@@ -21,9 +25,17 @@ import io.legado.app.help.book.simulatedTotalChapterNum
 import io.legado.app.help.book.update
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.ReadBookConfig
+import io.legado.app.help.config.ReadTipConfig
 import io.legado.app.help.coroutine.Coroutine
 import io.legado.app.help.globalExecutor
 import io.legado.app.model.localBook.TextFile
+import io.legado.app.model.read.ReadingTimeAdvanceResult
+import io.legado.app.model.read.ReadingTimeDisplayFormatter
+import io.legado.app.model.read.ReadingTimeDisplaySnapshot
+import io.legado.app.model.read.ReadingTimeEstimate
+import io.legado.app.model.read.ReadingTimeEstimator
+import io.legado.app.model.read.ReadingTimeIndexSnapshot
+import io.legado.app.model.read.ReadingTimePosition
 import io.legado.app.model.webBook.WebBook
 import io.legado.app.service.BaseReadAloudService
 import io.legado.app.service.CacheBookService
@@ -59,6 +71,8 @@ import kotlin.math.min
 
 @Suppress("MemberVisibilityCanBePrivate")
 object ReadBook : CoroutineScope by MainScope() {
+    private const val READING_TIME_PERSIST_INTERVAL = 120_000L
+
     var book: Book? = null
     var callBack: CallBack? = null
     var inBookshelf = false
@@ -80,6 +94,29 @@ object ReadBook : CoroutineScope by MainScope() {
     private val curChapterLoadingLock = Mutex()
     private val nextChapterLoadingLock = Mutex()
     var readStartTime: Long = System.currentTimeMillis()
+    private var readingTimeEstimator = ReadingTimeEstimator()
+    private var readingTimeEstimate: ReadingTimeEstimate = ReadingTimeEstimate.Unavailable
+    private var readingTimeStateDirty = false
+    private var readingTimeLastPersistElapsed = 0L
+    private var readingTimeHostResumed = false
+    private var readingTimeMenuVisible = false
+    private var readingTimeLayoutChanging = true
+    private var readingTimeSamplingActive = false
+    private var readingTimeBookIdentityHash = 0L
+    private var readingTimeTocChapterCount = 0
+    private var readingTimeTocPrefixHash = 0L
+    private var readingTimeSourceLastModified = 0L
+    private var readingTimeIndexJob: Job? = null
+    private var readingTimeIndexGeneration = 0L
+
+    @Volatile
+    var readingTimeDisplay = ReadingTimeDisplayFormatter.format(
+        appCtx,
+        readRecordEnabled = false,
+        accumulatedReadMillis = 0L,
+        estimate = ReadingTimeEstimate.Unavailable,
+    )
+        private set
 
     /* 跳转进度前进度记录 */
     var lastBookProgress: BookProgress? = null
@@ -98,8 +135,10 @@ object ReadBook : CoroutineScope by MainScope() {
     fun resetData(book: Book) {
         releaseAndCancel()
         ReadBook.book = book
-        readRecord.bookName = book.name
-        readRecord.readTime = appDb.readRecordDao.getReadTime(book.name) ?: 0
+        synchronized(readRecord) {
+            readRecord.bookName = book.name
+            readRecord.readTime = appDb.readRecordDao.getReadTime(book.name) ?: 0
+        }
         chapterSize = appDb.bookChapterDao.getChapterCount(book.bookUrl)
         simulatedChapterSize = if (book.readSimulating()) {
             book.simulatedTotalChapterNum()
@@ -111,6 +150,7 @@ object ReadBook : CoroutineScope by MainScope() {
         durChapterPos = book.durChapterPos
         isLocalBook = book.isLocal
         clearTextChapter()
+        initializeReadingTime(book)
         callBack?.upContent()
         callBack?.upMenuView()
         callBack?.upPageAnim()
@@ -148,6 +188,7 @@ object ReadBook : CoroutineScope by MainScope() {
         if (prevTextChapter?.isCompleted == false) {
             prevTextChapter = null
         }
+        initializeReadingTime(book)
         callBack?.upMenuView()
         upWebBook(book)
         synchronized(this) {
@@ -193,6 +234,333 @@ object ReadBook : CoroutineScope by MainScope() {
         }
     }
 
+    private fun initializeReadingTime(book: Book) {
+        readingTimeIndexJob?.cancel()
+        ReadingTimeIndexManager.stop()
+        readingTimeEstimator = ReadingTimeEstimator(book.config.readingTimeState)
+        readingTimeEstimator.updateIndex(ReadingTimeIndexSnapshot.empty(chapterSize))
+        readingTimeEstimate = if (AppConfig.enableReadRecord && isReadingTimeSupported(book)) {
+            readingTimeEstimator.estimate(currentReadingTimePosition())
+        } else {
+            ReadingTimeEstimate.Unavailable
+        }
+        readingTimeStateDirty = false
+        readingTimeLastPersistElapsed = SystemClock.elapsedRealtime()
+        readingTimeSamplingActive = false
+        readingTimeLayoutChanging = curTextChapter?.isCompleted != true
+        val state = book.config.readingTimeState
+        readingTimeBookIdentityHash = state?.bookIdentityHash ?: 0L
+        readingTimeTocChapterCount = state?.tocChapterCount ?: 0
+        readingTimeTocPrefixHash = state?.tocPrefixHash ?: 0L
+        readingTimeSourceLastModified = state?.sourceLastModified ?: 0L
+        refreshReadingTimeDisplay()
+        onReadingTimeTipConfigChanged()
+    }
+
+    private fun isReadingTimeSupported(book: Book): Boolean {
+        return !book.isAudio && !book.isImage && !book.isPdf
+    }
+
+    private fun shouldBuildReadingTimeIndex(): Boolean {
+        val book = book ?: return false
+        return ReadTipConfig.hasRemainingReadTimeTip && isReadingTimeSupported(book)
+    }
+
+    private fun canTrainReadingTime(): Boolean {
+        val book = book ?: return false
+        return AppConfig.enableReadRecord &&
+                shouldBuildReadingTimeIndex() &&
+                isReadingTimeSupported(book) &&
+                readingTimeHostResumed &&
+                !readingTimeMenuVisible &&
+                !readingTimeLayoutChanging &&
+                !BaseReadAloudService.isRun
+    }
+
+    private fun currentReadingTimePosition(): ReadingTimePosition {
+        val safeChapterIndex = if (chapterSize > 0) {
+            durChapterIndex.coerceIn(0, chapterSize - 1)
+        } else {
+            0
+        }
+        val textChapter = curTextChapter
+        val progress = if (
+            textChapter?.position == safeChapterIndex &&
+            textChapter.isCompleted &&
+            textChapter.pageSize > 0
+        ) {
+            val page = textChapter.getPageByReadPos(durChapterPos)
+            val lastPage = textChapter.lastPage
+            if (page != null && lastPage != null) {
+                val pageEnd = page.chapterPosition.toLong() + page.charSize
+                val chapterEnd = lastPage.chapterPosition.toLong() + lastPage.charSize
+                if (chapterEnd > 0L) pageEnd.toDouble() / chapterEnd else 0.0
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        }
+        return ReadingTimePosition(safeChapterIndex, progress.coerceIn(0.0, 1.0))
+    }
+
+    private fun resumeReadingTimeSampling() {
+        if (!canTrainReadingTime()) {
+            pauseReadingTimeSampling()
+            return
+        }
+        readingTimeEstimator.resume(
+            currentReadingTimePosition(),
+            SystemClock.elapsedRealtime(),
+        )
+        readingTimeSamplingActive = true
+    }
+
+    private fun pauseReadingTimeSampling() {
+        if (readingTimeSamplingActive) {
+            readingTimeEstimator.pause()
+            readingTimeSamplingActive = false
+        }
+    }
+
+    private fun onReadingTimePositionChanged(allowTraining: Boolean) {
+        val position = currentReadingTimePosition()
+        if (!canTrainReadingTime()) {
+            pauseReadingTimeSampling()
+            readingTimeEstimate = ReadingTimeEstimate.Unavailable.takeIf {
+                !AppConfig.enableReadRecord || book?.let(::isReadingTimeSupported) != true
+            } ?: readingTimeEstimator.estimate(position)
+            refreshReadingTimeDisplay()
+            return
+        }
+        if (!readingTimeSamplingActive) {
+            readingTimeEstimator.resume(position, SystemClock.elapsedRealtime())
+            readingTimeSamplingActive = true
+            readingTimeEstimate = readingTimeEstimator.estimate(position)
+            refreshReadingTimeDisplay()
+            return
+        }
+        if (allowTraining) {
+            val result: ReadingTimeAdvanceResult = readingTimeEstimator.onForward(
+                position = position,
+                allowTraining = true,
+                nowMillis = SystemClock.elapsedRealtime(),
+            )
+            readingTimeEstimate = result.estimate
+            if (result.sampleAccepted) {
+                readingTimeStateDirty = true
+                persistReadingTimeState(force = false)
+            }
+        } else {
+            readingTimeEstimator.reanchor(position, SystemClock.elapsedRealtime())
+            readingTimeEstimate = readingTimeEstimator.estimate(position)
+        }
+        refreshReadingTimeDisplay()
+    }
+
+    fun onReadingTimeResumed() {
+        readingTimeHostResumed = true
+        resumeReadingTimeSampling()
+        refreshReadingTimeDisplay()
+    }
+
+    fun onReadingTimePaused() {
+        refreshReadingTimeDisplay()
+        readingTimeHostResumed = false
+        pauseReadingTimeSampling()
+        persistReadingTimeState(force = true)
+        ReadingTimeIndexManager.flushActive()
+    }
+
+    fun onReadingTimeMenuVisibilityChanged(visible: Boolean) {
+        readingTimeMenuVisible = visible
+        if (visible) {
+            pauseReadingTimeSampling()
+        } else {
+            resumeReadingTimeSampling()
+        }
+    }
+
+    fun onReadingTimeLayoutChanged() {
+        readingTimeLayoutChanging = true
+        pauseReadingTimeSampling()
+    }
+
+    private fun onReadingTimeLayoutReady() {
+        readingTimeLayoutChanging = false
+        readingTimeEstimate = if (AppConfig.enableReadRecord) {
+            readingTimeEstimator.estimate(currentReadingTimePosition())
+        } else {
+            ReadingTimeEstimate.Unavailable
+        }
+        resumeReadingTimeSampling()
+        refreshReadingTimeDisplay()
+    }
+
+    fun onReadingTimeAloudStateChanged() {
+        if (BaseReadAloudService.isRun) {
+            pauseReadingTimeSampling()
+        } else {
+            resumeReadingTimeSampling()
+        }
+    }
+
+    fun onReadingTimeTipConfigChanged() {
+        val requestGeneration = synchronized(this) { ++readingTimeIndexGeneration }
+        readingTimeIndexJob?.cancel()
+        if (!shouldBuildReadingTimeIndex()) {
+            ReadingTimeIndexManager.stop()
+            pauseReadingTimeSampling()
+            readingTimeEstimate = ReadingTimeEstimate.Unavailable
+            refreshReadingTimeDisplay()
+            return
+        }
+        val currentBook = book ?: return
+        val speedState = readingTimeEstimator.stateSnapshot()
+        readingTimeIndexJob = launch(IO) {
+            val chapters = appDb.bookChapterDao.getChapterList(currentBook.bookUrl)
+            if (!isCurrentReadingTimeIndexRequest(requestGeneration) ||
+                book?.bookUrl != currentBook.bookUrl ||
+                !shouldBuildReadingTimeIndex()
+            ) {
+                return@launch
+            }
+            ReadingTimeIndexManager.start(
+                currentBook,
+                chapters,
+                speedState,
+            ) { update ->
+                postReadingTimeIndexUpdate(
+                    currentBook.bookUrl,
+                    requestGeneration,
+                    update,
+                )
+            }
+        }
+        readingTimeEstimate = readingTimeEstimator.estimate(currentReadingTimePosition())
+        resumeReadingTimeSampling()
+        refreshReadingTimeDisplay()
+    }
+
+    private fun isCurrentReadingTimeIndexRequest(requestGeneration: Long): Boolean {
+        return synchronized(this) { readingTimeIndexGeneration == requestGeneration }
+    }
+
+    private fun postReadingTimeIndexUpdate(
+        bookUrl: String,
+        requestGeneration: Long,
+        update: ReadingTimeIndexUpdate,
+    ) {
+        launch(Main) {
+            applyReadingTimeIndexUpdate(bookUrl, requestGeneration, update)
+        }
+    }
+
+    private fun applyReadingTimeIndexUpdate(
+        bookUrl: String,
+        requestGeneration: Long,
+        update: ReadingTimeIndexUpdate,
+    ) {
+        if (!isCurrentReadingTimeIndexRequest(requestGeneration) ||
+            book?.bookUrl != bookUrl ||
+            !shouldBuildReadingTimeIndex()
+        ) {
+            return
+        }
+        val position = currentReadingTimePosition()
+        if (update.resetSpeedModel) {
+            readingTimeEstimator.reset(position, SystemClock.elapsedRealtime())
+            readingTimeStateDirty = true
+        }
+        readingTimeEstimator.updateIdentity(
+            update.bookIdentityHash,
+            update.tocChapterCount,
+            update.tocPrefixHash,
+            update.sourceLastModified,
+        )
+        if (readingTimeBookIdentityHash != update.bookIdentityHash ||
+            readingTimeTocChapterCount != update.tocChapterCount ||
+            readingTimeTocPrefixHash != update.tocPrefixHash ||
+            readingTimeSourceLastModified != update.sourceLastModified
+        ) {
+            readingTimeStateDirty = true
+        }
+        readingTimeBookIdentityHash = update.bookIdentityHash
+        readingTimeTocChapterCount = update.tocChapterCount
+        readingTimeTocPrefixHash = update.tocPrefixHash
+        readingTimeSourceLastModified = update.sourceLastModified
+        readingTimeEstimator.updateIndex(update.snapshot)
+        readingTimeEstimate = if (AppConfig.enableReadRecord) {
+            readingTimeEstimator.estimate(position)
+        } else {
+            ReadingTimeEstimate.Unavailable
+        }
+        refreshReadingTimeDisplay()
+    }
+
+    fun resetReadingTimeEstimation(): Boolean {
+        if (book == null) return false
+        val position = currentReadingTimePosition()
+        readingTimeEstimator.reset(position, SystemClock.elapsedRealtime())
+        readingTimeEstimator.updateIdentity(
+            readingTimeBookIdentityHash,
+            readingTimeTocChapterCount,
+            readingTimeTocPrefixHash,
+            readingTimeSourceLastModified,
+        )
+        readingTimeStateDirty = true
+        readingTimeEstimate = if (AppConfig.enableReadRecord && shouldBuildReadingTimeIndex()) {
+            readingTimeEstimator.estimate(position)
+        } else {
+            ReadingTimeEstimate.Unavailable
+        }
+        persistReadingTimeState(force = true)
+        refreshReadingTimeDisplay()
+        return true
+    }
+
+    fun refreshReadingTimeDisplay() {
+        if (!AppConfig.enableReadRecord) {
+            pauseReadingTimeSampling()
+            readingTimeEstimate = ReadingTimeEstimate.Unavailable
+        } else if (!readingTimeSamplingActive) {
+            resumeReadingTimeSampling()
+        }
+        val accumulatedReadMillis = synchronized(readRecord) {
+            val currentSegment = if (readingTimeHostResumed) {
+                (System.currentTimeMillis() - readStartTime).coerceAtLeast(0L)
+            } else {
+                0L
+            }
+            readRecord.readTime + currentSegment
+        }
+        readingTimeDisplay = ReadingTimeDisplayFormatter.format(
+            appCtx,
+            AppConfig.enableReadRecord,
+            accumulatedReadMillis,
+            readingTimeEstimate,
+        )
+    }
+
+    private fun persistReadingTimeState(force: Boolean) {
+        if (!readingTimeStateDirty) return
+        val now = SystemClock.elapsedRealtime()
+        if (!force && now - readingTimeLastPersistElapsed < READING_TIME_PERSIST_INTERVAL) return
+        val currentBook = book ?: return
+        readingTimeEstimator.updateIdentity(
+            readingTimeBookIdentityHash,
+            readingTimeTocChapterCount,
+            readingTimeTocPrefixHash,
+            readingTimeSourceLastModified,
+        )
+        currentBook.config.readingTimeState = readingTimeEstimator.stateSnapshot()
+        readingTimeStateDirty = false
+        readingTimeLastPersistElapsed = now
+        executor.execute {
+            appDb.bookDao.update(currentBook)
+        }
+    }
+
     fun setProgress(progress: BookProgress) {
         if (progress.durChapterIndex < chapterSize &&
             (durChapterIndex != progress.durChapterIndex
@@ -200,6 +568,7 @@ object ReadBook : CoroutineScope by MainScope() {
         ) {
             durChapterIndex = progress.durChapterIndex
             durChapterPos = progress.durChapterPos
+            onReadingTimePositionChanged(false)
             saveRead()
             clearTextChapter()
             callBack?.upContent()
@@ -222,6 +591,7 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     fun clearTextChapter() {
+        onReadingTimeLayoutChanged()
         clearExpiredChapterLoadingJob(true)
         prevTextChapter = null
         curTextChapter = null
@@ -283,14 +653,16 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     fun upReadTime() {
+        if (!AppConfig.enableReadRecord) return
+        val recordSnapshot = synchronized(readRecord) {
+            val now = System.currentTimeMillis()
+            readRecord.readTime = readRecord.readTime + now - readStartTime
+            readStartTime = now
+            readRecord.lastRead = now
+            readRecord.copy()
+        }
         executor.execute {
-            if (!AppConfig.enableReadRecord) {
-                return@execute
-            }
-            readRecord.readTime = readRecord.readTime + System.currentTimeMillis() - readStartTime
-            readStartTime = System.currentTimeMillis()
-            readRecord.lastRead = System.currentTimeMillis()
-            appDb.readRecordDao.insert(readRecord)
+            appDb.readRecordDao.insert(recordSnapshot)
         }
     }
 
@@ -309,6 +681,7 @@ object ReadBook : CoroutineScope by MainScope() {
                 hasNextPage = true
                 it.getPage(durPageIndex)?.removePageAloudSpan()
                 durChapterPos = nextPagePos
+                onReadingTimePositionChanged(false)
                 callBack?.cancelSelect()
                 callBack?.upContent()
                 saveRead(true)
@@ -324,6 +697,7 @@ object ReadBook : CoroutineScope by MainScope() {
             if (prevPagePos >= 0) {
                 hasPrevPage = true
                 durChapterPos = prevPagePos
+                onReadingTimePositionChanged(false)
                 callBack?.upContent()
                 saveRead(true)
             }
@@ -331,7 +705,11 @@ object ReadBook : CoroutineScope by MainScope() {
         return hasPrevPage
     }
 
-    fun moveToNextChapter(upContent: Boolean, upContentInPlace: Boolean = true): Boolean {
+    fun moveToNextChapter(
+        upContent: Boolean,
+        upContentInPlace: Boolean = true,
+        allowReadingTimeTraining: Boolean = false,
+    ): Boolean {
         if (durChapterIndex < simulatedChapterSize - 1) {
             durChapterPos = 0
             durChapterIndex++
@@ -339,6 +717,7 @@ object ReadBook : CoroutineScope by MainScope() {
             prevTextChapter = curTextChapter
             curTextChapter = nextTextChapter
             nextTextChapter = null
+            onReadingTimePositionChanged(allowReadingTimeTraining)
             if (curTextChapter == null) {
                 AppLog.putDebug("moveToNextChapter-章节未加载,开始加载")
                 if (upContentInPlace) callBack?.upContent()
@@ -361,7 +740,8 @@ object ReadBook : CoroutineScope by MainScope() {
 
     suspend fun moveToNextChapterAwait(
         upContent: Boolean,
-        upContentInPlace: Boolean = true
+        upContentInPlace: Boolean = true,
+        allowReadingTimeTraining: Boolean = false,
     ): Boolean {
         if (durChapterIndex < simulatedChapterSize - 1) {
             durChapterPos = 0
@@ -370,6 +750,7 @@ object ReadBook : CoroutineScope by MainScope() {
             prevTextChapter = curTextChapter
             curTextChapter = nextTextChapter
             nextTextChapter = null
+            onReadingTimePositionChanged(allowReadingTimeTraining)
             if (curTextChapter == null) {
                 AppLog.putDebug("moveToNextChapter-章节未加载,开始加载")
                 if (upContentInPlace) callBack?.upContentAwait()
@@ -402,6 +783,7 @@ object ReadBook : CoroutineScope by MainScope() {
             nextTextChapter = curTextChapter
             curTextChapter = prevTextChapter
             prevTextChapter = null
+            onReadingTimePositionChanged(false)
             if (curTextChapter == null) {
                 if (upContentInPlace) callBack?.upContent()
                 loadContent(durChapterIndex, upContent, resetPageOffset = false)
@@ -420,6 +802,7 @@ object ReadBook : CoroutineScope by MainScope() {
 
     fun skipToPage(index: Int, success: (() -> Unit)? = null) {
         durChapterPos = curTextChapter?.getReadLength(index) ?: index
+        onReadingTimePositionChanged(false)
         callBack?.upContent {
             success?.invoke()
         }
@@ -427,9 +810,10 @@ object ReadBook : CoroutineScope by MainScope() {
         saveRead(true)
     }
 
-    fun setPageIndex(index: Int) {
+    fun setPageIndex(index: Int, allowReadingTimeTraining: Boolean = false) {
         recycleRecorders(durPageIndex, index)
         durChapterPos = curTextChapter?.getReadLength(index) ?: index
+        onReadingTimePositionChanged(allowReadingTimeTraining)
         saveRead(true)
         curPageChanged(true)
     }
@@ -460,6 +844,7 @@ object ReadBook : CoroutineScope by MainScope() {
             if (upContent) callBack?.upContent()
             durChapterIndex = index
             ReadBook.durChapterPos = durChapterPos
+            onReadingTimePositionChanged(false)
             saveRead()
             loadContent(resetPageOffset = true) {
                 success?.invoke()
@@ -738,6 +1123,9 @@ object ReadBook : CoroutineScope by MainScope() {
                         callBack?.onLayoutPageCompleted(index, page)
                     }
                     if (upContent) callBack?.upContent(offset, !available && resetPageOffset)
+                    withContext(Main) {
+                        onReadingTimeLayoutReady()
+                    }
                     curPageChanged()
                     callBack?.contentLoadFinish()
                 }
@@ -825,6 +1213,9 @@ object ReadBook : CoroutineScope by MainScope() {
                         callBack?.onLayoutPageCompleted(index, page)
                     }
                     if (upContent) callBack?.upContent(offset, !available && resetPageOffset)
+                    withContext(Main) {
+                        onReadingTimeLayoutReady()
+                    }
                     curPageChanged()
                     callBack?.contentLoadFinish()
                 }
@@ -971,6 +1362,8 @@ object ReadBook : CoroutineScope by MainScope() {
             if (simulatedChapterSize > 0 && durChapterIndex > simulatedChapterSize - 1) {
                 durChapterIndex = simulatedChapterSize - 1
             }
+            onReadingTimePositionChanged(false)
+            onReadingTimeTipConfigChanged()
             callBack?.upMenuView()
             if (callBack == null) {
                 clearTextChapter()
@@ -1010,6 +1403,12 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     private fun releaseAndCancel() {
+        synchronized(this) { readingTimeIndexGeneration++ }
+        persistReadingTimeState(force = true)
+        pauseReadingTimeSampling()
+        readingTimeIndexJob?.cancel()
+        readingTimeIndexJob = null
+        ReadingTimeIndexManager.stop()
         msg = null
         preDownloadTask?.cancel()
         downloadScope.coroutineContext.cancelChildren()

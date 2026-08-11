@@ -21,6 +21,7 @@ import io.legado.app.help.book.simulatedTotalChapterNum
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.ReadBookConfig
 import io.legado.app.model.ReadBook
+import io.legado.app.model.read.ReadingTimeState
 import io.legado.app.utils.GSON
 import io.legado.app.utils.fromJsonObject
 import kotlinx.parcelize.IgnoredOnParcel
@@ -353,7 +354,7 @@ data class Book(
         newBook.customIntro = customIntro
         newBook.customTag = customTag
         newBook.canUpdate = canUpdate
-        newBook.readConfig = readConfig
+        newBook.readConfig = readConfig?.copy(readingTimeState = null)
         return newBook
     }
 
@@ -402,7 +403,8 @@ data class Book(
         var readSimulating: Boolean = false,
         var startDate: LocalDate? = null,
         var startChapter: Int? = null,     // 用户设置的起始章节
-        var dailyChapters: Int = 3    // 用户设置的每日更新章节数
+        var dailyChapters: Int = 3,    // 用户设置的每日更新章节数
+        var readingTimeState: ReadingTimeState? = null,
     ) : Parcelable
 
     class Converters {

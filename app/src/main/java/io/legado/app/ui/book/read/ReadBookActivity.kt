@@ -333,6 +333,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     override fun onResume() {
         super.onResume()
         ReadBook.readStartTime = System.currentTimeMillis()
+        ReadBook.onReadingTimeResumed()
         if (bookChanged) {
             bookChanged = false
             ReadBook.callBack = this
@@ -363,6 +364,8 @@ class ReadBookActivity : BaseReadBookActivity(),
         super.onPause()
         autoPageStop()
         backupJob?.cancel()
+        ReadBook.onReadingTimePaused()
+        ReadBook.upReadTime()
         ReadBook.saveRead()
         ReadBook.cancelPreDownloadTask()
         unregisterReceiver(timeBatteryReceiver)
@@ -1494,10 +1497,12 @@ class ReadBookActivity : BaseReadBookActivity(),
 
     override fun onMenuShow() {
         binding.readView.autoPager.pause()
+        ReadBook.onReadingTimeMenuVisibilityChanged(true)
     }
 
     override fun onMenuHide() {
         binding.readView.autoPager.resume()
+        ReadBook.onReadingTimeMenuVisibilityChanged(false)
     }
 
     override fun onLayoutPageCompleted(index: Int, page: TextPage) {
@@ -1628,7 +1633,10 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     override fun observeLiveBus() = binding.run {
-        observeEvent<String>(EventBus.TIME_CHANGED) { readView.upTime() }
+        observeEvent<String>(EventBus.TIME_CHANGED) {
+            ReadBook.refreshReadingTimeDisplay()
+            readView.upTime()
+        }
         observeEvent<Int>(EventBus.BATTERY_CHANGED) { readView.upBattery(it) }
         observeEvent<Boolean>(EventBus.MEDIA_BUTTON) {
             if (it) {
@@ -1638,6 +1646,9 @@ class ReadBookActivity : BaseReadBookActivity(),
             }
         }
         observeEvent<ArrayList<Int>>(EventBus.UP_CONFIG) {
+            if (it.any { value -> value == 5 || value == 8 || value == 10 }) {
+                ReadBook.onReadingTimeLayoutChanged()
+            }
             it.forEach { value ->
                 when (value) {
                     0 -> upSystemUiVisibility()
@@ -1656,6 +1667,7 @@ class ReadBookActivity : BaseReadBookActivity(),
             }
         }
         observeEvent<Int>(EventBus.ALOUD_STATE) {
+            ReadBook.onReadingTimeAloudStateChanged()
             if (it == Status.STOP || it == Status.PAUSE) {
                 ReadBook.curTextChapter?.let { textChapter ->
                     val page = textChapter.getPageByReadPos(ReadBook.durChapterPos)

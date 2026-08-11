@@ -54,6 +54,9 @@ class PageView(context: Context) : FrameLayout(context) {
     private var tvBookName: BatteryView? = null
     private var tvTimeBattery: BatteryView? = null
     private var tvTimeBatteryP: BatteryView? = null
+    private var tvReadTime: BatteryView? = null
+    private var tvRemainingReadTime: BatteryView? = null
+    private var tvReadAndRemainingTime: BatteryView? = null
     private var isMainView = false
     var isScroll = false
 
@@ -243,6 +246,24 @@ class PageView(context: Context) : FrameLayout(context) {
             typeface = ChapterProvider.typeface
             textSize = 12f
         }
+        tvReadTime = getTipView(ReadTipConfig.readTime)?.apply {
+            tag = ReadTipConfig.readTime
+            isBattery = false
+            typeface = ChapterProvider.typeface
+            textSize = 12f
+        }
+        tvRemainingReadTime = getTipView(ReadTipConfig.remainingReadTime)?.apply {
+            tag = ReadTipConfig.remainingReadTime
+            isBattery = false
+            typeface = ChapterProvider.typeface
+            textSize = 12f
+        }
+        tvReadAndRemainingTime = getTipView(ReadTipConfig.readAndRemainingTime)?.apply {
+            tag = ReadTipConfig.readAndRemainingTime
+            isBattery = false
+            typeface = ChapterProvider.typeface
+            textSize = 12f
+        }
     }
 
     /**
@@ -288,6 +309,7 @@ class PageView(context: Context) : FrameLayout(context) {
     fun upTime() {
         tvTime?.text = timeFormat.format(Date(System.currentTimeMillis()))
         upTimeBattery()
+        upReadingTime()
     }
 
     /**
@@ -309,6 +331,13 @@ class PageView(context: Context) : FrameLayout(context) {
         val time = timeFormat.format(Date(System.currentTimeMillis()))
         tvTimeBattery?.setBattery(battery, time)
         tvTimeBatteryP?.text = "$time $battery%"
+    }
+
+    private fun upReadingTime() {
+        val display = ReadBook.readingTimeDisplay
+        tvReadTime?.setTextIfNotEqual(display.accumulated)
+        tvRemainingReadTime?.setTextIfNotEqual(display.remaining)
+        tvReadAndRemainingTime?.setTextIfNotEqual(display.combined)
     }
 
     /**
@@ -351,6 +380,7 @@ class PageView(context: Context) : FrameLayout(context) {
      */
     @SuppressLint("SetTextI18n")
     fun setProgress(textPage: TextPage) = textPage.apply {
+        upReadingTime()
         tvBookName?.setTextIfNotEqual(ReadBook.book?.name)
         tvTitle?.setTextIfNotEqual(textPage.title)
         val readProgress = readProgress

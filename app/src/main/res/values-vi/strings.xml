@@ -1220,4 +1220,14 @@
     <string name="auto_check_new_backup_t">自动检查新备份</string>
     <string name="auto_check_new_backup_s">打开软件时检查是否有新备份，有新备份时提示是否更新</string>
     <string name="sys_image_picker">系统图片选择器</string>
+    <string name="reading_time_read_minutes">Đã đọc %1$d phút</string>
+    <string name="reading_time_read_hours_minutes">Đã đọc %1$d giờ %2$d phút</string>
+    <string name="reading_time_remaining_minutes">Còn %1$d phút</string>
+    <string name="reading_time_remaining_hours_minutes">Còn %1$d giờ %2$d phút</string>
+    <string name="reading_time_learning">Đang học</string>
+    <string name="reading_time_unavailable">—</string>
+    <string name="reading_time_combined">%1$s · %2$s</string>
+    <string name="reset_reading_time_estimation">Đặt lại ước tính thời gian đọc</string>
+    <string name="reset_reading_time_estimation_message">Đặt lại tốc độ đọc đã học cho sách này? Lịch sử đọc và nội dung đã lưu vẫn được giữ.</string>
+    <string name="reading_time_estimation_reset">Đã đặt lại ước tính thời gian đọc</string>
 </resources>

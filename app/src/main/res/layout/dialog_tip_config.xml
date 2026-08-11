@@ -348,6 +348,14 @@
 
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/ll_reset_reading_time_estimation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:text="@string/reset_reading_time_estimation"
+            android:textColor="@color/primaryText" />
+
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
