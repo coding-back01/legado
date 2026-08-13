@@ -253,6 +253,20 @@
             android:text="@string/page_anim_none"
             app:isBottomBackground="true" />
 
+        <io.legado.app.lib.theme.view.ThemeRadioNoButton
+            android:id="@+id/rb_kindle_anim"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:layout_weight="1"
+            android:button="@null"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:padding="5dp"
+            android:singleLine="true"
+            android:text="@string/page_anim_kindle"
+            app:isBottomBackground="true" />
+
     </RadioGroup>
 
     <View

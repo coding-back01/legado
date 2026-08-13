@@ -15,9 +15,31 @@ object PageAnim {
 
     const val noAnim = 4
 
+    const val kindlePageAnim = 5
+
     @Target(AnnotationTarget.VALUE_PARAMETER)
     @Retention(AnnotationRetention.SOURCE)
-    @IntDef(coverPageAnim, slidePageAnim, simulationPageAnim, scrollPageAnim, noAnim)
+    @IntDef(
+        coverPageAnim,
+        slidePageAnim,
+        simulationPageAnim,
+        scrollPageAnim,
+        noAnim,
+        kindlePageAnim,
+    )
     annotation class Anim
+
+    fun normalize(value: Int): Int {
+        return when (value) {
+            coverPageAnim,
+            slidePageAnim,
+            simulationPageAnim,
+            scrollPageAnim,
+            noAnim,
+            kindlePageAnim -> value
+
+            else -> noAnim
+        }
+    }
 
 }

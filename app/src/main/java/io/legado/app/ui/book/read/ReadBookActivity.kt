@@ -82,6 +82,7 @@ import io.legado.app.ui.book.read.config.TipConfigDialog.Companion.TIP_COLOR
 import io.legado.app.ui.book.read.config.TipConfigDialog.Companion.TIP_DIVIDER_COLOR
 import io.legado.app.ui.book.read.page.ContentTextView
 import io.legado.app.ui.book.read.page.ReadView
+import io.legado.app.ui.book.read.page.delegate.KindlePageDelegate
 import io.legado.app.ui.book.read.page.entities.PageDirection
 import io.legado.app.ui.book.read.page.entities.TextPage
 import io.legado.app.ui.book.read.page.provider.ChapterProvider
@@ -936,6 +937,15 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     private fun handleKeyPage(direction: PageDirection, longPress: Boolean) {
+        val kindleDelegate = binding.readView.pageDelegate as? KindlePageDelegate
+        if (kindleDelegate != null) {
+            if (direction == PageDirection.NONE) {
+                kindleDelegate.onKeyReleased()
+            } else if (!longPress || AppConfig.keyPageOnLongPress) {
+                keyPage(direction, isRepeat = longPress)
+            }
+            return
+        }
         if (AppConfig.keyPageOnLongPress || direction == PageDirection.NONE) {
             keyPage(direction)
         } else {
@@ -968,10 +978,15 @@ class ReadBookActivity : BaseReadBookActivity(),
         }
     }
 
-    private fun keyPage(direction: PageDirection) {
+    private fun keyPage(direction: PageDirection, isRepeat: Boolean = false) {
         binding.readView.cancelSelect()
         binding.readView.pageDelegate?.isCancel = false
-        binding.readView.pageDelegate?.keyTurnPage(direction)
+        val delegate = binding.readView.pageDelegate
+        if (delegate is KindlePageDelegate) {
+            delegate.keyTurnPage(direction, isRepeat)
+        } else {
+            delegate?.keyTurnPage(direction)
+        }
     }
 
     override fun upMenuView() {

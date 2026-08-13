@@ -22,6 +22,7 @@ import io.legado.app.ui.book.read.ContentEditDialog
 import io.legado.app.ui.book.read.page.api.DataSource
 import io.legado.app.ui.book.read.page.delegate.CoverPageDelegate
 import io.legado.app.ui.book.read.page.delegate.HorizontalPageDelegate
+import io.legado.app.ui.book.read.page.delegate.KindlePageDelegate
 import io.legado.app.ui.book.read.page.delegate.NoAnimPageDelegate
 import io.legado.app.ui.book.read.page.delegate.PageDelegate
 import io.legado.app.ui.book.read.page.delegate.ScrollPageDelegate
@@ -520,9 +521,10 @@ class ReadView(context: Context, attrs: AttributeSet) :
      * 更新翻页动画
      */
     fun upPageAnim(upRecorder: Boolean = false) {
-        isScroll = ReadBook.pageAnim() == 3
+        val pageAnim = PageAnim.normalize(ReadBook.pageAnim())
+        isScroll = pageAnim == PageAnim.scrollPageAnim
         ChapterProvider.upLayout()
-        when (ReadBook.pageAnim()) {
+        when (pageAnim) {
             PageAnim.coverPageAnim -> if (pageDelegate !is CoverPageDelegate) {
                 pageDelegate = CoverPageDelegate(this)
             }
@@ -537,6 +539,10 @@ class ReadView(context: Context, attrs: AttributeSet) :
 
             PageAnim.scrollPageAnim -> if (pageDelegate !is ScrollPageDelegate) {
                 pageDelegate = ScrollPageDelegate(this)
+            }
+
+            PageAnim.kindlePageAnim -> if (pageDelegate !is KindlePageDelegate) {
+                pageDelegate = KindlePageDelegate(this)
             }
 
             else -> if (pageDelegate !is NoAnimPageDelegate) {
@@ -580,6 +586,7 @@ class ReadView(context: Context, attrs: AttributeSet) :
                     curPage.setContent(pageFactory.curPage, resetPageOffset)
                     nextPage.setContent(pageFactory.nextPage)
                     prevPage.setContent(pageFactory.prevPage)
+                    pageDelegate?.onCurrentPageChanged()
                 }
             }
         }
