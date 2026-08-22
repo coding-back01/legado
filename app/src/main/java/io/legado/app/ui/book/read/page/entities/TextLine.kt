@@ -11,9 +11,11 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.ReadBookConfig
 import io.legado.app.lib.theme.ThemeStore
 import io.legado.app.model.ReadBook
+import io.legado.app.model.read.VisibleTextUnits
 import io.legado.app.ui.book.read.page.ContentTextView
 import io.legado.app.ui.book.read.page.entities.TextPage.Companion.emptyTextPage
 import io.legado.app.ui.book.read.page.entities.column.BaseColumn
+import io.legado.app.ui.book.read.page.entities.column.ImageColumn
 import io.legado.app.ui.book.read.page.entities.column.TextColumn
 import io.legado.app.ui.book.read.page.provider.ChapterProvider
 import io.legado.app.utils.canvasrecorder.CanvasRecorderFactory
@@ -48,6 +50,10 @@ data class TextLine(
 ) {
 
     val columns: List<BaseColumn> get() = textColumns
+    var visibleTextUnits: Int = 0
+        private set
+    var imageReliabilityPenaltyUnits: Int = 0
+        private set
     val charSize: Int get() = text.length
     val lineStart: Float get() = textColumns.firstOrNull()?.start ?: 0f
     val lineEnd: Float get() = textColumns.lastOrNull()?.end ?: 0f
@@ -71,6 +77,10 @@ data class TextLine(
     fun addColumn(column: BaseColumn) {
         if (column !is TextColumn) {
             onlyTextColumn = false
+        }
+        when (column) {
+            is TextColumn -> visibleTextUnits += VisibleTextUnits.count(column.charData)
+            is ImageColumn -> imageReliabilityPenaltyUnits += if (isImage) 200 else 50
         }
         column.textLine = this
         textColumns.add(column)

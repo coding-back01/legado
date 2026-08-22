@@ -10,18 +10,24 @@ data class ReadingTimeIndexData(
     val tocPrefixHash: Long,
     val sourceLastModified: Long,
     val rawLengths: IntArray,
+    val visibleLengths: IntArray = IntArray(rawLengths.size) {
+        ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
+    },
 )
 
 object ReadingTimeIndexCodec {
 
     private const val MAGIC = 0x52544931
-    private const val VERSION = 1
+    private const val LEGACY_VERSION = 1
+    private const val VERSION = 2
     private const val FIXED_BYTES_WITH_CRC = 44
     private const val MAX_CHAPTER_COUNT = 1_000_000
 
     fun encode(data: ReadingTimeIndexData): ByteArray {
         require(data.rawLengths.size <= MAX_CHAPTER_COUNT)
-        val byteCount = FIXED_BYTES_WITH_CRC + data.rawLengths.size * Int.SIZE_BYTES
+        require(data.rawLengths.size == data.visibleLengths.size)
+        val byteCount = FIXED_BYTES_WITH_CRC +
+                data.rawLengths.size * Int.SIZE_BYTES * 2
         val bytes = ByteArray(byteCount)
         val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN)
         buffer.putInt(MAGIC)
@@ -32,6 +38,7 @@ object ReadingTimeIndexCodec {
         buffer.putInt(data.rawLengths.size)
         buffer.putInt(data.rawLengths.count { it > 0 })
         data.rawLengths.forEach(buffer::putInt)
+        data.visibleLengths.forEach(buffer::putInt)
         buffer.putInt(crc32(bytes, bytes.size - Int.SIZE_BYTES))
         return bytes
     }
@@ -43,23 +50,33 @@ object ReadingTimeIndexCodec {
             .int
         if (storedCrc != crc32(bytes, bytes.size - Int.SIZE_BYTES)) return null
         val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN)
-        if (buffer.int != MAGIC || buffer.int != VERSION) return null
+        if (buffer.int != MAGIC) return null
+        val version = buffer.int
+        if (version != LEGACY_VERSION && version != VERSION) return null
         val bookIdentityHash = buffer.long
         val tocPrefixHash = buffer.long
         val sourceLastModified = buffer.long
         val chapterCount = buffer.int
         val knownCount = buffer.int
         if (chapterCount !in 0..MAX_CHAPTER_COUNT) return null
-        val expectedSize = FIXED_BYTES_WITH_CRC.toLong() + chapterCount.toLong() * Int.SIZE_BYTES
+        val arraysPerChapter = if (version == LEGACY_VERSION) 1L else 2L
+        val expectedSize = FIXED_BYTES_WITH_CRC.toLong() +
+                chapterCount.toLong() * Int.SIZE_BYTES * arraysPerChapter
         if (expectedSize != bytes.size.toLong()) return null
         if (knownCount !in 0..chapterCount) return null
-        val lengths = IntArray(chapterCount) { buffer.int }
-        if (lengths.count { it > 0 } != knownCount) return null
+        val rawLengths = IntArray(chapterCount) { buffer.int }
+        if (rawLengths.count { it > 0 } != knownCount) return null
+        val visibleLengths = if (version == LEGACY_VERSION) {
+            IntArray(chapterCount) { ReadingTimeIndexSnapshot.UNKNOWN_LENGTH }
+        } else {
+            IntArray(chapterCount) { buffer.int }
+        }
         return ReadingTimeIndexData(
             bookIdentityHash = bookIdentityHash,
             tocPrefixHash = tocPrefixHash,
             sourceLastModified = sourceLastModified,
-            rawLengths = lengths,
+            rawLengths = rawLengths,
+            visibleLengths = visibleLengths,
         )
     }
 

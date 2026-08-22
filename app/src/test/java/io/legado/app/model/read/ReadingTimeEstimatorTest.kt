@@ -4,70 +4,76 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.abs
+import kotlin.math.ln
 
 class ReadingTimeEstimatorTest {
 
     @Test
-    fun `five samples and sixty seconds unlock estimate`() {
+    fun `evidence confidence naturally unlocks estimate`() {
         var now = 0L
         val estimator = ReadingTimeEstimator(elapsedRealtime = { now })
-        estimator.updateIndex(ReadingTimeIndexSnapshot.empty(10))
+        estimator.updateIndex(
+            ReadingTimeIndexSnapshot.create(
+                rawLengths = IntArray(10) { 1_000 },
+                visibleLengths = IntArray(10) { 1_000 },
+            )
+        )
         estimator.resume(ReadingTimePosition(0, 0.0))
 
-        repeat(4) { index ->
+        var firstReadyAt: Int? = null
+        repeat(10) { index ->
             now += 12_000L
             val result = estimator.onForward(ReadingTimePosition(0, (index + 1) / 10.0))
             assertTrue(result.sampleAccepted)
-            assertTrue(result.estimate is ReadingTimeEstimate.Learning)
+            if (firstReadyAt == null && result.estimate is ReadingTimeEstimate.Ready) {
+                firstReadyAt = index + 1
+            }
         }
 
-        now += 12_000L
-        val result = estimator.onForward(ReadingTimePosition(0, 0.5))
-        assertTrue(result.sampleAccepted)
-        assertTrue(result.estimate is ReadingTimeEstimate.Ready)
-        assertEquals(5, estimator.stateSnapshot().sampleCount)
-        assertEquals(60_000L, estimator.stateSnapshot().validReadingMillis)
+        assertTrue(firstReadyAt != null)
+        assertEquals(10, estimator.stateSnapshot().acceptedSampleCount)
+        assertTrue(estimator.stateSnapshot().totalEffectiveReadingMillis >= 60_000L)
     }
 
     @Test
-    fun `short long backward and paused moves do not train`() {
+    fun `short and long forward evidence train while backward and paused moves do not`() {
         var now = 0L
         val estimator = ReadingTimeEstimator(elapsedRealtime = { now })
         estimator.updateIndex(ReadingTimeIndexSnapshot.empty(10))
         estimator.resume(ReadingTimePosition(0, 0.0))
 
         now += 4_999L
-        assertFalse(estimator.onForward(ReadingTimePosition(0, 0.1)).sampleAccepted)
+        assertTrue(estimator.onForward(ReadingTimePosition(0, 0.1)).sampleAccepted)
         now += 120_001L
-        assertFalse(estimator.onForward(ReadingTimePosition(0, 0.2)).sampleAccepted)
+        assertTrue(estimator.onForward(ReadingTimePosition(0, 0.2)).sampleAccepted)
         now += 10_000L
         assertFalse(estimator.onForward(ReadingTimePosition(0, 0.1)).sampleAccepted)
         estimator.pause()
         now += 10_000L
         assertFalse(estimator.onForward(ReadingTimePosition(0, 0.2)).sampleAccepted)
-        assertEquals(0, estimator.stateSnapshot().sampleCount)
+        assertEquals(2, estimator.stateSnapshot().acceptedSampleCount)
     }
 
     @Test
-    fun `chapter mode estimates by chapter coordinate`() {
-        val state = qualifiedState(chapterSecondsPerUnit = 600.0)
+    fun `unknown remaining content stays learning`() {
+        val state = qualifiedState()
         val estimator = ReadingTimeEstimator(state)
         estimator.updateIndex(ReadingTimeIndexSnapshot.empty(10))
 
-        val estimate = estimator.estimate(ReadingTimePosition(2, 0.5)) as ReadingTimeEstimate.Ready
-
-        assertEquals(ReadingTimeEstimateMode.CHAPTER, estimate.mode)
-        assertEquals(4_500.0, estimate.remainingSeconds, 0.001)
+        assertTrue(estimator.estimate(ReadingTimePosition(2, 0.5)) is ReadingTimeEstimate.Learning)
     }
 
     @Test
-    fun `full content mode uses actual remaining bytes`() {
-        val state = qualifiedState(
-            chapterSecondsPerUnit = 600.0,
-            contentSecondsPerByte = 0.1,
-        )
+    fun `full content mode uses actual remaining visible units`() {
+        val state = qualifiedState(secondsPerVisibleUnit = 0.1)
         val estimator = ReadingTimeEstimator(state)
-        estimator.updateIndex(ReadingTimeIndexSnapshot.create(intArrayOf(100, 200, 300)))
+        estimator.updateIndex(
+            ReadingTimeIndexSnapshot.create(
+                rawLengths = intArrayOf(100, 200, 300),
+                visibleLengths = intArrayOf(100, 200, 300),
+            )
+        )
 
         val estimate = estimator.estimate(ReadingTimePosition(1, 0.5)) as ReadingTimeEstimate.Ready
 
@@ -78,14 +84,14 @@ class ReadingTimeEstimatorTest {
     @Test
     fun `hybrid mode fills unknown chapters with median`() {
         val lengths = IntArray(25) { index ->
+            if (index < 25) 100 else ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
+        }
+        val visibleLengths = IntArray(25) { index ->
             if (index < 20) 100 else ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
         }
-        val state = qualifiedState(
-            chapterSecondsPerUnit = 600.0,
-            contentSecondsPerByte = 0.1,
-        )
+        val state = qualifiedState(secondsPerVisibleUnit = 0.1)
         val estimator = ReadingTimeEstimator(state)
-        estimator.updateIndex(ReadingTimeIndexSnapshot.create(lengths))
+        estimator.updateIndex(ReadingTimeIndexSnapshot.create(lengths, visibleLengths))
 
         val estimate = estimator.estimate(ReadingTimePosition(20, 0.0)) as ReadingTimeEstimate.Ready
 
@@ -94,18 +100,12 @@ class ReadingTimeEstimatorTest {
     }
 
     @Test
-    fun `content mode waits for its own evidence`() {
-        val state = qualifiedState(chapterSecondsPerUnit = 600.0).copy(
-            contentSecondsPerByte = 0.1,
-            contentSampleCount = 4,
-            contentValidReadingMillis = 59_000L,
-        )
+    fun `estimate waits for remaining amount confidence`() {
+        val state = qualifiedState(secondsPerVisibleUnit = 0.1)
         val estimator = ReadingTimeEstimator(state)
         estimator.updateIndex(ReadingTimeIndexSnapshot.create(intArrayOf(100, 200, 300)))
 
-        val estimate = estimator.estimate(ReadingTimePosition(1, 0.5)) as ReadingTimeEstimate.Ready
-
-        assertEquals(ReadingTimeEstimateMode.CHAPTER, estimate.mode)
+        assertTrue(estimator.estimate(ReadingTimePosition(1, 0.5)) is ReadingTimeEstimate.Learning)
     }
 
     @Test
@@ -136,21 +136,23 @@ class ReadingTimeEstimatorTest {
     }
 
     @Test
-    fun `ewma clips a single extreme sample`() {
+    fun `robust model continuously downweights a single extreme sample`() {
         var now = 0L
         val estimator = ReadingTimeEstimator(elapsedRealtime = { now })
         estimator.updateIndex(ReadingTimeIndexSnapshot.empty(10))
         estimator.resume(ReadingTimePosition(0, 0.0))
-        now += 10_000L
-        estimator.onForward(ReadingTimePosition(0, 0.1))
-        val firstRate = estimator.stateSnapshot().chapterSecondsPerUnit
+        repeat(60) { step ->
+            now += 10_000L
+            estimator.onForward(ReadingTimePosition(0, (step + 1) / 100.0))
+        }
+        val firstRate = estimator.diagnostics().secondsPerVisibleUnit
 
-        now += 120_000L
-        estimator.onForward(ReadingTimePosition(0, 0.2))
-        val clippedRate = estimator.stateSnapshot().chapterSecondsPerUnit
+        now += 40_000L
+        estimator.onForward(ReadingTimePosition(0, 0.61))
+        val robustRate = estimator.diagnostics().secondsPerVisibleUnit
 
-        assertEquals(100.0, firstRate, 0.001)
-        assertEquals(160.0, clippedRate, 0.001)
+        assertEquals(1.0, firstRate, 0.000_001)
+        assertTrue(abs(robustRate / firstRate - 1.0) <= 0.03)
     }
 
     @Test
@@ -165,8 +167,8 @@ class ReadingTimeEstimatorTest {
         now += 12_000L
         assertFalse(estimator.onForward(ReadingTimePosition(3, 0.1)).sampleAccepted)
 
-        assertEquals(1, estimator.stateSnapshot().sampleCount)
-        assertEquals(12_000L, estimator.stateSnapshot().validReadingMillis)
+        assertEquals(1, estimator.stateSnapshot().acceptedSampleCount)
+        assertTrue(estimator.stateSnapshot().totalEffectiveReadingMillis > 0L)
     }
 
     @Test
@@ -182,16 +184,21 @@ class ReadingTimeEstimatorTest {
         val result = estimator.onForward(ReadingTimePosition(0, 0.6))
 
         assertTrue(result.sampleAccepted)
-        assertEquals(12_000L, estimator.stateSnapshot().validReadingMillis)
-        assertEquals(120.0, estimator.stateSnapshot().chapterSecondsPerUnit, 0.001)
+        assertTrue(estimator.stateSnapshot().totalEffectiveReadingMillis > 0L)
+        assertEquals(0.12, estimator.diagnostics().secondsPerVisibleUnit, 0.000_001)
     }
 
     @Test
     fun `reset clears learned speed but retains the current index`() {
         val estimator = ReadingTimeEstimator(
-            qualifiedState(chapterSecondsPerUnit = 600.0, contentSecondsPerByte = 0.1)
+            qualifiedState(secondsPerVisibleUnit = 0.1)
         )
-        estimator.updateIndex(ReadingTimeIndexSnapshot.create(intArrayOf(100, 200, 300)))
+        estimator.updateIndex(
+            ReadingTimeIndexSnapshot.create(
+                rawLengths = intArrayOf(100, 200, 300),
+                visibleLengths = intArrayOf(100, 200, 300),
+            )
+        )
         assertTrue(estimator.estimate(ReadingTimePosition(0, 0.5)) is ReadingTimeEstimate.Ready)
 
         estimator.reset(ReadingTimePosition(0, 0.5))
@@ -201,17 +208,21 @@ class ReadingTimeEstimatorTest {
     }
 
     @Test
-    fun `content mode transition completes after five accepted samples`() {
+    fun `exact visible index immediately replaces uncertain remaining amount`() {
         var now = 0L
         val estimator = ReadingTimeEstimator(
-            qualifiedState(chapterSecondsPerUnit = 600.0, contentSecondsPerByte = 0.1),
+            qualifiedState(secondsPerVisibleUnit = 0.1),
             elapsedRealtime = { now },
         )
         estimator.updateIndex(ReadingTimeIndexSnapshot.empty(10))
         estimator.resume(ReadingTimePosition(0, 0.0))
-        val chapterEstimate = estimator.estimate(ReadingTimePosition(0, 0.0))
-                as ReadingTimeEstimate.Ready
-        estimator.updateIndex(ReadingTimeIndexSnapshot.create(IntArray(10) { 100 }))
+        val uncertainEstimate = estimator.estimate(ReadingTimePosition(0, 0.0))
+        estimator.updateIndex(
+            ReadingTimeIndexSnapshot.create(
+                rawLengths = IntArray(10) { 100 },
+                visibleLengths = IntArray(10) { 100 },
+            )
+        )
 
         val estimates = (1..5).map { step ->
             now += 12_000L
@@ -219,7 +230,7 @@ class ReadingTimeEstimatorTest {
                     as ReadingTimeEstimate.Ready
         }
 
-        assertEquals(ReadingTimeEstimateMode.CHAPTER, chapterEstimate.mode)
+        assertTrue(uncertainEstimate is ReadingTimeEstimate.Learning)
         assertTrue(estimates.all { it.mode == ReadingTimeEstimateMode.FULL_CONTENT })
         assertTrue(estimates.zipWithNext().all { (before, after) ->
             before.remainingSeconds > after.remainingSeconds
@@ -233,16 +244,17 @@ class ReadingTimeEstimatorTest {
     }
 
     private fun qualifiedState(
-        chapterSecondsPerUnit: Double = 600.0,
-        contentSecondsPerByte: Double = 0.0,
+        secondsPerVisibleUnit: Double = 0.1,
     ): ReadingTimeState {
         return ReadingTimeState(
-            chapterSecondsPerUnit = chapterSecondsPerUnit,
-            contentSecondsPerByte = contentSecondsPerByte,
-            sampleCount = 5,
-            contentSampleCount = if (contentSecondsPerByte > 0.0) 5 else 0,
-            validReadingMillis = 60_000L,
-            contentValidReadingMillis = if (contentSecondsPerByte > 0.0) 60_000L else 0L,
+            recentLogSecondsPerUnit = ln(secondsPerVisibleUnit),
+            recentLogMad = 0.08,
+            recentEvidenceMillis = 600_000L,
+            longTermLogSecondsPerUnit = ln(secondsPerVisibleUnit),
+            longTermLogMad = 0.08,
+            longTermEvidenceMillis = 3_600_000L,
+            acceptedSampleCount = 50,
+            totalEffectiveReadingMillis = 3_600_000L,
         )
     }
 }

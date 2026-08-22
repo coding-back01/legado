@@ -7,6 +7,7 @@ data class ReadingTimeTocEntry(
 
 data class ReadingTimeIndexReconcileResult(
     val rawLengths: IntArray,
+    val visibleLengths: IntArray,
     val tocPrefixHash: Long,
     val resetSpeedModel: Boolean,
 )
@@ -35,27 +36,51 @@ object ReadingTimeIndexReconciler {
     ): ReadingTimeIndexReconcileResult {
         val fullHash = tocHash(entries)
         val directLengths = IntArray(entries.size) { entries[it].directRawLength }
+        val unknownVisibleLengths = IntArray(entries.size) {
+            if (entries[it].directRawLength == ReadingTimeIndexSnapshot.VOLUME_LENGTH) {
+                ReadingTimeIndexSnapshot.VOLUME_LENGTH
+            } else {
+                ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
+            }
+        }
         if (stored == null) {
-            return ReadingTimeIndexReconcileResult(directLengths, fullHash, false)
+            return ReadingTimeIndexReconcileResult(
+                directLengths,
+                unknownVisibleLengths,
+                fullHash,
+                false,
+            )
         }
         if (stored.bookIdentityHash != bookIdentityHash ||
             stored.sourceLastModified != sourceLastModified ||
             stored.rawLengths.size > entries.size
         ) {
-            return ReadingTimeIndexReconcileResult(directLengths, fullHash, true)
+            return ReadingTimeIndexReconcileResult(
+                directLengths,
+                unknownVisibleLengths,
+                fullHash,
+                true,
+            )
         }
         val storedPrefixHash = tocHash(entries, stored.rawLengths.size)
         if (storedPrefixHash != stored.tocPrefixHash) {
-            return ReadingTimeIndexReconcileResult(directLengths, fullHash, true)
+            return ReadingTimeIndexReconcileResult(
+                directLengths,
+                unknownVisibleLengths,
+                fullHash,
+                true,
+            )
         }
         val merged = directLengths.copyOf()
+        val mergedVisible = unknownVisibleLengths.copyOf()
         stored.rawLengths.copyInto(merged, endIndex = stored.rawLengths.size)
+        stored.visibleLengths.copyInto(mergedVisible, endIndex = stored.visibleLengths.size)
         entries.forEachIndexed { index, entry ->
             if (entry.directRawLength >= 0) {
                 merged[index] = entry.directRawLength
             }
         }
-        return ReadingTimeIndexReconcileResult(merged, fullHash, false)
+        return ReadingTimeIndexReconcileResult(merged, mergedVisible, fullHash, false)
     }
 
     fun tocHash(entries: List<ReadingTimeTocEntry>, count: Int = entries.size): Long {

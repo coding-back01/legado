@@ -80,6 +80,7 @@ class TextChapterLayout(
     private val pageAnim = book.getPageAnim()
 
     private var pendingTextPage = TextPage()
+    private var completedVisibleUnits = 0
 
     private val bookChapter inline get() = textChapter.chapter
     private val displayTitle inline get() = textChapter.title
@@ -147,6 +148,8 @@ class TextChapterLayout(
         textPage.title = displayTitle
         textPage.doublePage = doublePage
         textPage.paddingTop = paddingTop
+        textPage.setVisibleUnitRange(completedVisibleUnits)
+        completedVisibleUnits = textPage.visibleUnitEnd
         textPage.isCompleted = true
         textPage.textChapter = textChapter
         textPage.upLinesPosition()

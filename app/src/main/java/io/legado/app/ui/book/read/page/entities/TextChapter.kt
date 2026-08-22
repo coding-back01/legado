@@ -53,6 +53,9 @@ data class TextChapter(
 
     val pageSize: Int get() = pages.size
 
+    val visibleTextUnits: Int
+        get() = pages.lastOrNull()?.visibleUnitEnd ?: 0
+
     var listener: LayoutProgressListener? = null
 
     var isCompleted = false
@@ -276,6 +279,18 @@ data class TextChapter(
             book,
             bookContent,
         )
+    }
+
+    internal fun completeWithPages(pages: List<TextPage>) {
+        textPages.clear()
+        var visiblePrefix = 0
+        pages.forEach { page ->
+            page.setVisibleUnitRange(visiblePrefix)
+            visiblePrefix = page.visibleUnitEnd
+            page.textChapter = this
+            textPages.add(page)
+        }
+        isCompleted = true
     }
 
     fun setProgressListener(l: LayoutProgressListener?) {
