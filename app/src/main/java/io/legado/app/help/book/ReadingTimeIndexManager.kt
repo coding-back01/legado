@@ -75,11 +75,16 @@ object ReadingTimeIndexManager {
     }
 
     fun onContentSaved(book: Book, chapter: BookChapter, rawBytes: Long) {
-        updateChapter(book, chapter, rawBytes.coerceIn(1L, Int.MAX_VALUE.toLong()).toInt())
+        updateRawLength(book, chapter, rawBytes.coerceIn(1L, Int.MAX_VALUE.toLong()).toInt())
     }
 
     fun onContentDeleted(book: Book, chapter: BookChapter) {
-        updateChapter(book, chapter, ReadingTimeIndexSnapshot.UNKNOWN_LENGTH)
+        updateRawLength(book, chapter, ReadingTimeIndexSnapshot.UNKNOWN_LENGTH)
+        updateVisibleLength(book, chapter, ReadingTimeIndexSnapshot.UNKNOWN_LENGTH)
+    }
+
+    fun onChapterLaidOut(book: Book, chapter: BookChapter, visibleUnits: Int) {
+        updateVisibleLength(book, chapter, visibleUnits.coerceAtLeast(0))
     }
 
     fun onBookCacheCleared(book: Book) {
@@ -89,6 +94,13 @@ object ReadingTimeIndexManager {
             current.chapterMetadata.forEachIndexed { index, metadata ->
                 current.rawLengths[index] = metadata?.directRawLength
                     ?.takeIf { it >= 0 } ?: ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
+                current.visibleLengths[index] = if (current.rawLengths[index] ==
+                    ReadingTimeIndexSnapshot.VOLUME_LENGTH
+                ) {
+                    ReadingTimeIndexSnapshot.VOLUME_LENGTH
+                } else {
+                    ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
+                }
             }
             current.dirty = false
             current.writeFuture?.cancel(false)
@@ -102,6 +114,13 @@ object ReadingTimeIndexManager {
             current.chapterMetadata.forEachIndexed { index, metadata ->
                 current.rawLengths[index] = metadata?.directRawLength
                     ?.takeIf { it >= 0 } ?: ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
+                current.visibleLengths[index] = if (current.rawLengths[index] ==
+                    ReadingTimeIndexSnapshot.VOLUME_LENGTH
+                ) {
+                    ReadingTimeIndexSnapshot.VOLUME_LENGTH
+                } else {
+                    ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
+                }
             }
             current.dirty = false
             current.writeFuture?.cancel(false)
@@ -142,6 +161,7 @@ object ReadingTimeIndexManager {
             tocPrefixHash = reconcile.tocPrefixHash,
             chapterMetadata = request.chapterMetadata,
             rawLengths = reconcile.rawLengths,
+            visibleLengths = reconcile.visibleLengths,
             onUpdate = request.onUpdate,
         )
         synchronized(this) {
@@ -192,7 +212,7 @@ object ReadingTimeIndexManager {
         }
     }
 
-    private fun updateChapter(book: Book, chapter: BookChapter, rawLength: Int) {
+    private fun updateRawLength(book: Book, chapter: BookChapter, rawLength: Int) {
         synchronized(this) {
             val current = session ?: return
             if (!current.matches(book) || chapter.index !in current.rawLengths.indices) {
@@ -205,6 +225,25 @@ object ReadingTimeIndexManager {
             }
             if (current.rawLengths[chapter.index] == normalizedLength) return
             current.rawLengths[chapter.index] = normalizedLength
+            current.dirty = true
+            scheduleSnapshotLocked(current)
+            scheduleWriteLocked(current)
+        }
+    }
+
+    private fun updateVisibleLength(book: Book, chapter: BookChapter, visibleLength: Int) {
+        synchronized(this) {
+            val current = session ?: return
+            if (!current.matches(book) || chapter.index !in current.visibleLengths.indices) {
+                return
+            }
+            val normalizedLength = if (chapter.isVolume) {
+                ReadingTimeIndexSnapshot.VOLUME_LENGTH
+            } else {
+                visibleLength
+            }
+            if (current.visibleLengths[chapter.index] == normalizedLength) return
+            current.visibleLengths[chapter.index] = normalizedLength
             current.dirty = true
             scheduleSnapshotLocked(current)
             scheduleWriteLocked(current)
@@ -239,18 +278,19 @@ object ReadingTimeIndexManager {
     private fun publish(current: Session, resetSpeedModel: Boolean) {
         val lengths = synchronized(this) {
             if (session?.generation != current.generation) return
-            current.rawLengths.copyOf()
+            current.rawLengths.copyOf() to current.visibleLengths.copyOf()
         }
         current.onUpdate(
             ReadingTimeIndexUpdate(
                 snapshot = ReadingTimeIndexSnapshot.create(
-                    rawLengths = lengths,
+                    rawLengths = lengths.first,
+                    visibleLengths = lengths.second,
                     bookIdentityHash = current.bookIdentityHash,
                     tocPrefixHash = current.tocPrefixHash,
                 ),
                 resetSpeedModel = resetSpeedModel,
                 bookIdentityHash = current.bookIdentityHash,
-                tocChapterCount = lengths.size,
+                tocChapterCount = lengths.first.size,
                 tocPrefixHash = current.tocPrefixHash,
                 sourceLastModified = current.sourceLastModified,
             )
@@ -361,6 +401,7 @@ object ReadingTimeIndexManager {
         val tocPrefixHash: Long,
         val chapterMetadata: Array<ChapterMetadata?>,
         val rawLengths: IntArray,
+        val visibleLengths: IntArray,
         val onUpdate: (ReadingTimeIndexUpdate) -> Unit,
         var dirty: Boolean = false,
         var snapshotFuture: ScheduledFuture<*>? = null,
@@ -379,6 +420,7 @@ object ReadingTimeIndexManager {
                     tocPrefixHash = tocPrefixHash,
                     sourceLastModified = sourceLastModified,
                     rawLengths = rawLengths.copyOf(),
+                    visibleLengths = visibleLengths.copyOf(),
                 ),
             )
         }

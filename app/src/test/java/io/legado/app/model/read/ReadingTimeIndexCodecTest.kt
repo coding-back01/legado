@@ -7,6 +7,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import kotlin.io.path.createTempDirectory
+import kotlin.math.ln
 
 class ReadingTimeIndexCodecTest {
 
@@ -17,6 +18,7 @@ class ReadingTimeIndexCodecTest {
             tocPrefixHash = 22L,
             sourceLastModified = 33L,
             rawLengths = intArrayOf(100, 0, -1, 250),
+            visibleLengths = intArrayOf(60, 0, -1, 150),
         )
 
         val decoded = ReadingTimeIndexCodec.decode(ReadingTimeIndexCodec.encode(data))
@@ -26,6 +28,7 @@ class ReadingTimeIndexCodecTest {
         assertEquals(data.tocPrefixHash, decoded.tocPrefixHash)
         assertEquals(data.sourceLastModified, decoded.sourceLastModified)
         assertTrue(data.rawLengths.contentEquals(decoded.rawLengths))
+        assertTrue(data.visibleLengths.contentEquals(decoded.visibleLengths))
     }
 
     @Test
@@ -36,7 +39,7 @@ class ReadingTimeIndexCodecTest {
 
         assertNull(ReadingTimeIndexCodec.decode(bytes.copyOf(bytes.size - 1)))
         assertNull(ReadingTimeIndexCodec.decode(bytes.copyOf().also { it[20] = (it[20] + 1).toByte() }))
-        assertNull(ReadingTimeIndexCodec.decode(bytes.copyOf().also { it[7] = 2 }))
+        assertNull(ReadingTimeIndexCodec.decode(bytes.copyOf().also { it[7] = 99 }))
     }
 
     @Test
@@ -67,7 +70,7 @@ class ReadingTimeIndexCodecTest {
         assertEquals(100, snapshot.rawLengths[0])
         assertEquals(2, snapshot.knownContentCount)
         assertEquals(3, snapshot.contentChapterCount)
-        assertFalse(snapshot.hasUnknownContentBetween(2, 3))
+        assertTrue(snapshot.hasUnknownContentBetween(2, 3))
         assertTrue(snapshot.hasUnknownContentBetween(0, 1))
     }
 
@@ -82,6 +85,7 @@ class ReadingTimeIndexCodecTest {
             tocPrefixHash = ReadingTimeIndexReconciler.tocHash(oldEntries),
             sourceLastModified = 0L,
             rawLengths = intArrayOf(100, 200),
+            visibleLengths = intArrayOf(60, 120),
         )
 
         val appended = ReadingTimeIndexReconciler.reconcile(
@@ -92,6 +96,7 @@ class ReadingTimeIndexCodecTest {
         )
         assertFalse(appended.resetSpeedModel)
         assertTrue(intArrayOf(100, 200, -1).contentEquals(appended.rawLengths))
+        assertTrue(intArrayOf(60, 120, -1).contentEquals(appended.visibleLengths))
 
         val reordered = ReadingTimeIndexReconciler.reconcile(
             stored = stored,
@@ -101,6 +106,7 @@ class ReadingTimeIndexCodecTest {
         )
         assertTrue(reordered.resetSpeedModel)
         assertTrue(intArrayOf(-1, -1).contentEquals(reordered.rawLengths))
+        assertTrue(intArrayOf(-1, -1).contentEquals(reordered.visibleLengths))
     }
 
     @Test
@@ -163,27 +169,28 @@ class ReadingTimeIndexCodecTest {
 
     @Test
     fun `hybrid mode requires both chapter count and coverage thresholds`() {
+        val rawLengths = IntArray(100) { 100 }
         val tooFewKnown = IntArray(100) { index ->
-            if (index < 19) 100 else ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
+            if (index < 1) 100 else ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
         }
-        val tooLittleCoverage = IntArray(101) { index ->
-            if (index < 20) 100 else ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
+        val tooLittleCoverage = IntArray(100) {
+            ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
         }
         val thresholdReached = IntArray(100) { index ->
-            if (index < 20) 100 else ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
+            if (index < 2) 100 else ReadingTimeIndexSnapshot.UNKNOWN_LENGTH
         }
 
         assertEquals(
             ReadingTimeEstimateMode.CHAPTER,
-            ReadingTimeIndexSnapshot.create(tooFewKnown).mode,
+            ReadingTimeIndexSnapshot.create(rawLengths, tooFewKnown).mode,
         )
         assertEquals(
             ReadingTimeEstimateMode.CHAPTER,
-            ReadingTimeIndexSnapshot.create(tooLittleCoverage).mode,
+            ReadingTimeIndexSnapshot.create(rawLengths, tooLittleCoverage).mode,
         )
         assertEquals(
             ReadingTimeEstimateMode.HYBRID_CONTENT,
-            ReadingTimeIndexSnapshot.create(thresholdReached).mode,
+            ReadingTimeIndexSnapshot.create(rawLengths, thresholdReached).mode,
         )
     }
 
@@ -191,9 +198,9 @@ class ReadingTimeIndexCodecTest {
     fun `speed state rejects changed local file even without a sidecar`() {
         val entries = listOf(ReadingTimeTocEntry("0|a"))
         val state = ReadingTimeState(
-            chapterSecondsPerUnit = 600.0,
-            sampleCount = 5,
-            validReadingMillis = 60_000L,
+            recentLogSecondsPerUnit = ln(0.6),
+            recentLogMad = 0.08,
+            recentEvidenceMillis = 60_000L,
             bookIdentityHash = 7L,
             tocChapterCount = 1,
             tocPrefixHash = ReadingTimeIndexReconciler.tocHash(entries),

@@ -29,7 +29,7 @@ import io.legado.app.help.config.ReadTipConfig
 import io.legado.app.help.coroutine.Coroutine
 import io.legado.app.help.globalExecutor
 import io.legado.app.model.localBook.TextFile
-import io.legado.app.model.read.ReadingTimeAdvanceResult
+import io.legado.app.model.read.ReadingTimeAnchor
 import io.legado.app.model.read.ReadingTimeDisplayFormatter
 import io.legado.app.model.read.ReadingTimeDisplaySnapshot
 import io.legado.app.model.read.ReadingTimeEstimate
@@ -40,6 +40,7 @@ import io.legado.app.model.webBook.WebBook
 import io.legado.app.service.BaseReadAloudService
 import io.legado.app.service.CacheBookService
 import io.legado.app.ui.book.read.page.entities.TextChapter
+import io.legado.app.ui.book.read.page.entities.TextPage
 import io.legado.app.ui.book.read.page.provider.ChapterProvider
 import io.legado.app.ui.book.read.page.provider.LayoutProgressListener
 import io.legado.app.utils.postEvent
@@ -290,11 +291,8 @@ object ReadBook : CoroutineScope by MainScope() {
             textChapter.pageSize > 0
         ) {
             val page = textChapter.getPageByReadPos(durChapterPos)
-            val lastPage = textChapter.lastPage
-            if (page != null && lastPage != null) {
-                val pageEnd = page.chapterPosition.toLong() + page.charSize
-                val chapterEnd = lastPage.chapterPosition.toLong() + lastPage.charSize
-                if (chapterEnd > 0L) pageEnd.toDouble() / chapterEnd else 0.0
+            if (page != null && textChapter.visibleTextUnits > 0) {
+                page.visibleUnitStart.toDouble() / textChapter.visibleTextUnits
             } else {
                 0.0
             }
@@ -304,13 +302,28 @@ object ReadBook : CoroutineScope by MainScope() {
         return ReadingTimePosition(safeChapterIndex, progress.coerceIn(0.0, 1.0))
     }
 
+    private fun currentReadingTimePage(): TextPage? {
+        val textChapter = curTextChapter ?: return null
+        if (textChapter.position != durChapterIndex || !textChapter.isCompleted) return null
+        return textChapter.getPageByReadPos(durChapterPos)
+    }
+
+    private fun currentReadingTimeAnchor(): ReadingTimeAnchor {
+        val page = currentReadingTimePage()
+        return ReadingTimeAnchor(
+            position = currentReadingTimePosition(),
+            visibleTextUnits = page?.visibleTextUnits ?: 0,
+            textReliability = page?.textReliability ?: 0.0,
+        )
+    }
+
     private fun resumeReadingTimeSampling() {
         if (!canTrainReadingTime()) {
             pauseReadingTimeSampling()
             return
         }
         readingTimeEstimator.resume(
-            currentReadingTimePosition(),
+            currentReadingTimeAnchor(),
             SystemClock.elapsedRealtime(),
         )
         readingTimeSamplingActive = true
@@ -324,7 +337,8 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     private fun onReadingTimePositionChanged(allowTraining: Boolean) {
-        val position = currentReadingTimePosition()
+        val readingAnchor = currentReadingTimeAnchor()
+        val position = readingAnchor.position
         if (!canTrainReadingTime()) {
             pauseReadingTimeSampling()
             readingTimeEstimate = ReadingTimeEstimate.Unavailable.takeIf {
@@ -334,25 +348,25 @@ object ReadBook : CoroutineScope by MainScope() {
             return
         }
         if (!readingTimeSamplingActive) {
-            readingTimeEstimator.resume(position, SystemClock.elapsedRealtime())
+            readingTimeEstimator.resume(readingAnchor, SystemClock.elapsedRealtime())
             readingTimeSamplingActive = true
             readingTimeEstimate = readingTimeEstimator.estimate(position)
             refreshReadingTimeDisplay()
             return
         }
         if (allowTraining) {
-            val result: ReadingTimeAdvanceResult = readingTimeEstimator.onForward(
-                position = position,
+            val sampleAccepted = readingTimeEstimator.advance(
+                readingAnchor = readingAnchor,
                 allowTraining = true,
                 nowMillis = SystemClock.elapsedRealtime(),
             )
-            readingTimeEstimate = result.estimate
-            if (result.sampleAccepted) {
+            readingTimeEstimate = readingTimeEstimator.estimate(position)
+            if (sampleAccepted) {
                 readingTimeStateDirty = true
                 persistReadingTimeState(force = false)
             }
         } else {
-            readingTimeEstimator.reanchor(position, SystemClock.elapsedRealtime())
+            readingTimeEstimator.reanchor(readingAnchor, SystemClock.elapsedRealtime())
             readingTimeEstimate = readingTimeEstimator.estimate(position)
         }
         refreshReadingTimeDisplay()
@@ -1122,6 +1136,11 @@ object ReadBook : CoroutineScope by MainScope() {
                         }
                         callBack?.onLayoutPageCompleted(index, page)
                     }
+                    ReadingTimeIndexManager.onChapterLaidOut(
+                        book,
+                        textChapter.chapter,
+                        textChapter.visibleTextUnits,
+                    )
                     if (upContent) callBack?.upContent(offset, !available && resetPageOffset)
                     withContext(Main) {
                         onReadingTimeLayoutReady()
@@ -1136,6 +1155,11 @@ object ReadBook : CoroutineScope by MainScope() {
                         prevTextChapter = textChapter
                     }
                     textChapter.layoutChannel.receiveAsFlow().collect()
+                    ReadingTimeIndexManager.onChapterLaidOut(
+                        book,
+                        textChapter.chapter,
+                        textChapter.visibleTextUnits,
+                    )
                     if (upContent) callBack?.upContent(offset, resetPageOffset)
                 }
 
@@ -1150,6 +1174,11 @@ object ReadBook : CoroutineScope by MainScope() {
                         }
                         if (upContent) callBack?.upContent(offset, resetPageOffset)
                     }
+                    ReadingTimeIndexManager.onChapterLaidOut(
+                        book,
+                        textChapter.chapter,
+                        textChapter.visibleTextUnits,
+                    )
                 }
             }
 
@@ -1212,6 +1241,11 @@ object ReadBook : CoroutineScope by MainScope() {
                         }
                         callBack?.onLayoutPageCompleted(index, page)
                     }
+                    ReadingTimeIndexManager.onChapterLaidOut(
+                        book,
+                        textChapter.chapter,
+                        textChapter.visibleTextUnits,
+                    )
                     if (upContent) callBack?.upContent(offset, !available && resetPageOffset)
                     withContext(Main) {
                         onReadingTimeLayoutReady()
@@ -1226,6 +1260,11 @@ object ReadBook : CoroutineScope by MainScope() {
                         prevTextChapter = textChapter
                     }
                     textChapter.layoutChannel.receiveAsFlow().collect()
+                    ReadingTimeIndexManager.onChapterLaidOut(
+                        book,
+                        textChapter.chapter,
+                        textChapter.visibleTextUnits,
+                    )
                     if (upContent) callBack?.upContent(offset, resetPageOffset)
                 }
 
@@ -1240,6 +1279,11 @@ object ReadBook : CoroutineScope by MainScope() {
                         }
                         if (upContent) callBack?.upContent(offset, resetPageOffset)
                     }
+                    ReadingTimeIndexManager.onChapterLaidOut(
+                        book,
+                        textChapter.chapter,
+                        textChapter.visibleTextUnits,
+                    )
                 }
             }
         }.onFailure {

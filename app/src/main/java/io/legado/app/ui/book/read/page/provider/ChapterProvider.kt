@@ -312,7 +312,9 @@ object ChapterProvider {
             bookChapter.isVip,
             bookChapter.isPay,
             bookContent.effectiveReplaceRules
-        )
+        ).apply {
+            completeWithPages(textPages)
+        }
     }
 
     fun getTextChapterAsync(

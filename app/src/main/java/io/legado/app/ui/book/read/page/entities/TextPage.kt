@@ -57,6 +57,23 @@ data class TextPage(
     var paddingTop = ChapterProvider.paddingTop
     var isCompleted = false
     var hasReadAloudSpan = false
+    private var layoutVisibleTextUnits = 0
+    private var imageReliabilityPenaltyUnits = 0
+
+    var visibleUnitStart: Int = 0
+        private set
+    var visibleUnitEnd: Int = 0
+        private set
+
+    val visibleTextUnits: Int
+        get() = layoutVisibleTextUnits
+
+    val textReliability: Double
+        get() {
+            if (layoutVisibleTextUnits <= 0) return 0.0
+            return layoutVisibleTextUnits.toDouble() /
+                    (layoutVisibleTextUnits + imageReliabilityPenaltyUnits)
+        }
 
     @JvmField
     var textChapter = emptyTextChapter
@@ -83,6 +100,13 @@ data class TextPage(
     fun addLine(line: TextLine) {
         line.textPage = this
         textLines.add(line)
+        layoutVisibleTextUnits += line.visibleTextUnits
+        imageReliabilityPenaltyUnits += line.imageReliabilityPenaltyUnits
+    }
+
+    internal fun setVisibleUnitRange(start: Int) {
+        visibleUnitStart = start.coerceAtLeast(0)
+        visibleUnitEnd = visibleUnitStart + layoutVisibleTextUnits
     }
 
     fun getLine(index: Int): TextLine {
