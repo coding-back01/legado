@@ -1,7 +1,5 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+# 普通版本更新按月分组。三个生态的普通更新并发上限总和为 2 + 1 + 2 = 5。
+# 安全更新由仓库设置单独启用，不在此配置中自动合并。
 
 version: 2
 registries:
@@ -26,20 +24,136 @@ updates:
   - package-ecosystem: gradle
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     registries: "*"
-    open-pull-requests-limit: 20
+    open-pull-requests-limit: 2
     groups:
-      kotlin_KSP:
+      gradle-wrapper:
+        applies-to: version-updates
+        patterns:
+          - "gradle-wrapper"
+      android-gradle-plugin:
+        applies-to: version-updates
+        patterns:
+          - "com.android.application"
+          - "com.android.library"
+          - "com.android.test"
+          - "com.android.tools.build:gradle"
+      kotlin:
+        applies-to: version-updates
         patterns:
           - "org.jetbrains.kotlin:*"
+          - "org.jetbrains.kotlin.*"
+      ksp:
+        applies-to: version-updates
+        patterns:
           - "com.google.devtools.ksp"
-  # Maintain dependencies for GitHub Actions
+      android-libraries:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "gradle-wrapper"
+          - "com.android.application"
+          - "com.android.library"
+          - "com.android.test"
+          - "com.android.tools.build:gradle"
+          - "org.jetbrains.kotlin:*"
+          - "org.jetbrains.kotlin.*"
+          - "com.google.devtools.ksp"
+    # 以下依赖带有最低 Android 版本或行为兼容性约束。只忽略普通 semver
+    # 更新；安全更新任务不应用 update-types，仍可创建独立安全修复 PR。
+    ignore:
+      - dependency-name: "cn.hutool:hutool-crypto"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "com.google.protobuf:protobuf-javalite"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "org.jsoup:jsoup"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "org.apache.commons:commons-text"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "org.mozilla:rhino"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "androidx.media3:*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "androidx.webkit:webkit"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "androidx.activity:*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "androidx.lifecycle:*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "androidx.room:*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "androidx.room"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "androidx.recyclerview:recyclerview"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "androidx.viewpager2:viewpager2"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    open-pull-requests-limit: 1
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+
   - package-ecosystem: npm
-    directory: "modules/web"
+    directory: "/modules/web"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    open-pull-requests-limit: 2
+    groups:
+      web-production:
+        applies-to: version-updates
+        dependency-type: production
+        patterns:
+          - "*"
+      web-development:
+        applies-to: version-updates
+        dependency-type: development
+        patterns:
+          - "*"
