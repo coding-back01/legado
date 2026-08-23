@@ -78,5 +78,27 @@ GitHub 合并后的平台读回是任务 2.7 之后的独立证据，不能由�
 | `git diff --check` | 通过，无输出 |
 
 SchemaStore 来自其在线公开 schema；`actionlint` 由 `actionlint-py` 1.7.12.24 提供，
-实际 actionlint 版本为 1.7.12。工具成功仅证明静态配置合法；Dependabot 平台解析、Issue
-入口、私有漏洞报告和标签仍在 PR 1 合并后读回验证。
+实际 actionlint 版本为 1.7.12。工具成功仅证明静态配置合法；Dependabot 平台解析和默认
+分支 Issue/workflow 入口仍须在 PR 1 合并后读回，标签与私有漏洞报告按下一节在合并前原子准备。
+
+## PR 1 合并前远端原子前置
+
+执行时间：2026-08-23 11:43 +0800。操作前重新确认 PR `#41` 为打开状态，head ref 为
+`codex/fork-governance-foundation`，head SHA 为
+`7e8ead0386489c6bfcc08d240babdf3412b78bb3`；五个目标标签均不存在，私有漏洞报告为
+`enabled=false`。
+
+按任务 2.7 只创建并读回以下精确标签：
+
+| 标签 | 颜色 | 说明 |
+|---|---|---|
+| `needs-info` | `D4C5F9` | 等待报告者补充复现资料 |
+| `crash` | `B60205` | 应用崩溃问题；不得因时间自动关闭 |
+| `data-loss` | `B60205` | 数据损坏或丢失风险；不得因时间自动关闭 |
+| `security` | `D93F0B` | 安全问题；公开内容不得包含敏感信息 |
+| `stale` | `EDEDED` | 长期未补充资料 |
+
+随后通过 `PUT /repos/coding-back01/legado/private-vulnerability-reporting` 启用私有漏洞报告，
+GET 读回为 `{"enabled":true}`。未登录访问表单目标会按 GitHub 预期重定向到登录页；仓库
+API 的已启用状态是入口可用性的权威读回。此阶段没有启用其他安全能力，没有关闭 Pull
+Request、删除分支或修改 Release。
