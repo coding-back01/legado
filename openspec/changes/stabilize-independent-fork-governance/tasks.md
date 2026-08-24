@@ -19,12 +19,12 @@
 - [x] 2.4 删除失效的 `.github/workflows/autoupdatefork.yml`；将 stale 行为收敛为只处理 `needs-info` 且超过 30 天的 issue，并确保崩溃、数据损坏和安全问题不会因时间自动关闭。
 - [x] 2.5 审计 `.github/workflows/web.yml` 和 `cronet.yml` 的旧仓库身份条件：PR 1 不得机械启用上游写操作；保留只读/构建价值或删除无维护价值的定时写入，并记录选择理由。
 - [x] 2.6 使用适用的 YAML/schema/actionlint 检查验证 Dependabot、Issue 表单和 workflow；运行 `openspec validate --all --strict` 与 `git diff --check`，确认 PR 1 只包含治理入口范围。
-- [ ] 2.7 创建 PR 1；在合并前只允许执行两个入口原子前置：记录并按精确名称创建/读回 `needs-info`、`crash`、`data-loss`、`security`、`stale` 标签，以及启用/读回私有漏洞报告并验证表单目标可用。随后等待 PR 检查通过并合并；若任一前置或检查失败则停止后续序列，在原 PR 修复，不提前启用其他安全能力或执行任何批量远端清理。
-- [ ] 2.8 PR 1 合并且新 Dependabot 配置确认生效后，重新核对作者、状态、精确 head ref 和 head SHA，只关闭当前批准的遗留 Dependabot PR：`#1`、`#2`、`#4`、`#5`、`#6`、`#7`、`#8`、`#9`、`#10`、`#11`、`#12`、`#13`、`#14`、`#15`、`#16`、`#17`、`#18`、`#19`、`#20`、`#22`、`#24`、`#25`、`#26`、`#27`、`#28`、`#29`、`#30`、`#37`、`#38`、`#39`；只删除这些 PR 在核对后 ref/SHA 仍一致的精确 Dependabot 分支，新增、漂移或身份不符对象停止并另行报告。
-- [ ] 2.9 为遗留远端分支记录删除前 SHA，重新确认均已合并、SHA 未漂移且未被重新使用后，只删除 `codex/add-reading-time-estimation`、`codex/archive-harden-independent-fork-security`、`codex/harden-independent-fork-security`、`codex/initial-release`；禁止用 `codex/*` 扩大目标。
-- [ ] 2.10 仅在 `3.26.082216` 仍为现有 Latest 且资产未变化时，更新其说明为稳定化期间暂停新正式版、未来停止 `releaseA`、保留历史资产；若 Latest 已变化则停止并请求更新精确授权。
-- [ ] 2.11 启用并读回验证仓库可用的 Dependabot alerts、Dependabot Security Updates 和 Secret Scanning，确认 2.7 启用的私有漏洞报告仍然可用，并记录 API 前后状态；不在检查 context 尚未存在时修改 `master` 必需检查。
-- [ ] 2.12 紧接 2.11 读取 Dependabot 与 Secret Scanning 的现有告警并保存分级摘要：高危/严重项完成修复、替换或禁用受影响功能前不得开始 PR 2；中危逐项记录修复或接受理由；低危登记维护清单。API 不可用时如实标记受阻，不推断为零告警。
+- [x] 2.7 创建 PR 1；在合并前只允许执行两个入口原子前置：记录并按精确名称创建/读回 `needs-info`、`crash`、`data-loss`、`security`、`stale` 标签，以及启用/读回私有漏洞报告并验证表单目标可用。随后等待 PR 检查通过并合并；若任一前置或检查失败则停止后续序列，在原 PR 修复，不提前启用其他安全能力或执行任何批量远端清理。
+- [x] 2.8 PR 1 合并且新 Dependabot 配置确认生效后，重新核对作者、状态、精确 head ref 和 head SHA，只关闭当前批准的遗留 Dependabot PR：`#1`、`#2`、`#4`、`#5`、`#6`、`#7`、`#8`、`#9`、`#10`、`#11`、`#12`、`#13`、`#14`、`#15`、`#16`、`#17`、`#18`、`#19`、`#20`、`#22`、`#24`、`#25`、`#26`、`#27`、`#28`、`#29`、`#30`、`#37`、`#38`、`#39`；只删除这些 PR 在核对后 ref/SHA 仍一致的精确 Dependabot 分支，新增、漂移或身份不符对象停止并另行报告。
+- [x] 2.9 为遗留远端分支记录删除前 SHA，重新确认均已合并、SHA 未漂移且未被重新使用后，只删除 `codex/add-reading-time-estimation`、`codex/archive-harden-independent-fork-security`、`codex/harden-independent-fork-security`、`codex/initial-release`；禁止用 `codex/*` 扩大目标。
+- [x] 2.10 仅在 `3.26.082216` 仍为现有 Latest 且资产未变化时，更新其说明为稳定化期间暂停新正式版、未来停止 `releaseA`、保留历史资产；若 Latest 已变化则停止并请求更新精确授权。
+- [x] 2.11 启用并读回验证仓库可用的 Dependabot alerts、Dependabot Security Updates 和 Secret Scanning，确认 2.7 启用的私有漏洞报告仍然可用，并记录 API 前后状态；不在检查 context 尚未存在时修改 `master` 必需检查。
+- [x] 2.12 紧接 2.11 读取 Dependabot 与 Secret Scanning 的现有告警并保存分级摘要：高危/严重项完成修复、替换或禁用受影响功能前不得开始 PR 2；中危逐项记录修复或接受理由；低危登记维护清单。API 不可用时如实标记受阻，不推断为零告警。
 
 ## 3. PR 2：更新器、fork 身份、失效链接与 releaseA 退役
 
