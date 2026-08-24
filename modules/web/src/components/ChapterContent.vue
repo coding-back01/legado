@@ -1,19 +1,24 @@
 <template>
   <div class="title" data-chapterpos="0" ref="titleRef">{{ title }}</div>
   <div
-    v-for="(para, index) in contents"
+    v-for="(entry, index) in contentEntries"
     :key="index"
     ref="paragraphRef"
     :data-chapterpos="chapterPos[index]"
   >
     <img
       class="full"
-      v-if="/^\s*<img[^>]*src[^>]+>$/.test(String(para))"
-      :src="getImageSrc(para)"
+      v-if="entry.standaloneImageSource !== undefined"
+      :src="resolveImageSource(entry.standaloneImageSource, readWidth)"
       @error.once="proxyImage"
       loading="lazy"
     />
-    <p v-else :style="{ fontFamily, fontSize }" v-html="replaceImage(para)" @error.capture="handleImgLoadError" />
+    <p
+      v-else
+      :style="{ fontFamily, fontSize }"
+      v-html="replaceImage(entry.content)"
+      @error.capture="handleImgLoadError"
+    />
   </div>
 </template>
 
@@ -21,6 +26,12 @@
 import { isLegadoUrl } from '@/utils/utils'
 import API from '@api'
 import jump from '@/plugins/jump'
+import {
+  calculateChapterWordCount,
+  createImageFallbackResolver,
+  getStandaloneImageSource,
+  renderSafeChapterHtml,
+} from '@/utils/chapterHtml'
 import type { webReadConfig } from '@/web'
 
 const store = useBookStore()
@@ -37,33 +48,28 @@ const props = defineProps<{
   fontSize: string
 }>()
 
-const imgPattern = /<img[^>]*src=['"]([^'"]*(?:['"][^>]+\})?)['"][^>]*>/g
+const contentEntries = computed(() => {
+  return props.contents.map(content => ({
+    content,
+    standaloneImageSource: getStandaloneImageSource(content),
+  }))
+})
+
+const resolveImageSource = (source: string, width: number) => {
+  if (isLegadoUrl(source)) {
+    return API.getProxyImageUrl(bookUrl.value, source, width)
+  }
+  return source
+}
 
 const replaceImage = (content: string) => {
-  return content.replace(imgPattern, (match, src) => {
-    if (isLegadoUrl(src)) {
-      const proxySrc = API.getProxyImageUrl(
-        bookUrl.value,
-        src,
-        _fontSize.value * 2,
-      )
-      return match.replace(src, proxySrc)
-    }
-    return match
-  })
+  return renderSafeChapterHtml(content, source =>
+    resolveImageSource(source, _fontSize.value * 2),
+  )
 }
-
-const getImageSrc = (content: string) => {
-  const imgPattern = /<img[^>]*src=['"]([^'"]*(?:['"][^>]+\})?)['"][^>]*>/
-  const src = content.match(imgPattern)![1] //reg tested in template
-  if (isLegadoUrl(src))
-    return API.getProxyImageUrl(
-      bookUrl.value,
-      src,
-      readWidth.value,
-    )
-  return src
-}
+const resolveImageFallback = createImageFallbackResolver(source =>
+  API.getProxyImageUrl(bookUrl.value, source, readWidth.value),
+)
 const proxyImage = (event: Event) => {
   /* 获取IMG标签原始的src
     <img src="/test" />
@@ -71,42 +77,35 @@ const proxyImage = (event: Event) => {
     event.target.src 返回 http://example.com/test
     (event.target as HTMLImageElement)?.getAttribute("src")  返回/test
   */
-  const src = (event.target as HTMLImageElement)?.getAttribute("src")
-  if (src != null && src.length > 0) {
-    (event.target as HTMLImageElement).src = API.getProxyImageUrl(
-      bookUrl.value,
-      src,
-      readWidth.value,
-    )
-  }
+  const image = event.target as HTMLImageElement | null
+  const src = image?.getAttribute('src')
+  if (image == null || src == null || src.length === 0) return
+
+  const fallback = resolveImageFallback(image, src)
+  if (fallback === undefined) return
+
+  console.log(
+    '[ChapterContent]: IMG Load Error, replace src:',
+    src,
+    '=>',
+    fallback,
+  )
+  image.src = fallback
 }
 
 /**
  * 处理传入的IMG标签错误事件，自动替换图片的代理链接
  */
 const handleImgLoadError = (event: Event) => {
-  if ((event.target as HTMLElement)?.tagName === "IMG") {
-    console.log("[ChapterContent]: IMG Load Error, replace src:",
-      (event.target as HTMLImageElement)?.getAttribute("src"), "=>",
-      API.getProxyImageUrl(
-        bookUrl.value,
-        (event.target as HTMLImageElement)?.getAttribute("src") ?? "",
-        readWidth.value,
-      )
-    )
+  if ((event.target as HTMLElement)?.tagName === 'IMG') {
     proxyImage(event)
   }
 }
 
-const calculateWordCount = (paragraph: string) => {
-  //内嵌图片文字为1
-  const imagePlaceHolder = ' '
-  return paragraph.replace(imgPattern, imagePlaceHolder).length
-}
 const chapterPos = computed(() => {
   let pos = -1
   return Array.from(props.contents, content => {
-    pos += calculateWordCount(content) + 1 //计算上一段的换行符
+    pos += calculateChapterWordCount(content) + 1 //计算上一段的换行符
     return pos
   })
 })
