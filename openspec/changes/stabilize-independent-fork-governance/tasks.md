@@ -29,18 +29,18 @@
 
 ## 3. PR 2：更新器、fork 身份、失效链接与 releaseA 退役
 
-- [ ] 3.1 先为 Release JSON 解析、唯一普通资产选择和完整版本比较增加 JVM 测试，覆盖普通版/`releaseA` 顺序互换、相同时间戳、缺失/重复资产、错误 MIME/state、畸形 tag、同日更晚小时、跨日和跨年，并确认测试在旧实现上出现预期 RED；带 `debug` 后缀的安装版本必须得到明确“不支持正式更新”结果且不提供下载。
-- [ ] 3.2 将更新网络端点改为 `coding-back01/legado` Latest，解析完整 `tag_name`，严格选择 `legado_app_<tag>_release.apk` 的唯一 uploaded APK，并实现可区分的网络、JSON、Release 数据和“已是最新”结果，使 3.1 的测试转为 GREEN。
-- [ ] 3.3 为 `default_version`、`official_version`、`beta_release_version`、`beta_releaseA_version` 和未知旧偏好增加恢复/升级测试，确认旧实现会改变或阻断选择后，移除面向用户的通道列表并让更新路径永久归一为普通稳定版。
-- [ ] 3.4 将依赖 live upstream 和固定资产数量的设备 `UpdateTest` 改为确定性测试或发布阶段 smoke；验证成功、失败、超时和空实现路径都会关闭更新等待框。
-- [ ] 3.5 先增加 Release workflow 契约测试，断言仅允许仓库所有者通过 `workflow_dispatch` 手动触发、核对 `github.actor` 与 `github.triggering_actor`、只构建/上传一个普通版、先建草稿、拒绝 `releaseA` 路径、签名缺失时 fail-closed，并要求输入 `expected_sha` 与实际 `github.sha`、tag commit、Release target 一致；确认测试在旧双 APK workflow 上出现预期 RED。
-- [ ] 3.6 修改 Release workflow 使 3.5 转为 GREEN：删除双矩阵、`.releaseA` 动态 `sed` 改写、双 artifact 下载和双 APK 文案，只执行一次普通版构建并固定候选名为 `legado_app_<version>_release.apk`；显式检出 `expected_sha`，保留 Secrets-only 签名路径，触发者或 SHA 不一致时在构建/发布前失败。
-- [ ] 3.7 删除 `app/build.gradle` 中已不可达的 `releaseA` 应用名分支，但保留历史包识别、旧偏好 key、历史 Release 资产和设备数据兼容；静态契约检查不得发现未来 `releaseA` 构建或上传路径。
-- [ ] 3.8 更新 README/English 的当前维护、Issue、Release、独立签名、有限设备验证、应用不提供内容和无上游官方背书说明；保留原作者版权，并把官网、Google Play、社区和仍有效的上游项目明确标为上游资源。
-- [ ] 3.9 将贡献者、分享下载、应用内 Web 首页、当前源码/Issue、`package.json` repository/bugs/homepage/license 等当前功能入口改为本 fork，并同步所有已有 locale 的分享和贡献者说明。
-- [ ] 3.10 将默认 RSS 的失效远程图标改为既有内置 fallback；把失效帮助图片、免责声明和可恢复历史更新日志改为本地资产或不可变引用，对无法恢复的资料写明确缺失说明。
-- [ ] 3.11 逐项审计应用内帮助、更新日志、README/English、Issue 表单和 workflow 中的旧链接；保留 LICENSE、历史 issue/PR、依赖来源和仍有效上游资源，禁止全局域名替换。
-- [ ] 3.12 运行更新器 JVM 测试、Release workflow 契约测试、相关 Android 测试、Debug 构建、资源检查、actionlint、链接检查、`openspec validate --all --strict` 和 `git diff --check`，确认没有 Room、规则、备份、签名材料或历史 Release 资产变化。
+- [x] 3.1 先为 Release JSON 解析、唯一普通资产选择和完整版本比较增加 JVM 测试，覆盖普通版/`releaseA` 顺序互换、相同时间戳、缺失/重复资产、错误 MIME/state、畸形 tag、同日更晚小时、跨日和跨年，并确认测试在旧实现上出现预期 RED；带 `debug` 后缀的安装版本必须得到明确“不支持正式更新”结果且不提供下载。
+- [x] 3.2 将更新网络端点改为 `coding-back01/legado` Latest，解析完整 `tag_name`，严格选择 `legado_app_<tag>_release.apk` 的唯一 uploaded APK，并实现可区分的网络、JSON、Release 数据和“已是最新”结果，使 3.1 的测试转为 GREEN。
+- [x] 3.3 为 `default_version`、`official_version`、`beta_release_version`、`beta_releaseA_version` 和未知旧偏好增加恢复/升级测试，确认旧实现会改变或阻断选择后，移除面向用户的通道列表并让更新路径永久归一为普通稳定版。
+- [x] 3.4 将依赖 live upstream 和固定资产数量的设备 `UpdateTest` 改为确定性测试或发布阶段 smoke；验证成功、失败、超时和空实现路径都会关闭更新等待框。
+- [x] 3.5 先增加 Release workflow 契约测试，断言仅允许仓库所有者通过 `workflow_dispatch` 手动触发、核对 `github.actor` 与 `github.triggering_actor`、只构建/上传一个普通版、先建草稿、拒绝 `releaseA` 路径、签名缺失时 fail-closed，并要求输入 `expected_sha` 与实际 `github.sha`、tag commit、Release target 一致；确认测试在旧双 APK workflow 上出现预期 RED。
+- [x] 3.6 修改 Release workflow 使 3.5 转为 GREEN：删除双矩阵、`.releaseA` 动态 `sed` 改写、双 artifact 下载和双 APK 文案，只执行一次普通版构建并固定候选名为 `legado_app_<version>_release.apk`；显式检出 `expected_sha`，保留 Secrets-only 签名路径，触发者或 SHA 不一致时在构建/发布前失败。
+- [x] 3.7 删除 `app/build.gradle` 中已不可达的 `releaseA` 应用名分支，但保留历史包识别、旧偏好 key、历史 Release 资产和设备数据兼容；静态契约检查不得发现未来 `releaseA` 构建或上传路径。
+- [x] 3.8 更新 README/English 的当前维护、Issue、Release、独立签名、有限设备验证、应用不提供内容和无上游官方背书说明；保留原作者版权，并把官网、Google Play、社区和仍有效的上游项目明确标为上游资源。
+- [x] 3.9 将贡献者、分享下载、应用内 Web 首页、当前源码/Issue、`package.json` repository/bugs/homepage/license 等当前功能入口改为本 fork，并同步所有已有 locale 的分享和贡献者说明。
+- [x] 3.10 将默认 RSS 的失效远程图标改为既有内置 fallback；把失效帮助图片、免责声明和可恢复历史更新日志改为本地资产或不可变引用，对无法恢复的资料写明确缺失说明。
+- [x] 3.11 逐项审计应用内帮助、更新日志、README/English、Issue 表单和 workflow 中的旧链接；保留 LICENSE、历史 issue/PR、依赖来源和仍有效上游资源，禁止全局域名替换。
+- [x] 3.12 运行更新器 JVM 测试、Release workflow 契约测试、相关 Android 测试、Debug 构建、资源检查、actionlint、链接检查、`openspec validate --all --strict` 和 `git diff --check`，确认没有 Room、规则、备份、签名材料或历史 Release 资产变化。
 - [ ] 3.13 创建并合并 `codex/fork-distribution-identity` PR 2；检查失败或更新器 live smoke 无法唯一选择普通版时停止后续序列。
 
 ## 4. PR 3：Android/Web 阻断错误和高风险 warning

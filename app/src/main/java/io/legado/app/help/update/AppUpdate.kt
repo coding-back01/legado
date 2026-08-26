@@ -1,7 +1,6 @@
 package io.legado.app.help.update
 
-import io.legado.app.help.coroutine.Coroutine
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.withTimeout
 
 object AppUpdate {
 
@@ -18,8 +17,28 @@ object AppUpdate {
 
     interface AppUpdateInterface {
 
-        fun check(scope: CoroutineScope): Coroutine<UpdateInfo>
+        suspend fun check(): StableUpdateResult
 
     }
 
+}
+
+class UpdateUnavailableException : StableUpdateException("更新功能不可用")
+
+object UpdateCheckExecutor {
+
+    suspend fun execute(
+        updater: AppUpdate.AppUpdateInterface?,
+        timeoutMillis: Long = 10_000,
+        onFinally: () -> Unit
+    ): StableUpdateResult {
+        return try {
+            val availableUpdater = updater ?: throw UpdateUnavailableException()
+            withTimeout(timeoutMillis) {
+                availableUpdater.check()
+            }
+        } finally {
+            onFinally()
+        }
+    }
 }

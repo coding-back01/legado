@@ -2,48 +2,118 @@ name: Release Build
 
 on:
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: 必须与当前 master 和候选提交一致的完整 SHA
+        required: true
+        type: string
 
-permissions:
-  contents: write
+permissions: {}
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.expected_sha }}
   cancel-in-progress: false
 
 jobs:
-  prepare:
-    name: 准备版本号
-    if: github.ref == 'refs/heads/master'
+  authorize:
+    name: 核对发布授权与候选提交
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AUTHORIZED: >-
+        ${{ github.repository == 'coding-back01/legado' &&
+            github.actor == github.repository_owner &&
+            github.triggering_actor == github.repository_owner }}
+      EXPECTED_SHA: ${{ inputs.expected_sha }}
     outputs:
       version: ${{ steps.version.outputs.value }}
     steps:
+      - name: 拒绝未授权触发
+        if: env.AUTHORIZED != 'true'
+        run: |
+          echo "正式发布只允许 coding-back01/legado 仓库所有者手动触发"
+          exit 1
+
+      - name: 检出候选提交
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.expected_sha }}
+
+      - name: 核对候选提交
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "expected_sha 必须是 40 位小写十六进制提交 SHA"
+            exit 1
+          fi
+          ACTUAL_SHA=$(git rev-parse HEAD)
+          if [[ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "检出提交与 expected_sha 不一致"
+            exit 1
+          fi
+          if [[ "$GITHUB_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "workflow head_sha 与 expected_sha 不一致"
+            exit 1
+          fi
+          if [[ "$GITHUB_REF" != "refs/heads/master" ]]; then
+            echo "正式发布必须从 master 手动触发"
+            exit 1
+          fi
+          git fetch --force origin "refs/heads/master:refs/remotes/origin/master"
+          MASTER_SHA=$(git rev-parse refs/remotes/origin/master)
+          if [[ "$MASTER_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "expected_sha 不是当前远端 master"
+            exit 1
+          fi
+
       - name: 生成版本号
         id: version
         shell: bash
         run: echo "value=$(TZ=Asia/Shanghai date +3.%y.%m%d%H)" >> "$GITHUB_OUTPUT"
 
   build:
-    name: 构建 ${{ matrix.variant }} APK
-    needs: prepare
-    strategy:
-      fail-fast: true
-      matrix:
-        variant: [release, releaseA]
+    name: 构建普通正式 APK
+    needs: authorize
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
-      VERSION: ${{ needs.prepare.outputs.version }}
-      VARIANT: ${{ matrix.variant }}
+      VERSION: ${{ needs.authorize.outputs.version }}
+      EXPECTED_SHA: ${{ inputs.expected_sha }}
       KEYSTORE_BASE64: ${{ secrets.RELEASE_KEY_STORE }}
       ORG_GRADLE_PROJECT_RELEASE_STORE_FILE: ./legado-release.p12
       ORG_GRADLE_PROJECT_RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
       ORG_GRADLE_PROJECT_RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
       ORG_GRADLE_PROJECT_RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
     steps:
-      - name: 检出代码
+      - name: 检出候选提交
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ inputs.expected_sha }}
+
+      - name: 再次核对候选提交
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACTUAL_SHA=$(git rev-parse HEAD)
+          if [[ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "构建检出提交与 expected_sha 不一致"
+            exit 1
+          fi
+          if [[ "$GITHUB_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "workflow head_sha 与 expected_sha 不一致"
+            exit 1
+          fi
+          git fetch --force origin "refs/heads/master:refs/remotes/origin/master"
+          MASTER_SHA=$(git rev-parse refs/remotes/origin/master)
+          if [[ "$MASTER_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "构建前远端 master 已漂移"
+            exit 1
+          fi
 
       - name: 配置 JDK 17
         uses: actions/setup-java@v4
@@ -75,14 +145,11 @@ jobs:
             -alias "$ORG_GRADLE_PROJECT_RELEASE_KEY_ALIAS" \
             > /dev/null
 
-      - name: 配置版本与包名
+      - name: 配置版本
         shell: bash
         run: |
           set -euo pipefail
           sed -i "/^def version =/c\\def version = \"$VERSION\"" app/build.gradle
-          if [[ "$VARIANT" == "releaseA" ]]; then
-            sed -i "s/applicationIdSuffix '.release'/applicationIdSuffix '.releaseA'/" app/build.gradle
-          fi
 
       - name: 配置 Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -90,62 +157,131 @@ jobs:
       - name: 构建 APK
         run: ./gradlew :app:assembleAppRelease --build-cache --no-daemon --warning-mode all
 
-      - name: 整理构建产物
+      - name: 整理唯一构建产物
         shell: bash
         run: |
           set -euo pipefail
-          apk_path="$(find app/build/outputs/apk/app/release -type f -name '*.apk' -print -quit)"
-          if [[ -z "$apk_path" ]]; then
-            echo "未找到构建完成的 APK"
+          mapfile -t apks < <(find app/build/outputs/apk/app/release -type f -name '*.apk' -print)
+          if [[ "${#apks[@]}" -ne 1 ]]; then
+            echo "预期唯一普通正式 APK，实际找到 ${#apks[@]} 个"
             exit 1
           fi
           mkdir -p dist
-          cp "$apk_path" "dist/legado_app_${VERSION}_${VARIANT}.apk"
-          sha256sum dist/*.apk
+          cp "${apks[0]}" "dist/legado_app_${VERSION}_release.apk"
+          sha256sum "dist/legado_app_${VERSION}_release.apk"
 
       - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk-${{ matrix.variant }}
-          path: dist/*.apk
+          name: release-apk
+          path: dist/legado_app_${{ env.VERSION }}_release.apk
           if-no-files-found: error
           retention-days: 30
 
   draft-release:
-    name: 创建草稿 Release
-    needs: [prepare, build]
+    name: 创建并核对草稿 Release
+    needs: [authorize, build]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
-      VERSION: ${{ needs.prepare.outputs.version }}
+      VERSION: ${{ needs.authorize.outputs.version }}
+      EXPECTED_SHA: ${{ inputs.expected_sha }}
+      GH_TOKEN: ${{ github.token }}
     steps:
+      - name: 检出候选提交
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.expected_sha }}
+
       - name: 下载 APK
         uses: actions/download-artifact@v4
         with:
-          pattern: release-apk-*
+          name: release-apk
           path: dist
-          merge-multiple: true
 
-      - name: 核对 APK
-        run: sha256sum dist/*.apk
-
-      - name: 创建草稿 Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_NOTES: |
-            这是 coding-back01/legado 仓库的首次公开构建。
-
-            - `release` 为普通版本，包名为 `io.legado.app.release`。
-            - `releaseA` 为共存版本，包名为 `io.legado.app.releaseA`。
-            - 两个 APK 均使用本仓库独立保管的私有密钥签名。
-            - 对应提交：`${{ github.sha }}`。
-
-            本构建的签名与其他 Legado 发行版不同，不能直接覆盖安装其他签名的同包名版本。安装或迁移前请先备份数据。
+      - name: 核对唯一 APK
         shell: bash
         run: |
           set -euo pipefail
-          gh release create "$VERSION" dist/*.apk \
+          EXPECTED_APK="dist/legado_app_${VERSION}_release.apk"
+          mapfile -t apks < <(find dist -type f -name '*.apk' -print)
+          if [[ "${#apks[@]}" -ne 1 || "${apks[0]}" != "$EXPECTED_APK" ]]; then
+            echo "草稿 Release 只允许唯一普通正式 APK"
+            exit 1
+          fi
+          sha256sum "$EXPECTED_APK"
+
+      - name: 创建草稿 Release
+        env:
+          RELEASE_NOTES: |
+            这是 coding-back01/legado 独立维护、独立签名的个人衍生版本候选。
+
+            - 唯一 APK 包名为 `io.legado.app.release`。
+            - 对应提交：`${{ inputs.expected_sha }}`。
+            - 应用本身不提供内容，也未获得原项目官方背书。
+
+            本候选保持草稿，只有完整性、签名、自动化和指定真机验证全部通过后才会公开。其签名与其他发行版不同，不能直接覆盖安装其他签名的同包名版本，安装或迁移前请先备份数据。
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --force origin "refs/heads/master:refs/remotes/origin/master"
+          MASTER_SHA=$(git rev-parse refs/remotes/origin/master)
+          if [[ "$MASTER_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "创建草稿前远端 master 已漂移"
+            exit 1
+          fi
+          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "版本 $VERSION 已存在，拒绝覆盖既有 Release"
+            exit 1
+          fi
+          gh release create "$VERSION" "dist/legado_app_${VERSION}_release.apk" \
             --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
+            --target "$EXPECTED_SHA" \
             --title "legado_app_${VERSION}" \
             --notes "$RELEASE_NOTES" \
             --draft
+
+      - name: 核对 tag 与 Release target
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACTUAL_SHA=$(git rev-parse HEAD)
+          if [[ "$ACTUAL_SHA" != "$EXPECTED_SHA" || "$GITHUB_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "草稿阶段提交与 expected_sha 不一致"
+            exit 1
+          fi
+          git fetch --force origin "refs/heads/master:refs/remotes/origin/master"
+          MASTER_SHA=$(git rev-parse refs/remotes/origin/master)
+          if [[ "$MASTER_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "草稿核对时远端 master 已漂移"
+            exit 1
+          fi
+          git fetch --force origin "refs/tags/${VERSION}:refs/tags/${VERSION}"
+          TAG_SHA=$(git rev-list -n 1 "$VERSION")
+          TARGET_COMMITISH=$(
+            gh release view "$VERSION" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json targetCommitish \
+              --jq .targetCommitish
+          )
+          TARGET_SHA=$(git rev-parse "${TARGET_COMMITISH}^{commit}")
+          IS_DRAFT=$(
+            gh release view "$VERSION" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json isDraft \
+              --jq .isDraft
+          )
+          if [[ "$TAG_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "tag commit 与 expected_sha 不一致"
+            exit 1
+          fi
+          if [[ "$TARGET_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "Release target 与 expected_sha 不一致"
+            exit 1
+          fi
+          if [[ "$IS_DRAFT" != "true" ]]; then
+            echo "候选 Release 未保持草稿"
+            exit 1
+          fi

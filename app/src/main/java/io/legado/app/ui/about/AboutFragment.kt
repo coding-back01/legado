@@ -15,6 +15,8 @@ import io.legado.app.help.CrashHandler
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.coroutine.Coroutine
 import io.legado.app.help.update.AppUpdate
+import io.legado.app.help.update.StableUpdateResult
+import io.legado.app.help.update.UpdateCheckExecutor
 import io.legado.app.ui.widget.dialog.TextDialog
 import io.legado.app.ui.widget.dialog.WaitDialog
 import io.legado.app.utils.FileDoc
@@ -32,7 +34,10 @@ import io.legado.app.utils.sendMail
 import io.legado.app.utils.sendToClip
 import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.toastOnUi
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import splitties.init.appCtx
 import java.io.File
 
@@ -88,17 +93,42 @@ class AboutFragment : PreferenceFragmentCompat() {
      */
     private fun checkUpdate() {
         waitDialog.show()
-        AppUpdate.gitHubUpdate?.run {
-            check(lifecycleScope)
-                .onSuccess {
-                    showDialogFragment(
-                        UpdateDialog(it)
-                    )
-                }.onError {
-                    appCtx.toastOnUi("${getString(R.string.check_update)}\n${it.localizedMessage}")
-                }.onFinally {
-                    waitDialog.dismiss()
+        lifecycleScope.launch {
+            try {
+                when (val result = UpdateCheckExecutor.execute(
+                    updater = AppUpdate.gitHubUpdate,
+                    onFinally = waitDialog::dismiss
+                )) {
+                    is StableUpdateResult.UpdateAvailable -> {
+                        val release = result.release
+                        val updateInfo = AppUpdate.UpdateInfo(
+                            tagName = release.versionName,
+                            updateLog = release.note,
+                            downloadUrl = release.downloadUrl,
+                            fileName = release.name
+                        )
+                        showDialogFragment(UpdateDialog(updateInfo))
+                    }
+
+                    StableUpdateResult.UpToDate -> {
+                        appCtx.toastOnUi(getString(R.string.update_up_to_date))
+                    }
+
+                    StableUpdateResult.DebugBuildUnsupported -> {
+                        appCtx.toastOnUi(getString(R.string.update_debug_unsupported))
+                    }
                 }
+            } catch (_: TimeoutCancellationException) {
+                appCtx.toastOnUi(
+                    "${getString(R.string.check_update)}\n${getString(R.string.update_timeout)}"
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                appCtx.toastOnUi(
+                    "${getString(R.string.check_update)}\n${e.localizedMessage}"
+                )
+            }
         }
     }
 

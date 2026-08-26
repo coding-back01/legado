@@ -1,7 +1,6 @@
 <resources>
     <!--App-->
     <string name="app_name">阅读</string>
-    <string name="app_name_a">阅读·A</string>
     <string name="receiving_shared_label">阅读·搜索</string>
     <string name="tip_perm_request_storage">阅读需要访问存储卡权限，请前往“设置”—“应用权限”，打开所需权限</string>
 
@@ -100,7 +99,7 @@
         \u3000\u3000这是一款使用 Kotlin 全新开发的开源的阅读软件，欢迎您的加入。
     </string>
     <string name="app_share_description">
-        阅读 3.0 下载地址：\nhttps://github.com/gedoor/legado/releases
+        阅读个人稳定 fork 发布地址：\nhttps://github.com/coding-back01/legado/releases
     </string>
     <string name="version_name">版本 %s</string>
     <string name="pt_background_verification">后台校验书源</string>
@@ -186,6 +185,9 @@
     <string name="paste_source">粘贴源</string>
     <string name="source_rule_s">源规则说明</string>
     <string name="check_update">检查更新</string>
+    <string name="update_up_to_date">已是最新版本</string>
+    <string name="update_debug_unsupported">Debug 构建不支持正式更新</string>
+    <string name="update_timeout">检查更新超时</string>
     <string name="camera_scan">扫描二维码</string>
     <string name="scan_image">扫描本地图片</string>
     <string name="rule_summary">规则说明</string>
@@ -753,7 +755,7 @@
     <string name="alipay_red_envelope_qr_code">支付宝红包二维码</string>
     <string name="alipay_payment_qr_code">支付宝收款二维码</string>
     <string name="qq_collection_qr_code">QQ 收款二维码</string>
-    <string name="contributors_summary">gedoor、Invinciblelee 和 Xwite 等，详情请在 GitHub 中查看</string>
+    <string name="contributors_summary">包含原项目与本分支贡献者，完整名单请查看 GitHub 提交历史</string>
     <string name="clear_cache_summary">清除已下载书籍和字体缓存</string>
     <string name="default_cover">默认封面</string>
     <string name="restore_ignore">恢复忽略列表</string>
@@ -1175,12 +1177,6 @@
     <string name="start_from">开始日期</string>
     <string name="daily_chapters">日更章数</string>
     <string name="start_chapter">起始章节</string>
-    <string name="update_to_variant_title">检查更新查找版本</string>
-    <string name="update_to_variant_summary">检查更新时查找其他签名版本</string>
-    <string name="default_version">当前</string>
-    <string name="official_version">正式版</string>
-    <string name="beta_release_version">测试版</string>
-    <string name="beta_releaseA_version">共存版</string>
     <string name="stream_read_aloud_audio">流式播放音频</string>
     <string name="stream_read_aloud_audio_summary">即边下边播，网络不好时播放会断断续续，仅TTS源有效</string>
     <string name="pause_read_aloud_while_phone_calls_title">来电期间暂停朗读</string>

@@ -2,68 +2,56 @@ package io.legado.app.help.update
 
 import androidx.annotation.Keep
 import io.legado.app.constant.AppConst
-import io.legado.app.exception.NoStackTraceException
 import io.legado.app.help.config.AppConfig
-import io.legado.app.help.coroutine.Coroutine
 import io.legado.app.help.http.newCallResponse
 import io.legado.app.help.http.okHttpClient
 import io.legado.app.help.http.text
-import io.legado.app.utils.GSON
-import io.legado.app.utils.fromJsonObject
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 
 @Keep
 @Suppress("unused")
 object AppUpdateGitHub : AppUpdate.AppUpdateInterface {
 
-    private val checkVariant: AppVariant
-        get() = when (AppConfig.updateToVariant) {
-            "official_version" -> AppVariant.OFFICIAL
-            "beta_release_version" -> AppVariant.BETA_RELEASE
-            "beta_releaseA_version" -> AppVariant.BETA_RELEASEA
-            else -> AppConst.appInfo.appVariant
-        }
+    const val LAST_RELEASE_URL = StableUpdateChannel.LAST_RELEASE_URL
 
-    private suspend fun getLatestRelease(): List<AppReleaseInfo> {
-        val lastReleaseUrl = if (checkVariant.isBeta()) {
-            "https://api.github.com/repos/gedoor/legado/releases/tags/beta"
-        } else {
-            "https://api.github.com/repos/gedoor/legado/releases/latest"
-        }
-        val res = okHttpClient.newCallResponse {
-            url(lastReleaseUrl)
-        }
-        if (!res.isSuccessful) {
-            throw NoStackTraceException("获取新版本出错(${res.code})")
-        }
-        val body = res.body.text()
-        if (body.isBlank()) {
-            throw NoStackTraceException("获取新版本出错")
-        }
-        return GSON.fromJsonObject<GithubRelease>(body)
-            .getOrElse {
-                throw NoStackTraceException("获取新版本出错 " + it.localizedMessage)
+    private val releaseParser = StableReleaseParser()
+
+    private suspend fun getLatestReleaseJson(): String {
+        val res = try {
+            okHttpClient.newCallResponse {
+                url(StableUpdateChannel.latestReleaseUrl(AppConfig.updateToVariant))
             }
-            .gitReleaseToAppReleaseInfo()
-            .sortedByDescending { it.createdAt }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            throw ReleaseNetworkException("连接更新服务失败")
+        }
+        return res.use { response ->
+            if (!response.isSuccessful) {
+                throw ReleaseNetworkException("更新服务返回 HTTP ${response.code}")
+            }
+            val body = try {
+                response.body.text()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                throw ReleaseNetworkException("读取更新响应失败")
+            }
+            if (body.isBlank()) {
+                throw ReleaseJsonException("更新响应为空")
+            }
+            body
+        }
     }
 
-    override fun check(
-        scope: CoroutineScope,
-    ): Coroutine<AppUpdate.UpdateInfo> {
-        return Coroutine.async(scope) {
-            getLatestRelease()
-                .filter { it.appVariant == checkVariant }
-                .firstOrNull { it.versionName > AppConst.appInfo.versionName }
-                ?.let {
-                    return@async AppUpdate.UpdateInfo(
-                        it.versionName,
-                        it.note,
-                        it.downloadUrl,
-                        it.name
-                    )
-                }
-                ?: throw NoStackTraceException("已是最新版本")
-        }.timeout(10000)
+    override suspend fun check(): StableUpdateResult {
+        val installedVersion = AppConst.appInfo.versionName
+        if (StableReleaseParser.isDebugVersion(installedVersion)) {
+            return StableUpdateResult.DebugBuildUnsupported
+        }
+        return releaseParser.parseAndCheck(
+            getLatestReleaseJson(),
+            installedVersion
+        )
     }
 }
