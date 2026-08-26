@@ -25,6 +25,7 @@
 - [x] 2.10 仅在 `3.26.082216` 仍为现有 Latest 且资产未变化时，更新其说明为稳定化期间暂停新正式版、未来停止 `releaseA`、保留历史资产；若 Latest 已变化则停止并请求更新精确授权。
 - [x] 2.11 启用并读回验证仓库可用的 Dependabot alerts、Dependabot Security Updates 和 Secret Scanning，确认 2.7 启用的私有漏洞报告仍然可用，并记录 API 前后状态；不在检查 context 尚未存在时修改 `master` 必需检查。
 - [x] 2.12 紧接 2.11 读取 Dependabot 与 Secret Scanning 的现有告警并保存分级摘要：高危/严重项完成修复、替换或禁用受影响功能前不得开始 PR 2；中危逐项记录修复或接受理由；低危登记维护清单。API 不可用时如实标记受阻，不推断为零告警。
+- [x] 2.13 在 PR 2 前插入 `codex/web-chapter-content-safety` 紧急安全 PR：先为书源正文经 Web API 进入 `ChapterContent.vue` 的 `v-html` 边界建立 RED，只允许从 canonical 小写图片标签重建唯一且非空的 `src`，其余内容全部转义；覆盖隐藏图片请求、畸形输入、线性复杂度和代理回退，提交固定 pnpm 生成的 Android Web assets，并在 PR 与合并后的 `master` 上确认 Web、Android 检查和安全告警状态。
 
 ## 3. PR 2：更新器、fork 身份、失效链接与 releaseA 退役
 
@@ -52,7 +53,7 @@
 - [ ] 4.6 补齐 6 个缺失翻译键对应的全部 locale 条目，恢复默认资源中的英文 `play_mode`；运行 lint、资源检查和自动截图/UI 层级验证，不把无法人工判断的装饰质量描述为已验证。
 - [ ] 4.7 修复已确认的 `IntentWithNullActionLaunch`、8 个 locale 逻辑问题和 `AppBundleLocaleChanges`，为可观察行为先建立 RED 测试或检查，再提升这些 ID 的后续阻断策略。
 - [ ] 4.8 移除网页端未使用的 `RuleSearch`，用具体类型替换 `souce.ts` 中的 `any`，并通过类型检查与 ESLint RED/GREEN 验证。
-- [ ] 4.9 在 `modules/web/package.json` 固定 `packageManager: "pnpm@9.15.9"`，使用该版本生成并审计 `pnpm-lock.yaml`，不修改依赖版本范围；使用同版本冻结安装运行类型检查、ESLint 和构建，检查同步到 Android assets 的差异只包含预期 Web 产物。
+- [x] 4.9 在 `modules/web/package.json` 固定 `packageManager: "pnpm@9.15.9"`，使用该版本生成并审计 `pnpm-lock.yaml`，不修改依赖版本范围；使用同版本冻结安装运行类型检查、ESLint 和构建，检查同步到 Android assets 的差异只包含预期 Web 产物。
 - [ ] 4.10 运行 `:app:testAppDebugUnitTest`、`:app:lintAppDebug`、`:app:assembleAppDebug`、网页端冻结安装/类型检查/ESLint/构建、OpenSpec 严格校验和 `git diff --check`，确认 Android lint 0 error、Web ESLint 0 error。
 - [ ] 4.11 创建并合并 `codex/quality-blockers` PR 3；若任何阻断错误仍存在或测试失败，停止 warning 批次和持续门禁阶段。
 
