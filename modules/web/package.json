@@ -2,6 +2,7 @@
   "name": "legado-web",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@9.15.9",
   "type": "module",
   "engines": {
     "node": ">=20",
@@ -13,6 +14,7 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
+    "test:chapter-html": "tsc --strict --noEmitOnError --pretty false --rootDir . --target ES2022 --module NodeNext --moduleResolution NodeNext --types node --outDir node_modules/.tmp/chapter-html-test src/utils/chapterHtml.ts tests/chapterHtml.test.ts && node node_modules/.tmp/chapter-html-test/tests/chapterHtml.test.js",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write src/"
   },

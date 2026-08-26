@@ -5,10 +5,14 @@ on:
     branches:
       - master
     paths:
-      - '**/modules/web/**'
+      - 'modules/web/**'
+      - 'app/src/main/assets/web/vue/**'
+      - '.github/workflows/web.yml'
   pull_request:
     paths:
-      - '**/modules/web/**'
+      - 'modules/web/**'
+      - 'app/src/main/assets/web/vue/**'
+      - '.github/workflows/web.yml'
   workflow_dispatch:
 
 permissions:
@@ -31,7 +35,7 @@ jobs:
         name: Install pnpm
         id: pnpm-install
         with:
-          version: 9
+          version: 9.15.9
           run_install: false
 
       - name: Get pnpm store directory
@@ -44,12 +48,18 @@ jobs:
         name: Setup pnpm cache
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/web/package.json') }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/web/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
       - name: Build and move files
         working-directory: modules/web
         run: |
-          pnpm i
+          pnpm install --frozen-lockfile
+          pnpm test:chapter-html
           pnpm build
+          asset_status="$(git status --porcelain --untracked-files=all -- ../../app/src/main/assets/web/vue)"
+          if [ -n "$asset_status" ]; then
+            printf '%s\n' "$asset_status"
+            exit 1
+          fi
