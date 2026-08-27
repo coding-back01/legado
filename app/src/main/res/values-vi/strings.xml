@@ -88,6 +88,10 @@
     <string name="import_books_count">Tổng cộng %s tệp văn bản</string>
     <string name="is_loading">Đang tải…</string>
     <string name="retry">Thử lại</string>
+    <string name="select_date">Chọn ngày</string>
+    <string name="import_from_clipboard">Nhập từ bảng nhớ tạm</string>
+    <string name="previous_search_result">Kết quả trước</string>
+    <string name="next_search_result">Kết quả tiếp theo</string>
     <string name="web_service">Dịch vụ web</string>
     <string name="web_service_desc">Chỉnh sửa nguồn và đọc sách qua web</string>
     <string name="web_edit_source">Chỉnh sửa nguồn sách trên web</string>

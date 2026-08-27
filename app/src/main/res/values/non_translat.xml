@@ -11,6 +11,8 @@
     <string name="diy_edit_source_group_title" translatable="false">【%s】</string>
     <string name="vip_title" translatable="false">🔒%s</string>
     <string name="payed_title" translatable="false">🔓%s</string>
+    <string name="default_daily_chapters_hint" translatable="false">3</string>
+    <string name="progress_zero_percent" translatable="false">0%</string>
 
     <string name="separator" translatable="false">丨</string>
 
