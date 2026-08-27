@@ -1,4 +1,4 @@
-# PR 4g：`UseKtx` 的 `SparseArray.size` 小批次证据
+# PR 4g（GitHub #60）：`UseKtx` 的 `SparseArray.size` 小批次证据
 
 ## 串行前置条件
 
@@ -96,5 +96,5 @@ ANDROID_SDK_ROOT=/Users/back/Library/Android/sdk \
 | `lint-results-appDebug.html` | `a4858c4958ee4c16372a2d6e357c7942d87b5ec9e7639df9b565c5a90ee89487` |
 | `lint-results-appDebug.txt` | `d95ae9316b671fcd28b840babf68af87fc3c2cdc722d45947005b5d5c1f31f25` |
 
-上述结果只证明本地提交候选通过；本批仍须创建 Pull Request，并分别确认最终
+上述结果只证明本地提交候选通过；本批已创建 draft PR #60，仍须分别确认最终
 head 与合并后 `master` 的远端及本地验证，才可开始下一个 warning 批次。
