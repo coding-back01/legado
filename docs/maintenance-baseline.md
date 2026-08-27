@@ -46,8 +46,8 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 |---|---|---:|---:|---:|---:|---:|---:|---|
 | `AndroidGradlePluginVersion` | 低 | 4 | 4 | 0 | 0 | 0 | 4 | 工具链提示；不得混入普通依赖升级 |
 | `AppBundleLocaleChanges` | 高 | 1 | 0 | 1 | 0 | 0 | 0 | PR 3 关闭语言资源拆分并提升为 fatal；聚焦契约与 lint 已验证 |
-| `Autofill` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 影响输入体验与隐私语义 |
-| `ContentDescription` | 中 | 2 | 2 | 0 | 0 | 0 | 2 | 无障碍可访问性 |
+| `Autofill` | 中 | 1 | 0 | 1 | 0 | 0 | 0 | PR 4e（#58）将只由日期选择器赋值的字段明确排除自动填充；聚焦契约与 lint 已验证 |
+| `ContentDescription` | 中 | 2 | 0 | 2 | 0 | 0 | 0 | PR 4e（#58）为锁定章节图标补齐全 locale 语义，并将装饰性主题图标预览移出无障碍树 |
 | `DefaultLocale` | 高 | 8 | 0 | 8 | 0 | 0 | 0 | PR 3 对内部标识统一使用 `Locale.ROOT` 并提升为 fatal；土耳其语行为测试与 lint 已验证 |
 | `DiscouragedApi` | 中 | 11 | 11 | 0 | 0 | 0 | 11 | 需逐项确认公开替代及行为等价性 |
 | `GradleDependency` | 低 | 14 | 14 | 0 | 0 | 0 | 14 | 多数涉及兼容固定版本，不得机械升级 |
@@ -56,21 +56,21 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `IconLocation` | 中 | 6 | 6 | 0 | 0 | 0 | 6 | 资源密度与打包行为 |
 | `InefficientWeight` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 布局性能，需验证界面不变 |
 | `IntentWithNullActionLaunch` | 高 | 1 | 0 | 1 | 0 | 0 | 0 | PR 3 为 QQ 跳转设置显式 `ACTION_VIEW` 并提升为 fatal；契约测试与 lint 已验证 |
-| `KeyboardInaccessibleWidget` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 键盘与无障碍可达性 |
+| `KeyboardInaccessibleWidget` | 中 | 1 | 0 | 1 | 0 | 0 | 0 | PR 4e（#58）保留日期字段键盘焦点与点击入口，并明确禁止软键盘直接编辑 |
 | `NewerVersionAvailable` | 低 | 21 | 21 | 0 | 0 | 0 | 21 | 依赖维护提示，不得突破兼容固定版本 |
 | `Overdraw` | 中 | 41 | 41 | 0 | 0 | 0 | 41 | 性能与视觉行为需逐布局验证 |
 | `PluralsCandidate` | 低 | 5 | 0 | 5 | 0 | 0 | 0 | PR 4d（#57）删除 5 个经全仓动态引用审计确认无使用的资源；聚焦契约与 lint 已验证 |
 | `RtlHardcoded` | 中 | 7 | 0 | 7 | 0 | 0 | 0 | PR 4a（#54）将物理方向间距与 gravity 改为逻辑方向；布局契约与 lint 已验证 |
 | `RtlSymmetry` | 中 | 2 | 0 | 2 | 0 | 0 | 0 | PR 4a（#54）为单侧逻辑内边距补齐显式零起始值；布局契约与 lint 已验证 |
 | `SetTextI18n` | 中 | 8 | 0 | 4 | 4 | 0 | 0 | PR 4b（#55）本地化显示数字与跳转提示；4 个 ASCII 数字输入保留精确兼容抑制 |
-| `TextFields` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 输入控件行为与可用性 |
+| `TextFields` | 中 | 1 | 0 | 0 | 1 | 0 | 0 | PR 4e（#58）保留日期选择器专用字段的 `inputType="none"`，并在精确视图记录兼容理由 |
 | `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
 | `UnusedResources` | 中 | 594 | 588 | 6 | 0 | 0 | 588 | PR 3 显式加入 Startup 后减少 1 项；PR 4d（#57）对 5 个同时触发 `PluralsCandidate` 的资源完成全仓动态引用审计后删除；其余仍须逐项审计 |
 | `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 可证明等价后再机械调整 |
 | `UseKtx` | 低 | 133 | 132 | 1 | 0 | 0 | 132 | PR 3 的显式 Intent 构造安全消除 1 项；其余只处理语义等价位置，不全量替换 |
 | `UselessParent` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 布局层级变化需视觉验证 |
 | `VectorPath` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 图形精度与渲染风险 |
-| **合计** |  | **881** | **828** | **49** | **4** | **0** | **828** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4d 已处置 53 项 |
+| **合计** |  | **881** | **823** | **53** | **5** | **0** | **823** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4e 已处置 58 项 |
 
 ## 精确局部抑制
 
@@ -79,6 +79,7 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `SetTextI18n` | `BaseReadBookActivity.showSimulatedReading` 的起始章节和每日章节输入 | 2 | 两个字段保存 ASCII 整数并直接由 `toInt()` 回读；本地化数字或分组符会破坏往返解析 | 字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b（#55）聚焦契约、完整单元测试与 lint |
 | `SetTextI18n` | `CheckSourceConfig.onFragmentCreated` 的超时秒数输入 | 1 | 字段保存 ASCII 整数并直接由 `toLong()` 回读；本地化数字或分组符会破坏往返解析 | 超时字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b（#55）聚焦契约、完整单元测试与 lint |
 | `SetTextI18n` | `ReplaceEditActivity.upReplaceView` 的替换超时毫秒输入 | 1 | 规则字段保存 ASCII 整数并直接由 `toLong()` 回读；改变持久化输入语义可能破坏既有规则编辑 | 规则编辑字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b（#55）聚焦契约、完整单元测试与 lint |
+| `TextFields` | `dialog_simulated_reading.xml` 的 `start_date` 日期选择字段 | 1 | 日期只由 `DatePickerDialog` 选择；`inputType="none"` 阻止软键盘直接编辑，字段仍保留键盘焦点与点击入口 | 字段改为允许可靠文本解析的直接输入，或替换为不会触发该检查的日期选择控件 | PR 4e（#58）聚焦契约、完整单元测试与 lint |
 
 ## 精确延期项
 

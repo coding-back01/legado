@@ -297,8 +297,8 @@ abstract class BaseReadBookActivity :
             editStart.setText(book.getStartChapter().toString())
             editNum.setText(book.getDailyChapters().toString())
             startDate.setText(book.getStartDate()?.format(dateFormatter))
-            startDate.isFocusable = false // 设置为false，不允许获得焦点
-            startDate.isCursorVisible = false // 不显示光标
+            startDate.showSoftInputOnFocus = false
+            startDate.isCursorVisible = false
             startDate.setOnClickListener {
                 // 获取当前日期
                 val localStartDate = LocalDate.parse(startDate.text)

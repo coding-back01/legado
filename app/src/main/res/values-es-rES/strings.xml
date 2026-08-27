@@ -136,6 +136,7 @@
     <string name="interface_setting">Interfaz</string>
     <string name="brightness">Brillo</string>
     <string name="chapter_list">Capítulos</string>
+    <string name="chapter_locked">Capítulo bloqueado</string>
     <string name="next_chapter">Próximo</string>
     <string name="previous_chapter">Anterior</string>
     <string name="pt_hide_status_bar">Ocultar barra de estado</string>

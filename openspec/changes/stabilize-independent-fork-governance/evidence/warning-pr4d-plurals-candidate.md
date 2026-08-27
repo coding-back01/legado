@@ -55,7 +55,7 @@ warning 合计的累计 `FIXED` 为 49，4 个既有 suppression 仍全部来自
 | `lint-results-appDebug.html` | `402d1ed08d1f9b1c75cb50a7a50302d12b761a2c3a620dface38b1f184256307` |
 | `lint-results-appDebug.txt` | `59abab56215250cf2c2771e29490aa7db7e3a7572f1d24cb0134d92d00679b5e` |
 
-任务 5.2 继续保持未完成，剩余正确性与国际化类 warning 仍须独立审查，且下一批必须等待本 PR 完成全部本地、PR 与合并后验证。
+PR #57 的最终 head `054b9391cb96640787ee38c126ea137b435d87a9`、merge commit `033dbe5db1c202ebaed97e31ad052f4dcd774873` 及合并后 `master` 的 `Android Debug 验证` 均成功；合并后本地再次强制执行 131 个 Gradle 任务，111 个单元测试 0 失败、1 跳过，lint、OpenSpec 和空白检查均通过。因此任务 5.2 的正确性、启动安全、国际化与 RTL warning 已完成处置，后续转入任务 5.3 的无障碍和可验证性能批次。
 
 ## 本批完整本地验证
 

@@ -135,6 +135,7 @@
     <string name="interface_setting">Giao diện</string>
     <string name="brightness">Độ sáng</string>
     <string name="chapter_list">Danh sách chương</string>
+    <string name="chapter_locked">Chương bị khóa</string>
     <string name="next_chapter">Chương sau</string>
     <string name="previous_chapter">Chương trước</string>
     <string name="pt_hide_status_bar">Ẩn thanh trạng thái</string>
