@@ -133,3 +133,25 @@ PR #52 首轮 `Build Web / build` 在源码、类型检查和 16 个章节 HTML 
 - 更新 `app/src/main/assets/web/vue/index.html` 的入口哈希。
 
 这些是固定 lockfile 和现有 Web 源码的生成结果，不包含依赖范围修改。提交同步产物前后再次运行 Web 冻结安装、章节 HTML 测试、类型检查、ESLint、GitHub Actions 等价构建和 Android Debug 构建；只有生成目录不再产生未提交差异后才允许 PR 重新进入合并检查。
+
+## 4.11 PR 3 合并证据
+
+PR 3 为 [#52](https://github.com/coding-back01/legado/pull/52)，精确身份如下：
+
+- base：`master`，创建时 base SHA 为 `7746729d5228d3c548b3cc940614c9f4dc7b3462`；
+- head：`codex/quality-blockers`；
+- 最终 head SHA：`6abcdcf4bcf56ad10f64eec73f31b9758af6015f`；
+- merge commit：`5fa69d4022c9e4df0b76225561b34330489b1f19`；
+- 合并时间：2026-08-27 16:57:46 +0800。
+
+最终 head 的远端检查均成功：
+
+- `Build Web / build`：run `33055420393`，27 秒；
+- `Test Build / Android Debug 验证`：run `33055420386`，4 分 58 秒。
+
+PR 在 `mergeStateStatus=CLEAN`、`mergeable=MERGEABLE` 且两个检查均成功后使用普通 merge commit 合并，没有删除 head 分支。合并后的精确 `master` SHA 上再次确认：
+
+- `Build Web` push run `33056363134` 成功；
+- `Test Build` workflow_run `33056404216` 成功，Android job 用时 5 分 14 秒。
+
+因此 PR 3 的 Android lint 0 error、Web ESLint 0 error 和构建门禁均已进入 `master`，可以开始从该 SHA 重新生成 warning occurrence 清单。Actions 对 Node.js 20 与 `setup-java@v4` 的弃用注解属于后续持续门禁 PR 5 的维护项，不改变本次成功结论。
