@@ -1,5 +1,6 @@
 package io.legado.app.ui.config
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +28,8 @@ class CheckSourceConfig : BaseDialogFragment(R.layout.dialog_check_source_config
         setLayout(0.9f, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
+    // ASCII 数字输入会由 toLong 回读，本地化数字或分组符会破坏往返解析。
+    @SuppressLint("SetTextI18n")
     override fun onFragmentCreated(view: View, savedInstanceState: Bundle?) {
         binding.toolBar.setBackgroundColor(primaryColor)
         binding.run {

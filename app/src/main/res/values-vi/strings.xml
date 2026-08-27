@@ -1084,6 +1084,7 @@
     <string name="c_blacklist">Danh sách đen(contentBlacklist)</string>
     <string name="confirm">Xác nhận</string>
     <string name="jump_to_another_app">Chuyển sang ứng dụng khác</string>
+    <string name="open_url_confirm_message">%1$s đang yêu cầu mở một liên kết hoặc ứng dụng. Bạn có muốn tiếp tục không?</string>
     <string name="clear_webview_data">Xóa dữ liệu WebView</string>
     <string name="clear_webview_data_summary">Xóa tất cả dữ liệu của trình duyệt tích hợp</string>
     <string name="source_tab_list">Danh sách</string>

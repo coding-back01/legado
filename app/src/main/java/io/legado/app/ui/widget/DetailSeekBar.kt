@@ -13,6 +13,7 @@ import io.legado.app.lib.theme.bottomBackground
 import io.legado.app.lib.theme.getPrimaryTextColor
 import io.legado.app.ui.widget.seekbar.SeekBarChangeListener
 import io.legado.app.utils.ColorUtils
+import io.legado.app.utils.LocalizedNumberFormatter
 import io.legado.app.utils.progressAdd
 
 
@@ -73,7 +74,7 @@ class DetailSeekBar @JvmOverloads constructor(
         valueFormat?.let {
             binding.tvSeekValue.text = it.invoke(progress)
         } ?: let {
-            binding.tvSeekValue.text = progress.toString()
+            binding.tvSeekValue.text = LocalizedNumberFormatter.formatInteger(context, progress)
         }
     }
 

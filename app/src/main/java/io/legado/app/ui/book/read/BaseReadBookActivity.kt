@@ -287,6 +287,8 @@ abstract class BaseReadBookActivity :
         }
     }
 
+    // ASCII 数字输入会由 toInt 回读，本地化数字或分组符会破坏往返解析。
+    @SuppressLint("SetTextI18n")
     fun showSimulatedReading() {
         val book = ReadBook.book ?: return
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")

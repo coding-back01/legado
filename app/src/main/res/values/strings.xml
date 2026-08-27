@@ -1093,6 +1093,7 @@
     <string name="c_blacklist">黑名单(contentBlacklist)</string>
     <string name="confirm">Confirm</string>
     <string name="jump_to_another_app">Jump to another app</string>
+    <string name="open_url_confirm_message">%1$s is requesting to open a link or app. Continue?</string>
     <string name="clear_webview_data">Clear WebView Data</string>
     <string name="clear_webview_data_summary">Clear all data in WebView</string>
     <string name="source_tab_list">List</string>
