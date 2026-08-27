@@ -9,6 +9,14 @@
 
 本文件只记录 PR 创建前实际完成的本地验证；GitHub PR 与合并后 `master` 的检查结果在任务 3.13 完成时另行补记。
 
+## GitHub Actions 基础设施事件
+
+PR #50 首次创建后，GitHub Actions 处于公开的 `major_outage` 状态。Web run
+`32984050846` 在没有执行任何步骤的情况下被平台取消并记为 failure，Android check suite
+没有创建；因此该次 run 只记录为外部基础设施失败，不作为代码失败或通过证据。2026-08-27
+确认 Actions 恢复为 `operational` 后，通过本证据补充提交触发新的 PR `synchronize` 事件；
+重试与合并后结果仍按任务 3.13 单独核对。
+
 ## RED→GREEN 补充证据
 
 发布 workflow 新增“候选必须等于当前远端 `master`”契约后，先只运行
