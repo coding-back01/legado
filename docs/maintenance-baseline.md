@@ -59,13 +59,13 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `KeyboardInaccessibleWidget` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 键盘与无障碍可达性 |
 | `NewerVersionAvailable` | 低 | 21 | 21 | 0 | 0 | 0 | 21 | 依赖维护提示，不得突破兼容固定版本 |
 | `Overdraw` | 中 | 41 | 41 | 0 | 0 | 0 | 41 | 性能与视觉行为需逐布局验证 |
-| `PluralsCandidate` | 低 | 5 | 0 | 5 | 0 | 0 | 0 | PR 4d 删除 5 个经全仓动态引用审计确认无使用的资源；聚焦契约与 lint 已验证 |
+| `PluralsCandidate` | 低 | 5 | 0 | 5 | 0 | 0 | 0 | PR 4d（#57）删除 5 个经全仓动态引用审计确认无使用的资源；聚焦契约与 lint 已验证 |
 | `RtlHardcoded` | 中 | 7 | 0 | 7 | 0 | 0 | 0 | PR 4a（#54）将物理方向间距与 gravity 改为逻辑方向；布局契约与 lint 已验证 |
 | `RtlSymmetry` | 中 | 2 | 0 | 2 | 0 | 0 | 0 | PR 4a（#54）为单侧逻辑内边距补齐显式零起始值；布局契约与 lint 已验证 |
 | `SetTextI18n` | 中 | 8 | 0 | 4 | 4 | 0 | 0 | PR 4b（#55）本地化显示数字与跳转提示；4 个 ASCII 数字输入保留精确兼容抑制 |
 | `TextFields` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 输入控件行为与可用性 |
 | `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
-| `UnusedResources` | 中 | 594 | 588 | 6 | 0 | 0 | 588 | PR 3 显式加入 Startup 后减少 1 项；PR 4d 对 5 个同时触发 `PluralsCandidate` 的资源完成全仓动态引用审计后删除；其余仍须逐项审计 |
+| `UnusedResources` | 中 | 594 | 588 | 6 | 0 | 0 | 588 | PR 3 显式加入 Startup 后减少 1 项；PR 4d（#57）对 5 个同时触发 `PluralsCandidate` 的资源完成全仓动态引用审计后删除；其余仍须逐项审计 |
 | `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 可证明等价后再机械调整 |
 | `UseKtx` | 低 | 133 | 132 | 1 | 0 | 0 | 132 | PR 3 的显式 Intent 构造安全消除 1 项；其余只处理语义等价位置，不全量替换 |
 | `UselessParent` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 布局层级变化需视觉验证 |

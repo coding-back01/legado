@@ -1,4 +1,4 @@
-# PR 4d（GitHub 待创建）`PluralsCandidate` warning 清理证据
+# PR 4d（GitHub #57）`PluralsCandidate` warning 清理证据
 
 ## 串行前置条件
 
