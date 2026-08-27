@@ -55,7 +55,7 @@
 - [x] 4.8 移除网页端未使用的 `RuleSearch`，用具体类型替换 `souce.ts` 中的 `any`，并通过类型检查与 ESLint RED/GREEN 验证。
 - [x] 4.9 在 `modules/web/package.json` 固定 `packageManager: "pnpm@9.15.9"`，使用该版本生成并审计 `pnpm-lock.yaml`，不修改依赖版本范围；使用同版本冻结安装运行类型检查、ESLint 和构建，检查同步到 Android assets 的差异只包含预期 Web 产物。
 - [x] 4.10 运行 `:app:testAppDebugUnitTest`、`:app:lintAppDebug`、`:app:assembleAppDebug`、网页端冻结安装/类型检查/ESLint/构建、OpenSpec 严格校验和 `git diff --check`，确认 Android lint 0 error、Web ESLint 0 error。
-- [ ] 4.11 创建并合并 `codex/quality-blockers` PR 3；若任何阻断错误仍存在或测试失败，停止 warning 批次和持续门禁阶段。
+- [x] 4.11 创建并合并 `codex/quality-blockers` PR 3；若任何阻断错误仍存在或测试失败，停止 warning 批次和持续门禁阶段。
 
 ## 5. PR 4a...4n：Warning 三态清理
 
