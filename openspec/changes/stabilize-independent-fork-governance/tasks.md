@@ -45,16 +45,16 @@
 
 ## 4. PR 3：Android/Web 阻断错误和高风险 warning
 
-- [ ] 4.1 将 AndroidX Startup 显式加入 compile/runtime 依赖，在修改前后分别观察 `MissingClass` RED/GREEN，并核对最终 APK 仍只含预期 Provider；不升级无关依赖。
-- [ ] 4.2 为并发 key set 的 API 21 路径增加或复用聚焦测试，再将暴露类型改为公开 `MutableSet<String>`，确认两个 `NewApi` error 消失且并发语义不变。
-- [ ] 4.3 为书籍类型位掩码补充组合测试并观察旧注解契约 RED，再将 `@IntDef` 改为 `flag = true`。
-- [ ] 4.4 用 RecyclerView 公共 orientation typedef 替换重复 typedef，并以聚焦测试或 lint RED/GREEN 证明横向、纵向行为未改变。
-- [ ] 4.5 为输入法显示路径建立可验证断言，将错误结果常量改为 `SHOW_IMPLICIT`；用公开 `RecyclerView` 访问导航列表，移除 Material 内部 API 依赖，并验证键盘与导航页面行为。
-- [ ] 4.6 补齐 6 个缺失翻译键对应的全部 locale 条目，恢复默认资源中的英文 `play_mode`；运行 lint、资源检查和自动截图/UI 层级验证，不把无法人工判断的装饰质量描述为已验证。
-- [ ] 4.7 修复已确认的 `IntentWithNullActionLaunch`、8 个 locale 逻辑问题和 `AppBundleLocaleChanges`，为可观察行为先建立 RED 测试或检查，再提升这些 ID 的后续阻断策略。
-- [ ] 4.8 移除网页端未使用的 `RuleSearch`，用具体类型替换 `souce.ts` 中的 `any`，并通过类型检查与 ESLint RED/GREEN 验证。
+- [x] 4.1 将 AndroidX Startup 显式加入 compile/runtime 依赖，在修改前后分别观察 `MissingClass` RED/GREEN，并核对最终 APK 仍只含预期 Provider；不升级无关依赖。
+- [x] 4.2 为并发 key set 的 API 21 路径增加或复用聚焦测试，再将暴露类型改为公开 `MutableSet<String>`，确认两个 `NewApi` error 消失且并发语义不变。
+- [x] 4.3 为书籍类型位掩码补充组合测试并观察旧注解契约 RED，再将 `@IntDef` 改为 `flag = true`。
+- [x] 4.4 用 RecyclerView 公共 orientation typedef 替换重复 typedef，并以聚焦测试或 lint RED/GREEN 证明横向、纵向行为未改变。
+- [x] 4.5 为输入法显示路径建立可验证断言，将错误结果常量改为 `SHOW_IMPLICIT`；用公开 `RecyclerView` 访问导航列表，移除 Material 内部 API 依赖，并验证键盘与导航页面行为。
+- [x] 4.6 补齐 6 个缺失翻译键对应的全部 locale 条目，恢复默认资源中的英文 `play_mode`；运行 lint、资源检查和自动截图/UI 层级验证，不把无法人工判断的装饰质量描述为已验证。
+- [x] 4.7 修复已确认的 `IntentWithNullActionLaunch`、8 个 locale 逻辑问题和 `AppBundleLocaleChanges`，为可观察行为先建立 RED 测试或检查，再提升这些 ID 的后续阻断策略。
+- [x] 4.8 移除网页端未使用的 `RuleSearch`，用具体类型替换 `souce.ts` 中的 `any`，并通过类型检查与 ESLint RED/GREEN 验证。
 - [x] 4.9 在 `modules/web/package.json` 固定 `packageManager: "pnpm@9.15.9"`，使用该版本生成并审计 `pnpm-lock.yaml`，不修改依赖版本范围；使用同版本冻结安装运行类型检查、ESLint 和构建，检查同步到 Android assets 的差异只包含预期 Web 产物。
-- [ ] 4.10 运行 `:app:testAppDebugUnitTest`、`:app:lintAppDebug`、`:app:assembleAppDebug`、网页端冻结安装/类型检查/ESLint/构建、OpenSpec 严格校验和 `git diff --check`，确认 Android lint 0 error、Web ESLint 0 error。
+- [x] 4.10 运行 `:app:testAppDebugUnitTest`、`:app:lintAppDebug`、`:app:assembleAppDebug`、网页端冻结安装/类型检查/ESLint/构建、OpenSpec 严格校验和 `git diff --check`，确认 Android lint 0 error、Web ESLint 0 error。
 - [ ] 4.11 创建并合并 `codex/quality-blockers` PR 3；若任何阻断错误仍存在或测试失败，停止 warning 批次和持续门禁阶段。
 
 ## 5. PR 4a...4n：Warning 三态清理

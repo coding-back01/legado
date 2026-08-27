@@ -68,6 +68,7 @@ lifecycle = "2.9.4"
 room = "2.7.1"
 #noinspection GradleDependency
 recyclerview = "1.2.0"
+startup = "1.2.0"
 #noinspection GradleDependency
 viewpager2 = "1.0.0"
 [libraries]
@@ -146,6 +147,7 @@ splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemse
 splitties-views = { module = "com.louiscad.splitties:splitties-views", version.ref = "splitties" }
 
 androidx-runner = { module = "androidx.test:runner", version = "1.6.2" }
+androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "startup" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
