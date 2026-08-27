@@ -7,7 +7,7 @@
 - 验证日期：2026-08-26
 - 范围：更新器、fork 身份、链接分类、未来 `releaseA` 生成链退役和 Release workflow
 
-本文件只记录 PR 创建前实际完成的本地验证；GitHub PR 与合并后 `master` 的检查结果在任务 3.13 完成时另行补记。
+本文件记录 PR 创建前本地验证、GitHub PR 检查、合并后 `master` 检查和安全告警回验。
 
 ## GitHub Actions 基础设施事件
 
@@ -16,6 +16,43 @@ PR #50 首次创建后，GitHub Actions 处于公开的 `major_outage` 状态。
 没有创建；因此该次 run 只记录为外部基础设施失败，不作为代码失败或通过证据。2026-08-27
 确认 Actions 恢复为 `operational` 后，通过本证据补充提交触发新的 PR `synchronize` 事件；
 重试与合并后结果仍按任务 3.13 单独核对。
+
+## PR 与合并后证据
+
+- Pull Request：[PR #50](https://github.com/coding-back01/legado/pull/50)
+- 精确 head ref：`codex/fork-distribution-identity`
+- 精确 head SHA：`92a138ae69182286210e9003eba042a97cbb89c9`
+- merge commit：`09fc2b56f1bcf7c1c5783d0698532a75487676eb`
+- 合并时间：`2026-08-27T02:17:56Z`
+
+PR head 检查：
+
+| 检查 | run | 结果 |
+|---|---:|---|
+| Build Web | `33032495292` | 成功 |
+| Test Build / Android Debug 验证 | `33032495295` | 成功 |
+
+合并后 `master` 检查：
+
+| 检查 | run | 结果 |
+|---|---:|---|
+| Build Web | `33032843266` | 成功 |
+| Test Build / Android Debug 验证 | `33032873744` | 成功 |
+
+`master` push 直接创建的 Test Build `33032843280` 被既有 concurrency 策略取消；Web 成功后，
+同一 merge SHA 的 `workflow_run` 自动创建 `33032873744` 并完整执行成功，因此不把被替代的
+run 描述为测试失败。两个 Android run 都完成了单元测试、Debug APK 构建和 artifact 上传。
+Actions 给出的 Node.js 20 与 `setup-java@v4` 弃用 annotation 已登记到后续持续门禁/依赖治理范围，
+不在 PR 2 顺手升级 Actions。
+
+从 merge commit 重新读取当前 Latest `3.26.082216`，精确普通 uploaded APK 仍为 1 个；
+将真实 JSON 交给已合并 `StableReleaseParserTest` 后 9/9 通过。
+
+合并后安全回验：Dependabot 打开告警为 2 条 medium、0 条 high/critical。两条记录都是既有
+Element Plus `GHSA-5m5x-9j46-h678`，分别对应 `modules/web/package.json` 与
+`modules/web/pnpm-lock.yaml`，是同一个无修复版本的已接受中危，不是两个独立漏洞；
+Secret Scanning 打开告警为 0。Dependabot Security Updates、Secret Scanning 和 push
+protection 仍为 enabled。
 
 ## RED→GREEN 补充证据
 
