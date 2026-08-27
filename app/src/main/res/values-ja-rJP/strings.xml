@@ -2,7 +2,6 @@
 <resources>
     <!--App-->
     <string name="app_name">Legado</string>
-    <string name="app_name_a">Legado·A</string>
     <string name="receiving_shared_label">Legado·search</string>
     <string name="tip_perm_request_storage">Legado needs storage access to find and read books. please go "App Settings" to allow "Storage permission".</string>
 
@@ -101,7 +100,7 @@
         \u3000\u3000 This is an open source reading software newly developed by Kotlin, welcome to join us.
     </string>
     <string name="app_share_description">
-        Legado (YueDu 3.0) download link：\n https://github.com/gedoor/legado/releases
+        Legado personal stable fork releases:\n https://github.com/coding-back01/legado/releases
     </string>
     <string name="version_name">Version %s</string>
     <string name="pt_background_verification">Background-verification</string>
@@ -187,6 +186,9 @@
     <string name="paste_source">Paste source</string>
     <string name="source_rule_s">Source rules description</string>
     <string name="check_update">Check for Updates</string>
+    <string name="update_up_to_date">最新バージョンです</string>
+    <string name="update_debug_unsupported">デバッグビルドは正式版の更新に対応していません</string>
+    <string name="update_timeout">更新の確認がタイムアウトしました</string>
     <string name="camera_scan">Scan QR code</string>
     <string name="scan_image">Scan local images</string>
     <string name="rule_summary">Rules description</string>
@@ -753,7 +755,7 @@
     <string name="alipay_red_envelope_qr_code">AliPay red envelope QR code</string>
     <string name="alipay_payment_qr_code">AliPay QR code</string>
     <string name="qq_collection_qr_code">QQ Collection QR code</string>
-    <string name="contributors_summary">gedoor,Invinciblelee,Xwite etc. Checking in github for details</string>
+    <string name="contributors_summary">元プロジェクトとこの fork の貢献者です。完全な履歴は GitHub で確認できます</string>
     <string name="clear_cache_summary">Clear the cache of the downloaded books and fonts</string>
     <string name="default_cover">Default cover</string>
     <string name="restore_ignore">Bypass list</string>
@@ -1176,12 +1178,6 @@
     <string name="start_from">開始日</string>
     <string name="daily_chapters">日更の章数</string>
     <string name="start_chapter">開始の章</string>
-    <string name="update_to_variant_title">检查更新查找版本</string>
-    <string name="update_to_variant_summary">检查更新时查找其他签名版本</string>
-    <string name="default_version">当前</string>
-    <string name="official_version">正式版</string>
-    <string name="beta_release_version">测试版</string>
-    <string name="beta_releaseA_version">共存版</string>
     <string name="stream_read_aloud_audio">流式播放音频</string>
     <string name="stream_read_aloud_audio_summary">即边下边播，网络不好时播放会断断续续，仅TTS源有效</string>
     <string name="pause_read_aloud_while_phone_calls_title">来电期间暂停朗读</string>

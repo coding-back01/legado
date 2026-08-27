@@ -2,7 +2,6 @@
 <resources>
     <!--App-->
     <string name="app_name">Legado</string>
-    <string name="app_name_a">Legado·A</string>
     <string name="receiving_shared_label">Legado·pesquisa</string>
     <string name="tip_perm_request_storage">Legado precisa de acesso ao armazenamento para encontrar e ler livros. Por favor, vá às "Configurações do App" para conceder "Permissão de armazenamento".</string>
 
@@ -101,7 +100,7 @@
         \u3000\u3000 Este é um App de leitura de software livre, desenvolvido em Kotlin, você é bem-vindo a participar em projeto.
     </string>
     <string name="app_share_description">
-        Legado (YueDu 3.0) link de download：\n https://github.com/gedoor/legado/releases
+        Versões do fork estável pessoal do Legado:\n https://github.com/coding-back01/legado/releases
     </string>
     <string name="version_name">Versão %s</string>
     <string name="pt_background_verification">Verificação em segundo plano</string>
@@ -187,6 +186,9 @@
     <string name="paste_source">Colar a fonte</string>
     <string name="source_rule_s">A descrição de fonte das regras</string>
     <string name="check_update">Verificar por atualizações</string>
+    <string name="update_up_to_date">Você já tem a versão mais recente</string>
+    <string name="update_debug_unsupported">Compilações Debug não aceitam atualizações de versão</string>
+    <string name="update_timeout">A verificação de atualizações expirou</string>
     <string name="camera_scan">Digitalizar código QR</string>
     <string name="scan_image">Digitalizar imagens locais</string>
     <string name="rule_summary">Descrição das regras</string>
@@ -751,7 +753,7 @@
     <string name="alipay_red_envelope_qr_code">Envelope vermelho de AliPay código QR</string>
     <string name="alipay_payment_qr_code">AliPay código QR</string>
     <string name="qq_collection_qr_code">Coleção QQ Código QR</string>
-    <string name="contributors_summary">gedoor,Invinciblelee,Xwite etc. Para mais detalhes vá ao Github</string>
+    <string name="contributors_summary">Colaboradores do projeto original e deste fork; veja o histórico completo no GitHub</string>
     <string name="clear_cache_summary">Limpar o cache dos livros e fontes baixados</string>
     <string name="default_cover">Capa padrão</string>
     <string name="restore_ignore">Lista de ignorados</string>
@@ -1176,12 +1178,6 @@
     <string name="start_from">Começar</string>
     <string name="daily_chapters">Cap. por dia</string>
     <string name="start_chapter">Início</string>
-    <string name="update_to_variant_title">检查更新查找版本</string>
-    <string name="update_to_variant_summary">检查更新时查找其他签名版本</string>
-    <string name="default_version">当前</string>
-    <string name="official_version">正式版</string>
-    <string name="beta_release_version">测试版</string>
-    <string name="beta_releaseA_version">共存版</string>
     <string name="stream_read_aloud_audio">流式播放音频</string>
     <string name="stream_read_aloud_audio_summary">即边下边播，网络不好时播放会断断续续，仅TTS源有效</string>
     <string name="pause_read_aloud_while_phone_calls_title">来电期间暂停朗读</string>

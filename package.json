@@ -9,20 +9,20 @@
       "path": "./node_modules/cz-conventional-changelog"
     }
   },
-  "description": "[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)",
+  "description": "coding-back01/legado 独立维护的 Android 阅读器个人稳定 fork",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gedoor/legado.git"
+    "url": "git+https://github.com/coding-back01/legado.git"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/gedoor/legado/issues"
+    "url": "https://github.com/coding-back01/legado/issues"
   },
-  "homepage": "https://github.com/gedoor/legado#readme"
+  "homepage": "https://github.com/coding-back01/legado#readme"
 }

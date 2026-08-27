@@ -29,7 +29,7 @@
 1. *新版 QQ 文件下载路径：`Android/data/com.tencent.mobileqq/Tencent/QQfile_recv/`。*
 2. *书源格式后缀有 .txt 和 .json，其中 .json 文件在某些情况下可能无法导入，需要修改后缀为 .txt 才可导入。*
 
-![QQ 导入书源](https://cdn.jsdelivr.net/gh/gedoor/gedoor.github.io@master/images/importSource.jpg)
+![QQ 导入书源（上游历史截图）](https://raw.githubusercontent.com/gedoor/gedoor.github.io/3cdf95ece45c85eac9cb7289e3339661373bc4ea/static/img/legado/importSource.jpg)
 
 ### 2. 如何新建大佬发的单独书源？
 * 复制书源代码；

@@ -1,5 +1,5 @@
-/** https://github.com/gedoor/legado/tree/master/app/src/main/java/io/legado/app/api */
-/** https://github.com/gedoor/legado/tree/master/app/src/main/java/io/legado/app/web */
+/** https://github.com/coding-back01/legado/tree/master/app/src/main/java/io/legado/app/api */
+/** https://github.com/coding-back01/legado/tree/master/app/src/main/java/io/legado/app/web */
 
 import type { webReadConfig } from '@/web'
 import ajax from './axios'

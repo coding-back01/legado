@@ -2,6 +2,17 @@
   "name": "legado-web",
   "version": "1.0.0",
   "private": true,
+  "description": "coding-back01/legado 内置网页端",
+  "license": "GPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coding-back01/legado.git",
+    "directory": "modules/web"
+  },
+  "bugs": {
+    "url": "https://github.com/coding-back01/legado/issues"
+  },
+  "homepage": "https://github.com/coding-back01/legado#readme",
   "packageManager": "pnpm@9.15.9",
   "type": "module",
   "engines": {

@@ -36,6 +36,6 @@
 
 ----
 
-* [2023年日志](https://github.com/gedoor/legado/blob/record2023/app/src/main/assets/updateLog.md)
-* [2022年日志](https://github.com/gedoor/legado/blob/record2022/app/src/main/assets/updateLog.md)
-* [2021年日志](https://github.com/gedoor/legado/blob/record2021/app/src/main/assets/updateLog.md)
+* [2023 年日志（不可变提交快照）](https://github.com/coding-back01/legado/blob/6697190e182252dcdbd91d73cdcb7a810f9ff58d/app/src/main/assets/updateLog.md)
+* [2022 年日志（不可变提交快照）](https://github.com/coding-back01/legado/blob/1508f69830f854804b2fb2c692eabd2d7239b03b/app/src/main/assets/updateLog.md)
+* [2021 年日志（不可变提交快照）](https://github.com/coding-back01/legado/blob/51c16a1efcb036cc18e9cdb6d592e691b3da5816/app/src/main/assets/updateLog.md)
