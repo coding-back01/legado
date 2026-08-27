@@ -41,7 +41,7 @@
 - [x] 3.10 将默认 RSS 的失效远程图标改为既有内置 fallback；把失效帮助图片、免责声明和可恢复历史更新日志改为本地资产或不可变引用，对无法恢复的资料写明确缺失说明。
 - [x] 3.11 逐项审计应用内帮助、更新日志、README/English、Issue 表单和 workflow 中的旧链接；保留 LICENSE、历史 issue/PR、依赖来源和仍有效上游资源，禁止全局域名替换。
 - [x] 3.12 运行更新器 JVM 测试、Release workflow 契约测试、相关 Android 测试、Debug 构建、资源检查、actionlint、链接检查、`openspec validate --all --strict` 和 `git diff --check`，确认没有 Room、规则、备份、签名材料或历史 Release 资产变化。
-- [ ] 3.13 创建并合并 `codex/fork-distribution-identity` PR 2；检查失败或更新器 live smoke 无法唯一选择普通版时停止后续序列。
+- [x] 3.13 创建并合并 `codex/fork-distribution-identity` PR 2；检查失败或更新器 live smoke 无法唯一选择普通版时停止后续序列。
 
 ## 4. PR 3：Android/Web 阻断错误和高风险 warning
 
