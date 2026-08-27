@@ -117,7 +117,19 @@ git diff --check
 - Android lint 成功，0 error、869 warning、18 hint；五类原始阻断 error 和三个提升为 fatal 的高风险 ID 均为 0。
 - Debug APK 构建成功。
 - `corepack pnpm` 为 9.15.9，冻结安装确认 lockfile 无漂移；类型检查、ESLint 和构建均成功，ESLint 为 0 error、0 warning。
-- Web 构建识别为非 GitHub Workflows 环境，没有同步或改写 Android Web assets，工作区未出现相关生成差异。
+- 本地普通构建按脚本设计不复制 Android Web assets；PR CI 使用 GitHub Actions 环境复制后，必须进一步核对同步产物并提交预期差异，见下节。
 - OpenSpec 严格校验为 3 passed、0 failed。
 - `git diff --check` 成功。
 - 改动未涉及最低 API 21、Room schema、书源/订阅源规则、导入 URI、备份格式、普通正式版包名、正式签名材料或历史 Release 资产。
+
+### PR 首轮 Web 检查修复
+
+PR #52 首轮 `Build Web / build` 在源码、类型检查和 16 个章节 HTML 安全测试全部通过后失败。失败点是 workflow 设置 GitHub Actions 环境并执行同步时，检测到 3 个旧哈希 JavaScript bundle 被 3 个新哈希 bundle 替换，且 `index.html` 入口随之变化；本地普通构建此前按 `sync.js` 的设计跳过了这一步。
+
+使用固定 pnpm 9.15.9 和与 CI 相同的 `GITHUB_ENV` 条件重新构建，得到与失败日志完全一致的文件名：
+
+- 删除 `BookChapter-Cx-OjwJt.js`、`BookShelf-CuH7u1Ed.js`、`index-BnnocMgN.js`；
+- 新增 `BookChapter-CdJY7wEM.js`、`BookShelf-CtS426Fi.js`、`index-DjYVT5-l.js`；
+- 更新 `app/src/main/assets/web/vue/index.html` 的入口哈希。
+
+这些是固定 lockfile 和现有 Web 源码的生成结果，不包含依赖范围修改。提交同步产物前后再次运行 Web 冻结安装、章节 HTML 测试、类型检查、ESLint、GitHub Actions 等价构建和 Android Debug 构建；只有生成目录不再产生未提交差异后才允许 PR 重新进入合并检查。
