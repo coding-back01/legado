@@ -134,6 +134,7 @@
     <string name="interface_setting">介面</string>
     <string name="brightness">亮度</string>
     <string name="chapter_list">目錄</string>
+    <string name="chapter_locked">章節未解鎖</string>
     <string name="next_chapter">下一章</string>
     <string name="previous_chapter">上一章</string>
     <string name="pt_hide_status_bar">隱藏狀態欄</string>
