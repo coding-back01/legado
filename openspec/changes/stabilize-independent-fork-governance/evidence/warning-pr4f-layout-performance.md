@@ -121,4 +121,33 @@ warning 合计的累计 `FIXED` 为 54，累计 suppression 为 5，累计 `DEFE
 - `openspec validate --all --strict` 为 3 项通过、0 项失败；
 - `git diff --check` 成功，没有空白错误。
 
-上述结果只证明本批本地提交候选通过；Pull Request 与合并后 `master` 的远端检查仍须分别通过，才可完成任务 5.3 或开始下一 warning 批次。
+## Pull Request 与合并后闭环
+
+GitHub PR #59 的最终 head 为 `d8b33d4770b0066ee8d051a8f21a6a1a763388d2`，
+merge commit 为 `d21786470f06855b86f5767f3c625d05f39972d5`。PR head 的
+`Android Debug 验证` 成功；合并后同一 merge commit 的 `Test Build` run
+`33097857391` 也成功：
+
+```text
+https://github.com/coding-back01/legado/actions/runs/33097857391
+```
+
+2026-08-28 从干净的 `master@d21786470f06855b86f5767f3c625d05f39972d5`
+使用 JDK 17.0.17 与本机 Android SDK 再次强制执行同一组三个 Gradle 任务，
+131 个任务全部实际执行并成功；XML 汇总为 116 个单元测试、0 失败、0 error、
+1 跳过，lint 为 0 error、822 warning、18 hint，Debug APK 成功生成。随后
+`openspec validate --all --strict` 为 3 项通过、0 项失败，`git diff --check`
+成功，工作区保持干净。
+
+本次合并后报告哈希为：
+
+| 报告 | SHA-256 |
+|---|---|
+| `lint-results-appDebug.xml` | `35de7bb88b3bda112e799e75aac63657b5c6e12b9583bffee54acb12078c4af3` |
+| `lint-results-appDebug.html` | `de029abd528b38e6d054937a59b5fa70da226fe0b24126c958483c9c0b044779` |
+| `lint-results-appDebug.txt` | `f264d218c5088cb01c51226f10f3e6430b746129b3af19dc1574f811fbbab68e` |
+
+首次调用因当前 shell 未设置 Android SDK 而在解析任务依赖前失败；定位本机 SDK 后
+显式设置 SDK 路径重跑。另一次诊断运行发现默认 JVM 为 JDK 21，因此不作为固定环境
+证据，最终结果以上述显式 JDK 17 完整重跑为准。至此无障碍和有可靠证据的性能
+warning 已完成审查，任务 5.3 可以完成；43 个精确延期项仍由任务 5.7 统一收口。
