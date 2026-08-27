@@ -69,6 +69,11 @@ android {
         buildConfig = true
         viewBinding = true
     }
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
     buildTypes {
         release {
             if (project.hasProperty("RELEASE_STORE_FILE")) {
@@ -139,6 +144,9 @@ android {
     }
     lint {
         checkDependencies = true
+        fatal 'IntentWithNullActionLaunch'
+        fatal 'DefaultLocale'
+        fatal 'AppBundleLocaleChanges'
     }
     tasks.withType(JavaCompile).tap {
         configureEach {
@@ -179,6 +187,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.startup.runtime)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.documentfile)

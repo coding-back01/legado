@@ -49,15 +49,16 @@ export const convertSourcesToMap = (sources: Source[]): Map<string, Source> => {
   return map
 }
 
-export const normalizeSource = (source: any) => {
-  for (const key in source) {
-    const value = source[key]
+export const normalizeSource = (source: object) => {
+  const sourceRecord = source as Record<string, unknown>
+  for (const key in sourceRecord) {
+    const value = sourceRecord[key]
     if (
       value === '' ||
       value === null ||
       (typeof value === 'string' && !value.trim())
     ) {
-      delete source[key]
+      delete sourceRecord[key]
     } else if (value instanceof Object) {
       normalizeSource(value)
     }

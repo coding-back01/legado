@@ -26,12 +26,12 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 
 | lint ID | 原始数量 | 当前数量 | 计划处置 |
 |---|---:|---:|---|
-| `MissingClass` | 1 | 1 | 显式声明 AndroidX Startup 直接依赖 |
-| `MissingTranslation` | 6 | 6 | 补齐缺失 locale 并恢复默认英文资源 |
-| `NewApi` | 2 | 2 | 将并发 key set 暴露为公共 `MutableSet<String>` 接口 |
-| `RestrictedApi` | 1 | 1 | 改用公开 `RecyclerView` 类型 |
-| `WrongConstant` | 4 | 4 | 修正位掩码、orientation typedef 与输入法 flag |
-| **合计** | **14** | **14** | 治理完成时必须为 0 |
+| `MissingClass` | 1 | 0 | PR 3 显式声明 AndroidX Startup 直接依赖；lint 与 APK Manifest 已验证 |
+| `MissingTranslation` | 6 | 0 | PR 3 补齐全部现有 locale 并恢复默认英文资源；资源测试、lint 和模拟器界面证据已记录 |
+| `NewApi` | 2 | 0 | PR 3 将并发 key set 暴露为公共 `MutableSet<String>` 接口；并发测试与 lint 已验证 |
+| `RestrictedApi` | 1 | 0 | PR 3 改用公开 `RecyclerView` 类型；聚焦测试与 lint 已验证 |
+| `WrongConstant` | 4 | 0 | PR 3 修正位掩码、orientation typedef 与输入法 flag；聚焦测试与 lint 已验证 |
+| **合计** | **14** | **0** | PR 3 已清零；全量验证完成前仍不视为可合并 |
 
 ## Warning 三态账本
 
@@ -45,17 +45,17 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | lint ID | 风险 | 原始数量 | 当前数量 | FIXED | SUPPRESSED | DEFERRED | PENDING | 初始判断 |
 |---|---|---:|---:|---:|---:|---:|---:|---|
 | `AndroidGradlePluginVersion` | 低 | 4 | 4 | 0 | 0 | 0 | 4 | 工具链提示；不得混入普通依赖升级 |
-| `AppBundleLocaleChanges` | 高 | 1 | 1 | 0 | 0 | 0 | 1 | 可能改变按应用语言行为，列入后续阻断 |
+| `AppBundleLocaleChanges` | 高 | 1 | 0 | 1 | 0 | 0 | 0 | PR 3 关闭语言资源拆分并提升为 fatal；聚焦契约与 lint 已验证 |
 | `Autofill` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 影响输入体验与隐私语义 |
 | `ContentDescription` | 中 | 2 | 2 | 0 | 0 | 0 | 2 | 无障碍可访问性 |
-| `DefaultLocale` | 高 | 8 | 8 | 0 | 0 | 0 | 8 | 可能在特定语言环境产生错误结果，列入后续阻断 |
+| `DefaultLocale` | 高 | 8 | 0 | 8 | 0 | 0 | 0 | PR 3 对内部标识统一使用 `Locale.ROOT` 并提升为 fatal；土耳其语行为测试与 lint 已验证 |
 | `DiscouragedApi` | 中 | 11 | 11 | 0 | 0 | 0 | 11 | 需逐项确认公开替代及行为等价性 |
 | `GradleDependency` | 低 | 14 | 14 | 0 | 0 | 0 | 14 | 多数涉及兼容固定版本，不得机械升级 |
 | `HardcodedText` | 中 | 14 | 14 | 0 | 0 | 0 | 14 | 影响本地化与可维护性 |
 | `IconDuplicates` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
 | `IconLocation` | 中 | 6 | 6 | 0 | 0 | 0 | 6 | 资源密度与打包行为 |
 | `InefficientWeight` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 布局性能，需验证界面不变 |
-| `IntentWithNullActionLaunch` | 高 | 1 | 1 | 0 | 0 | 0 | 1 | 可能导致错误 Intent 行为，列入后续阻断 |
+| `IntentWithNullActionLaunch` | 高 | 1 | 0 | 1 | 0 | 0 | 0 | PR 3 为 QQ 跳转设置显式 `ACTION_VIEW` 并提升为 fatal；契约测试与 lint 已验证 |
 | `KeyboardInaccessibleWidget` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 键盘与无障碍可达性 |
 | `NewerVersionAvailable` | 低 | 21 | 21 | 0 | 0 | 0 | 21 | 依赖维护提示，不得突破兼容固定版本 |
 | `Overdraw` | 中 | 41 | 41 | 0 | 0 | 0 | 41 | 性能与视觉行为需逐布局验证 |
@@ -65,12 +65,12 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `SetTextI18n` | 中 | 8 | 8 | 0 | 0 | 0 | 8 | 本地化与格式化语义 |
 | `TextFields` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 输入控件行为与可用性 |
 | `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
-| `UnusedResources` | 中 | 594 | 594 | 0 | 0 | 0 | 594 | 可能存在反射、名称拼接或规则动态引用，删除前必须审计 |
+| `UnusedResources` | 中 | 594 | 593 | 1 | 0 | 0 | 593 | PR 3 显式加入 Startup 后 lint 可达性分析减少 1 项；其余可能存在反射、名称拼接或规则动态引用，删除前必须审计 |
 | `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 可证明等价后再机械调整 |
-| `UseKtx` | 低 | 133 | 133 | 0 | 0 | 0 | 133 | 只处理语义等价位置，不全量替换 |
+| `UseKtx` | 低 | 133 | 132 | 1 | 0 | 0 | 132 | PR 3 的显式 Intent 构造安全消除 1 项；其余只处理语义等价位置，不全量替换 |
 | `UselessParent` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 布局层级变化需视觉验证 |
 | `VectorPath` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 图形精度与渲染风险 |
-| **合计** |  | **881** | **881** | **0** | **0** | **0** | **881** | 逐 ID 审查中 |
+| **合计** |  | **881** | **869** | **12** | **0** | **0** | **869** | 逐 ID 审查中；PR 3 已清理三类高风险 warning |
 
 ## 精确局部抑制
 

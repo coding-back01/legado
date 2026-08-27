@@ -1206,6 +1206,11 @@
     <string name="hide_manga_title">Ẩn tiêu đề danh sách manga</string>
     <string name="refresh_explore">Làm mới khám phá</string>
     <string name="padding_display_cutouts">Đệm các phần cắt hiển thị</string>
+    <string name="custom_export_section">Tùy chỉnh chương xuất EPUB</string>
+    <string name="del_all">Xóa tất cả</string>
+    <string name="system_media_control_compatibility_change">Khả năng tương thích của điều khiển phương tiện hệ thống</string>
+    <string name="system_media_control_compatibility_change_summary">Nếu điều khiển phương tiện hệ thống không xuất hiện trên màn hình khóa, hãy thử bật tùy chọn này, ví dụ trên thiết bị chạy One UI 7.0 hoặc vivo.</string>
+    <string name="read_aloud_pause_resume">Tạm dừng/tiếp tục đọc thành tiếng</string>
     <string name="manga_epaper">Màn hình mực</string>
     <string name="manga_epaper_stting">Cài đặt màn hình mực</string>
     <string name="manga_epaper_value">Ngưỡng</string>
