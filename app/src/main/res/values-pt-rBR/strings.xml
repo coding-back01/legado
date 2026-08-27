@@ -89,6 +89,10 @@
     <string name="import_books_count">%s arquivo(s) de texto em total</string>
     <string name="is_loading">Carregando…</string>
     <string name="retry">Tentar novamente</string>
+    <string name="select_date">Selecionar data</string>
+    <string name="import_from_clipboard">Importar da área de transferência</string>
+    <string name="previous_search_result">Resultado anterior</string>
+    <string name="next_search_result">Próximo resultado</string>
     <string name="web_service">Serviço Web</string>
     <string name="web_service_desc">Fonte de edição web e livro lidos</string>
     <string name="web_edit_source">Editar fontes de livros na web</string>
