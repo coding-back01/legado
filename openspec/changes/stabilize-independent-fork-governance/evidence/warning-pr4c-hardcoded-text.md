@@ -1,4 +1,4 @@
-# PR 4c `HardcodedText` warning 清理证据
+# PR 4c（GitHub #56）`HardcodedText` warning 清理证据
 
 ## 串行前置条件
 

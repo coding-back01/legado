@@ -51,7 +51,7 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `DefaultLocale` | 高 | 8 | 0 | 8 | 0 | 0 | 0 | PR 3 对内部标识统一使用 `Locale.ROOT` 并提升为 fatal；土耳其语行为测试与 lint 已验证 |
 | `DiscouragedApi` | 中 | 11 | 11 | 0 | 0 | 0 | 11 | 需逐项确认公开替代及行为等价性 |
 | `GradleDependency` | 低 | 14 | 14 | 0 | 0 | 0 | 14 | 多数涉及兼容固定版本，不得机械升级 |
-| `HardcodedText` | 中 | 14 | 0 | 14 | 0 | 0 | 0 | PR 4c 将运行时文本、提示和无障碍说明替换为现有或全 locale 资源 |
+| `HardcodedText` | 中 | 14 | 0 | 14 | 0 | 0 | 0 | PR 4c（#56）将运行时文本、提示和无障碍说明替换为现有或全 locale 资源 |
 | `IconDuplicates` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
 | `IconLocation` | 中 | 6 | 6 | 0 | 0 | 0 | 6 | 资源密度与打包行为 |
 | `InefficientWeight` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 布局性能，需验证界面不变 |
