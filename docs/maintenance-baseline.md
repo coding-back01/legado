@@ -54,11 +54,11 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `HardcodedText` | 中 | 14 | 0 | 14 | 0 | 0 | 0 | PR 4c（#56）将运行时文本、提示和无障碍说明替换为现有或全 locale 资源 |
 | `IconDuplicates` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
 | `IconLocation` | 中 | 6 | 6 | 0 | 0 | 0 | 6 | 资源密度与打包行为 |
-| `InefficientWeight` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 布局性能，需验证界面不变 |
+| `InefficientWeight` | 中 | 1 | 0 | 1 | 0 | 0 | 0 | PR 4f 在固定宽度父容器中用 `0dp + weight` 保持开关占用同一剩余宽度，避免重复测量 |
 | `IntentWithNullActionLaunch` | 高 | 1 | 0 | 1 | 0 | 0 | 0 | PR 3 为 QQ 跳转设置显式 `ACTION_VIEW` 并提升为 fatal；契约测试与 lint 已验证 |
 | `KeyboardInaccessibleWidget` | 中 | 1 | 0 | 1 | 0 | 0 | 0 | PR 4e（#58）保留日期字段键盘焦点与点击入口，并明确禁止软键盘直接编辑 |
 | `NewerVersionAvailable` | 低 | 21 | 21 | 0 | 0 | 0 | 21 | 依赖维护提示，不得突破兼容固定版本 |
-| `Overdraw` | 中 | 41 | 41 | 0 | 0 | 0 | 41 | 性能与视觉行为需逐布局验证 |
+| `Overdraw` | 中 | 41 | 41 | 0 | 0 | 41 | 0 | PR 4f 完成逐位置审查；根背景移除需要日夜模式与透明页面截图基线，本轮精确延期 |
 | `PluralsCandidate` | 低 | 5 | 0 | 5 | 0 | 0 | 0 | PR 4d（#57）删除 5 个经全仓动态引用审计确认无使用的资源；聚焦契约与 lint 已验证 |
 | `RtlHardcoded` | 中 | 7 | 0 | 7 | 0 | 0 | 0 | PR 4a（#54）将物理方向间距与 gravity 改为逻辑方向；布局契约与 lint 已验证 |
 | `RtlSymmetry` | 中 | 2 | 0 | 2 | 0 | 0 | 0 | PR 4a（#54）为单侧逻辑内边距补齐显式零起始值；布局契约与 lint 已验证 |
@@ -66,11 +66,11 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `TextFields` | 中 | 1 | 0 | 0 | 1 | 0 | 0 | PR 4e（#58）保留日期选择器专用字段的 `inputType="none"`，并在精确视图记录兼容理由 |
 | `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
 | `UnusedResources` | 中 | 594 | 588 | 6 | 0 | 0 | 588 | PR 3 显式加入 Startup 后减少 1 项；PR 4d（#57）对 5 个同时触发 `PluralsCandidate` 的资源完成全仓动态引用审计后删除；其余仍须逐项审计 |
-| `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 可证明等价后再机械调整 |
+| `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f 审查确认会改变两个文件选择器的 View Binding、图标尺寸与点击区域，本轮精确延期 |
 | `UseKtx` | 低 | 133 | 132 | 1 | 0 | 0 | 132 | PR 3 的显式 Intent 构造安全消除 1 项；其余只处理语义等价位置，不全量替换 |
-| `UselessParent` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 布局层级变化需视觉验证 |
+| `UselessParent` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f 审查确认需移动漫画菜单边距、背景和测量职责，缺少稳定页面截图，本轮精确延期 |
 | `VectorPath` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 图形精度与渲染风险 |
-| **合计** |  | **881** | **823** | **53** | **5** | **0** | **823** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4e 已处置 58 项 |
+| **合计** |  | **881** | **822** | **54** | **5** | **43** | **779** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4f 已完成 59 项修复/抑制，并精确延期 43 项 |
 
 ## 精确局部抑制
 
@@ -83,7 +83,11 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 
 ## 精确延期项
 
-当前没有完成审查的延期项。新增记录必须包含 lint ID、精确范围、剩余数量、行为风险、延期原因、重新启动条件和对应 PR。
+| lint ID | 精确范围 | 数量 | 行为风险与延期原因 | 重新启动条件 | 证据 |
+|---|---|---:|---|---|---|
+| `Overdraw` | 41 个根布局背景位置，逐文件与行号见 PR 4f 证据 | 41 | 根背景可能承担日夜主题、不透明对话框或透明页面兜底；批量删除会改变实际渲染，当前没有逐页面截图基线 | 为清单中每个页面建立日夜模式截图或像素差异基线，并覆盖透明窗口与弹窗背景后逐批重启 | `warning-pr4f-layout-performance.md` |
+| `UselessParent` | `app/src/main/res/layout/view_manga_menu.xml:85` | 1 | 扁平化需要把子容器 margin 改为父容器 padding，并改变背景和测量职责；缺少稳定漫画菜单夹具与截图 | 建立漫画页面固定夹具、菜单 UI 层级和日夜模式截图，证明 SeekBar、前后章按钮位置与点击区域不变 | `warning-pr4f-layout-performance.md` |
+| `UseCompoundDrawables` | `app/src/main/res/layout/item_path_picker.xml:2` | 1 | 合并为单 TextView 会改变两个文件选择器的 View Binding 字段、动态 Drawable 尺寸、文本着色和整行点击区域 | 为文件管理与文件选择对话框建立路径面包屑导航测试、图标/文字截图和点击区域断言后独立重构 | `warning-pr4f-layout-performance.md` |
 
 ## Hint 清单
 

@@ -38,7 +38,7 @@
                 android:layout_weight="1"
                 android:gravity="start|center_vertical"
                 style="@style/Widget.AppCompat.CompoundButton.Switch"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:width="20dp" />
         </LinearLayout>
 
