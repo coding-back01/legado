@@ -1,4 +1,4 @@
-# PR 4b `SetTextI18n` warning 清理证据
+# PR 4b（GitHub #55）`SetTextI18n` warning 清理证据
 
 ## 串行前置条件
 

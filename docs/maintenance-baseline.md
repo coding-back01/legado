@@ -62,7 +62,7 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `PluralsCandidate` | 低 | 5 | 5 | 0 | 0 | 0 | 5 | 本地化表达建议 |
 | `RtlHardcoded` | 中 | 7 | 0 | 7 | 0 | 0 | 0 | PR 4a（#54）将物理方向间距与 gravity 改为逻辑方向；布局契约与 lint 已验证 |
 | `RtlSymmetry` | 中 | 2 | 0 | 2 | 0 | 0 | 0 | PR 4a（#54）为单侧逻辑内边距补齐显式零起始值；布局契约与 lint 已验证 |
-| `SetTextI18n` | 中 | 8 | 0 | 4 | 4 | 0 | 0 | PR 4b 本地化显示数字与跳转提示；4 个 ASCII 数字输入保留精确兼容抑制 |
+| `SetTextI18n` | 中 | 8 | 0 | 4 | 4 | 0 | 0 | PR 4b（#55）本地化显示数字与跳转提示；4 个 ASCII 数字输入保留精确兼容抑制 |
 | `TextFields` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 输入控件行为与可用性 |
 | `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
 | `UnusedResources` | 中 | 594 | 593 | 1 | 0 | 0 | 593 | PR 3 显式加入 Startup 后 lint 可达性分析减少 1 项；其余可能存在反射、名称拼接或规则动态引用，删除前必须审计 |
@@ -76,9 +76,9 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 
 | lint ID | 文件与范围 | 数量 | 理由 | 重新启动条件 | 证据 |
 |---|---|---:|---|---|---|
-| `SetTextI18n` | `BaseReadBookActivity.showSimulatedReading` 的起始章节和每日章节输入 | 2 | 两个字段保存 ASCII 整数并直接由 `toInt()` 回读；本地化数字或分组符会破坏往返解析 | 字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b 聚焦契约、完整单元测试与 lint |
-| `SetTextI18n` | `CheckSourceConfig.onFragmentCreated` 的超时秒数输入 | 1 | 字段保存 ASCII 整数并直接由 `toLong()` 回读；本地化数字或分组符会破坏往返解析 | 超时字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b 聚焦契约、完整单元测试与 lint |
-| `SetTextI18n` | `ReplaceEditActivity.upReplaceView` 的替换超时毫秒输入 | 1 | 规则字段保存 ASCII 整数并直接由 `toLong()` 回读；改变持久化输入语义可能破坏既有规则编辑 | 规则编辑字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b 聚焦契约、完整单元测试与 lint |
+| `SetTextI18n` | `BaseReadBookActivity.showSimulatedReading` 的起始章节和每日章节输入 | 2 | 两个字段保存 ASCII 整数并直接由 `toInt()` 回读；本地化数字或分组符会破坏往返解析 | 字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b（#55）聚焦契约、完整单元测试与 lint |
+| `SetTextI18n` | `CheckSourceConfig.onFragmentCreated` 的超时秒数输入 | 1 | 字段保存 ASCII 整数并直接由 `toLong()` 回读；本地化数字或分组符会破坏往返解析 | 超时字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b（#55）聚焦契约、完整单元测试与 lint |
+| `SetTextI18n` | `ReplaceEditActivity.upReplaceView` 的替换超时毫秒输入 | 1 | 规则字段保存 ASCII 整数并直接由 `toLong()` 回读；改变持久化输入语义可能破坏既有规则编辑 | 规则编辑字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b（#55）聚焦契约、完整单元测试与 lint |
 
 ## 精确延期项
 
