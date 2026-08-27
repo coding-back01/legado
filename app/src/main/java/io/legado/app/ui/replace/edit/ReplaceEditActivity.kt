@@ -1,5 +1,6 @@
 package io.legado.app.ui.replace.edit
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -97,6 +98,8 @@ class ReplaceEditActivity :
         }
     }
 
+    // ASCII 数字输入会由 toLong 回读，本地化数字或分组符会破坏往返解析。
+    @SuppressLint("SetTextI18n")
     private fun upReplaceView(replaceRule: ReplaceRule) = binding.run {
         etName.setText(replaceRule.name)
         etGroup.setText(replaceRule.group)

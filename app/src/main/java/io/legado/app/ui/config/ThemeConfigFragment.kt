@@ -32,6 +32,7 @@ import io.legado.app.ui.widget.number.NumberPickerDialog
 import io.legado.app.ui.widget.seekbar.SeekBarChangeListener
 import io.legado.app.utils.ColorUtils
 import io.legado.app.utils.FileUtils
+import io.legado.app.utils.LocalizedNumberFormatter
 import io.legado.app.utils.MD5Utils
 import io.legado.app.utils.applyTint
 import io.legado.app.utils.externalFiles
@@ -278,7 +279,8 @@ class ThemeConfigFragment : PreferenceFragment(),
             val alertBinding = DialogImageBlurringBinding.inflate(layoutInflater).apply {
                 getPrefInt(preferKey, 0).let {
                     seekBar.progress = it
-                    textViewValue.text = it.toString()
+                    textViewValue.text =
+                        LocalizedNumberFormatter.formatInteger(requireContext(), it)
                 }
                 seekBar.setOnSeekBarChangeListener(object : SeekBarChangeListener {
                     override fun onProgressChanged(
@@ -286,7 +288,8 @@ class ThemeConfigFragment : PreferenceFragment(),
                         progress: Int,
                         fromUser: Boolean
                     ) {
-                        textViewValue.text = progress.toString()
+                        textViewValue.text =
+                            LocalizedNumberFormatter.formatInteger(requireContext(), progress)
                     }
                 })
             }
