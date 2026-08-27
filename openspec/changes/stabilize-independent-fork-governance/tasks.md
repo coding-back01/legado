@@ -59,7 +59,7 @@
 
 ## 5. PR 4a...4n：Warning 三态清理
 
-- [ ] 5.1 从 PR 3 合并后的 lint XML 重新按 ID 和 occurrence 生成机器清单，与 `docs/maintenance-baseline.md` 的 ID 汇总对账；允许同一 ID 包含多种最终状态数量，但未审查的 ID 或范围必须保持 `PENDING_REVIEW` 并阻断完成。
+- [x] 5.1 从 PR 3 合并后的 lint XML 重新按 ID 和 occurrence 生成机器清单，与 `docs/maintenance-baseline.md` 的 ID 汇总对账；允许同一 ID 包含多种最终状态数量，但未审查的 ID 或范围必须保持 `PENDING_REVIEW` 并阻断完成。
 - [ ] 5.2 先处理正确性、启动安全、国际化和 RTL warning；每项行为修改先建立聚焦 RED，再实现 GREEN，并用独立小 PR 合并。
 - [ ] 5.3 处理无障碍和有可靠证据的性能 warning；截图、UI 层级、基准或单元测试不足时不得标记 `FIXED`。
 - [ ] 5.4 将 `UseKtx` 等机械建议拆成独立批次，只转换语义等价且检查可覆盖的位置，避免全项目格式化或顺手重构。

@@ -33,7 +33,8 @@
     </io.legado.app.ui.widget.text.TextInputLayout>
 
     <io.legado.app.ui.widget.text.AccentTextView
-        android:paddingLeft="12dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="0dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/check_source_item" />
