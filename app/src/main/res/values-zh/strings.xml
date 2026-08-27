@@ -136,7 +136,6 @@
     <string name="screen_portrait">竖向</string>
     <string name="screen_unspecified">跟随系统</string>
     <string name="disclaimer">免责声明</string>
-    <string name="all_chapter_num">共 %d 章</string>
     <string name="interface_setting">界面</string>
     <string name="brightness">亮度</string>
     <string name="chapter_list">目录</string>
@@ -274,7 +273,6 @@
     <string name="content_sl">这是一段测试文字\n\u3000\u3000只是让你看看效果的</string>
     <string name="text_bg_style">文字颜色和背景（长按自定义）</string>
     <string name="immersion_status_bar">沉浸式状态栏</string>
-    <string name="un_download">还剩 %d 章未下载</string>
     <string name="long_click_input_color">长按输入颜色值</string>
     <string name="loading">加载中…</string>
     <string name="group_zg">追更区</string>
@@ -289,7 +287,6 @@
     <string name="clear_bookshelf_s">这将会删除所有书籍，请谨慎操作。</string>
     <string name="search_book_source">搜索书源</string>
     <string name="search_rss_source">搜索订阅源</string>
-    <string name="search_book_source_num">搜索（共 %d 个书源）</string>
     <string name="chapter_list_size">目录（%d）</string>
     <string name="text_bold">加粗</string>
     <string name="text_font">字体</string>
@@ -314,11 +311,9 @@
     <string name="jf_convert_f">简转繁</string>
     <string name="jf_convert_j">繁转简</string>
     <string name="page_mode">翻页模式</string>
-    <string name="nb_file_sub_count">%1$d 项</string>
     <string name="nb_file_path">存储卡：</string>
     <string name="nb_file_add_shelf">加入书架</string>
     <string name="nb_file_add_shelves">加入书架（%1$d）</string>
-    <string name="nb_file_add_succeed">成功添加 %1$d 本书</string>
     <string name="fonts_folder">请将字体文件放到存储根目录 Fonts 文件夹下后重新选择</string>
     <string name="default_font">默认字体</string>
     <string name="select_font">选择字体</string>

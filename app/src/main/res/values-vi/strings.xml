@@ -132,7 +132,6 @@
     <string name="screen_portrait">Dọc</string>
     <string name="screen_unspecified">Theo hệ thống</string>
     <string name="disclaimer">Tuyên bố miễn trừ trách nhiệm</string>
-    <string name="all_chapter_num">%d chương</string>
     <string name="interface_setting">Giao diện</string>
     <string name="brightness">Độ sáng</string>
     <string name="chapter_list">Danh sách chương</string>
@@ -269,7 +268,6 @@
     <string name="content_sl">Đây là một đoạn văn bản thử nghiệm, \n\u3000\u3000 chỉ để cho bạn thấy hiệu ứng</string>
     <string name="text_bg_style">Màu và nền (nhấn giữ để tùy chỉnh)</string>
     <string name="immersion_status_bar">Thanh trạng thái chìm</string>
-    <string name="un_download">Còn lại %d chương</string>
     <string name="long_click_input_color">Nhấn giữ để nhập giá trị màu</string>
     <string name="loading">Đang tải…</string>
     <string name="group_zg">Đang theo dõi</string>
@@ -284,7 +282,6 @@
     <string name="clear_bookshelf_s">Thao tác này sẽ xóa tất cả sách. Vui lòng cẩn thận.</string>
     <string name="search_book_source">Tìm kiếm nguồn sách</string>
     <string name="search_rss_source">Tìm kiếm nguồn RSS</string>
-    <string name="search_book_source_num">Tìm kiếm (tổng cộng %d nguồn)</string>
     <string name="chapter_list_size">Chương (%d)</string>
     <string name="text_bold">In đậm</string>
     <string name="text_font">Phông chữ</string>
@@ -309,11 +306,9 @@
     <string name="jf_convert_f">Giản thể sang Phồn thể</string>
     <string name="jf_convert_j">Phồn thể sang Giản thể</string>
     <string name="page_mode">Chế độ lật trang</string>
-    <string name="nb_file_sub_count">%1$d mục</string>
     <string name="nb_file_path">Bộ nhớ:</string>
     <string name="nb_file_add_shelf">Thêm vào tủ sách</string>
     <string name="nb_file_add_shelves">Thêm vào tủ sách (%1$d)</string>
-    <string name="nb_file_add_succeed">Đã thêm thành công %1$d sách</string>
     <string name="fonts_folder">Vui lòng đặt tệp phông chữ vào thư mục Fonts của thư mục gốc bộ nhớ và chọn lại</string>
     <string name="default_font">Phông chữ mặc định</string>
     <string name="select_font">Chọn phông chữ</string>
