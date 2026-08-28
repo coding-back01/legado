@@ -1,4 +1,4 @@
-# PR 4h：`UseKtx` 只读访问器小批次证据
+# PR 4h（GitHub #61）：`UseKtx` 只读访问器小批次证据
 
 ## 串行前置条件
 
@@ -66,5 +66,5 @@ lint 与 Debug 构建，131 个 Gradle 任务全部实际执行并成功。XML �
 | `lint-results-appDebug.html` | `f392c3b41374c83289b200fcc193e16b7bf1d7b1f957856bbea068a95d42ce19` |
 | `lint-results-appDebug.txt` | `069b1b6407a838951423ec889f44a2f3f7ff480a5419ff88064f9048b3525f45` |
 
-上述结果只证明本地提交候选通过；仍须完成 Pull Request 最终 head 与合并后
+上述结果只证明本地提交候选通过；draft PR #61 仍须完成最终 head 与合并后
 `master` 的远端和本地验证，才可开始下一 warning 批次。
