@@ -65,12 +65,12 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `SetTextI18n` | 中 | 8 | 0 | 4 | 4 | 0 | 0 | PR 4b（#55）本地化显示数字与跳转提示；4 个 ASCII 数字输入保留精确兼容抑制 |
 | `TextFields` | 中 | 1 | 0 | 0 | 1 | 0 | 0 | PR 4e（#58）保留日期选择器专用字段的 `inputType="none"`，并在精确视图记录兼容理由 |
 | `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
-| `UnusedResources` | 中 | 594 | 588 | 6 | 0 | 0 | 588 | PR 3 显式加入 Startup 后减少 1 项；PR 4d（#57）对 5 个同时触发 `PluralsCandidate` 的资源完成全仓动态引用审计后删除；其余仍须逐项审计 |
+| `UnusedResources` | 中 | 594 | 2 | 592 | 0 | 2 | 0 | PR 3 显式加入 Startup 后减少 1 项；PR 4d（#57）删除 5 个已审计复数候选；PR 4q（#70）对剩余 588 项完成动态引用和死资源闭包审计，删除 586 项并因既有翻译与 RTL 契约精确延期 2 项，当前已完成全 ID 对账 |
 | `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认会改变两个文件选择器的 View Binding、图标尺寸与点击区域，本轮精确延期 |
 | `UseKtx` | 低 | 133 | 0 | 126 | 7 | 0 | 0 | PR 3 与 PR 4g 至 4o 已完成 116 项安全转换；PR 4l（#65）另精确抑制 7 个可空兼容 occurrence；PR 4p（#69）完成 10 个 Canvas 状态转换，当前已完成全 ID 对账 |
 | `UselessParent` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认需移动漫画菜单边距、背景和测量职责，缺少稳定页面截图，本轮精确延期 |
 | `VectorPath` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 图形精度与渲染风险 |
-| **合计** |  | **881** | **690** | **179** | **12** | **43** | **647** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4p 已完成 191 项修复/抑制，并精确延期 43 项 |
+| **合计** |  | **881** | **104** | **765** | **12** | **45** | **59** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4q 已完成 777 项修复/抑制，并精确延期 45 项 |
 
 ## 精确局部抑制
 
@@ -88,6 +88,7 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 
 | lint ID | 精确范围 | 数量 | 行为风险与延期原因 | 重新启动条件 | 证据 |
 |---|---|---:|---|---|---|
+| `UnusedResources` | `app/src/main/res/layout/dialog_progressbar_view.xml:2`；8 个支持 locale 的 `strings.xml` 中 `del_all` 对应 1 个 base occurrence | 2 | 删除后既有 `RtlLayoutContractTest` 和 `BlockingTranslationResourceTest` 分别失败，会撤销已完成的 RTL 与六键全 locale 契约 | 通过新的 OpenSpec 评审明确退役进度布局或 `del_all`，并在证明不存在运行时入口后同步替换相应跨批契约测试 | PR 4q（#70）`warning-pr4q-unused-resources.md` 的全量 RED、聚焦 GREEN 与 lint 对账 |
 | `Overdraw` | 41 个根布局背景位置，逐文件与行号见 PR 4f 证据 | 41 | 根背景可能承担日夜主题、不透明对话框或透明页面兜底；批量删除会改变实际渲染，当前没有逐页面截图基线 | 为清单中每个页面建立日夜模式截图或像素差异基线，并覆盖透明窗口与弹窗背景后逐批重启 | PR 4f（#59）`warning-pr4f-layout-performance.md` |
 | `UselessParent` | `app/src/main/res/layout/view_manga_menu.xml:85` | 1 | 扁平化需要把子容器 margin 改为父容器 padding，并改变背景和测量职责；缺少稳定漫画菜单夹具与截图 | 建立漫画页面固定夹具、菜单 UI 层级和日夜模式截图，证明 SeekBar、前后章按钮位置与点击区域不变 | PR 4f（#59）`warning-pr4f-layout-performance.md` |
 | `UseCompoundDrawables` | `app/src/main/res/layout/item_path_picker.xml:2` | 1 | 合并为单 TextView 会改变两个文件选择器的 View Binding 字段、动态 Drawable 尺寸、文本着色和整行点击区域 | 为文件管理与文件选择对话框建立路径面包屑导航测试、图标/文字截图和点击区域断言后独立重构 | PR 4f（#59）`warning-pr4f-layout-performance.md` |

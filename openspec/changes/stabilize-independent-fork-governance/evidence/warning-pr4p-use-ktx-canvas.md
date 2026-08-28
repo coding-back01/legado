@@ -71,3 +71,24 @@ Simulation 仅保留 1 对非目标原始状态调用。旧生产代码运行该
 无输出。draft PR #69 已创建；当前结果只证明本地候选通过，仍须完成该 PR 最终 head
 与合并后 `master` 的远端和本地验证，才可完成任务 5.4。实时
 `adb devices -l` 为空，本批未运行设备测试，也不将其描述为通过。
+
+## Pull Request 与合并后闭环
+
+PR #69 的最终 head 为 `828ba3681dce8b08abd239071939cbaf5bdfb6d8`，merge
+commit 为 `2b08b43634dd2c94d17f3d89ab458fc7ff25d10b`。最终 head 的
+`Android Debug 验证` run `33187190988` 成功；合并后同一 merge commit 的
+`Test Build` run `33187516558` 也成功。短期 head 分支按治理序列要求保留。
+
+2026-08-29 从干净的合并后 `master` 使用 JDK 17.0.17 与固定 Android SDK
+再次强制执行 131 个 Gradle 任务，129 个单元测试 0 失败、1 跳过，Android lint
+为 0 error、690 warning、18 hint，`UseKtx` 为 0；Debug 构建、OpenSpec 严格
+校验和空白检查均成功。合并后报告哈希如下：
+
+| 报告 | SHA-256 |
+|---|---|
+| `lint-results-appDebug.xml` | `87fcacb662c0d8f5d1d38dd7fa3403d0aafe9da7c8422ee74e1ae00b0856bdde` |
+| `lint-results-appDebug.html` | `602905fd0e9515a45cd79bbb549f4868c5974f3026f7840d041b040e48eb9a3e` |
+| `lint-results-appDebug.txt` | `eacd290bc2351b830d79236a704609c3a5218499af62c513bf2e965e16b06c6f` |
+
+实时 `adb devices -l` 仍为空，设备测试未运行。至此 PR 4p 完成全部串行门禁，
+任务 5.4 可以完成，并可从该 merge commit 开始 `UnusedResources` 动态引用审计。
