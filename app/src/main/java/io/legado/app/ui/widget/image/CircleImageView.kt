@@ -16,6 +16,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.content.withStyledAttributes
 import io.legado.app.R
 import io.legado.app.utils.getCompatColor
 import io.legado.app.utils.printOnDebug
@@ -121,30 +122,32 @@ class CircleImageView @JvmOverloads constructor(
     var isInView = false
 
     init {
-        val a = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
-        mBorderWidth =
-            a.getDimensionPixelSize(
+        context.withStyledAttributes(attrs, R.styleable.CircleImageView) {
+            mBorderWidth = getDimensionPixelSize(
                 R.styleable.CircleImageView_civ_border_width,
                 DEFAULT_BORDER_WIDTH
             )
-        mBorderColor =
-            a.getColor(R.styleable.CircleImageView_civ_border_color, DEFAULT_BORDER_COLOR)
-        mBorderOverlay =
-            a.getBoolean(R.styleable.CircleImageView_civ_border_overlay, DEFAULT_BORDER_OVERLAY)
-        mCircleBackgroundColor =
-            a.getColor(
+            mBorderColor = getColor(
+                R.styleable.CircleImageView_civ_border_color,
+                DEFAULT_BORDER_COLOR
+            )
+            mBorderOverlay = getBoolean(
+                R.styleable.CircleImageView_civ_border_overlay,
+                DEFAULT_BORDER_OVERLAY
+            )
+            mCircleBackgroundColor = getColor(
                 R.styleable.CircleImageView_civ_circle_background_color,
                 DEFAULT_CIRCLE_BACKGROUND_COLOR
             )
-        text = a.getString(R.styleable.CircleImageView_text)
-        contentDescription = text
-        if (a.hasValue(R.styleable.CircleImageView_textColor)) {
-            textColor = a.getColor(
-                R.styleable.CircleImageView_textColor,
-                context.getCompatColor(R.color.primaryText)
-            )
+            text = getString(R.styleable.CircleImageView_text)
+            contentDescription = text
+            if (hasValue(R.styleable.CircleImageView_textColor)) {
+                textColor = getColor(
+                    R.styleable.CircleImageView_textColor,
+                    context.getCompatColor(R.color.primaryText)
+                )
+            }
         }
-        a.recycle()
 
         mReady = true
 

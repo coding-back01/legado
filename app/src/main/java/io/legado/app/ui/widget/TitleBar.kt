@@ -13,6 +13,7 @@ import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.withStyledAttributes
 import androidx.core.graphics.alpha
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.children
@@ -60,100 +61,124 @@ class TitleBar @JvmOverloads constructor(
     private val attachToActivity: Boolean
 
     init {
-        val a = context.obtainStyledAttributes(
+        var parsedNavigationIconTint: ColorStateList? = null
+        var parsedNavigationIconTintMode = 9
+        var parsedAttachToActivity = true
+        var parsedDisplayHomeAsUp = true
+        var parsedFitStatusBar = true
+        var parsedFitNavigationBar = false
+        lateinit var parsedToolbar: Toolbar
+        context.withStyledAttributes(
             attrs, R.styleable.TitleBar,
             R.attr.titleBarStyle, 0
-        )
-        navigationIconTint = a.getColorStateList(R.styleable.TitleBar_navigationIconTint)
-        navigationIconTintMode = a.getInt(R.styleable.TitleBar_navigationIconTintMode, 9)
-        attachToActivity = a.getBoolean(R.styleable.TitleBar_attachToActivity, true)
-        displayHomeAsUp = a.getBoolean(R.styleable.TitleBar_displayHomeAsUp, true)
-        fitStatusBar = a.getBoolean(R.styleable.TitleBar_fitStatusBar, true)
-        fitNavigationBar = a.getBoolean(R.styleable.TitleBar_fitNavigationBar, false)
+        ) {
+            val a = this
+            parsedNavigationIconTint =
+                a.getColorStateList(R.styleable.TitleBar_navigationIconTint)
+            parsedNavigationIconTintMode =
+                a.getInt(R.styleable.TitleBar_navigationIconTintMode, parsedNavigationIconTintMode)
+            parsedAttachToActivity =
+                a.getBoolean(R.styleable.TitleBar_attachToActivity, parsedAttachToActivity)
+            parsedDisplayHomeAsUp =
+                a.getBoolean(R.styleable.TitleBar_displayHomeAsUp, parsedDisplayHomeAsUp)
+            parsedFitStatusBar =
+                a.getBoolean(R.styleable.TitleBar_fitStatusBar, parsedFitStatusBar)
+            parsedFitNavigationBar =
+                a.getBoolean(R.styleable.TitleBar_fitNavigationBar, parsedFitNavigationBar)
 
-        val navigationIcon = a.getDrawable(R.styleable.TitleBar_navigationIcon)
-        val navigationContentDescription =
-            a.getText(R.styleable.TitleBar_navigationContentDescription)
-        val titleText = a.getString(R.styleable.TitleBar_title)
-        val subtitleText = a.getString(R.styleable.TitleBar_subtitle)
+            val navigationIcon = a.getDrawable(R.styleable.TitleBar_navigationIcon)
+            val navigationContentDescription =
+                a.getText(R.styleable.TitleBar_navigationContentDescription)
+            val titleText = a.getString(R.styleable.TitleBar_title)
+            val subtitleText = a.getString(R.styleable.TitleBar_subtitle)
 
-        when (a.getInt(R.styleable.TitleBar_themeMode, 0)) {
-            1 -> inflate(context, R.layout.view_title_bar_dark, this)
-            else -> inflate(context, R.layout.view_title_bar, this)
+            when (a.getInt(R.styleable.TitleBar_themeMode, 0)) {
+                1 -> inflate(context, R.layout.view_title_bar_dark, this@TitleBar)
+                else -> inflate(context, R.layout.view_title_bar, this@TitleBar)
+            }
+            parsedToolbar = findViewById(R.id.toolbar)
+
+            parsedToolbar.apply {
+                navigationIcon?.let {
+                    this.navigationIcon = it
+                    this.navigationContentDescription = navigationContentDescription
+                }
+
+                if (a.hasValue(R.styleable.TitleBar_titleTextAppearance)) {
+                    this.setTitleTextAppearance(
+                        context,
+                        a.getResourceId(R.styleable.TitleBar_titleTextAppearance, 0)
+                    )
+                }
+
+                if (a.hasValue(R.styleable.TitleBar_titleTextColor)) {
+                    this.setTitleTextColor(a.getColor(R.styleable.TitleBar_titleTextColor, -0x1))
+                }
+
+                if (a.hasValue(R.styleable.TitleBar_subtitleTextAppearance)) {
+                    this.setSubtitleTextAppearance(
+                        context,
+                        a.getResourceId(R.styleable.TitleBar_subtitleTextAppearance, 0)
+                    )
+                }
+
+                if (a.hasValue(R.styleable.TitleBar_subtitleTextColor)) {
+                    this.setSubtitleTextColor(
+                        a.getColor(R.styleable.TitleBar_subtitleTextColor, -0x1)
+                    )
+                }
+
+
+                if (a.hasValue(R.styleable.TitleBar_contentInsetLeft)
+                    || a.hasValue(R.styleable.TitleBar_contentInsetRight)
+                ) {
+                    this.setContentInsetsAbsolute(
+                        a.getDimensionPixelSize(R.styleable.TitleBar_contentInsetLeft, 0),
+                        a.getDimensionPixelSize(R.styleable.TitleBar_contentInsetRight, 0)
+                    )
+                }
+
+                if (a.hasValue(R.styleable.TitleBar_contentInsetStart)
+                    || a.hasValue(R.styleable.TitleBar_contentInsetEnd)
+                ) {
+                    this.setContentInsetsRelative(
+                        a.getDimensionPixelSize(R.styleable.TitleBar_contentInsetStart, 0),
+                        a.getDimensionPixelSize(R.styleable.TitleBar_contentInsetEnd, 0)
+                    )
+                }
+
+                if (a.hasValue(R.styleable.TitleBar_contentInsetStartWithNavigation)) {
+                    this.contentInsetStartWithNavigation = a.getDimensionPixelOffset(
+                        R.styleable.TitleBar_contentInsetStartWithNavigation, 0
+                    )
+                }
+
+                if (a.hasValue(R.styleable.TitleBar_contentInsetEndWithActions)) {
+                    this.contentInsetEndWithActions = a.getDimensionPixelOffset(
+                        R.styleable.TitleBar_contentInsetEndWithActions, 0
+                    )
+                }
+
+                if (!titleText.isNullOrBlank()) {
+                    this.title = titleText
+                }
+
+                if (!subtitleText.isNullOrBlank()) {
+                    this.subtitle = subtitleText
+                }
+
+                if (a.hasValue(R.styleable.TitleBar_contentLayout)) {
+                    inflate(context, a.getResourceId(R.styleable.TitleBar_contentLayout, 0), this)
+                }
+            }
         }
-        toolbar = findViewById(R.id.toolbar)
-
-        toolbar.apply {
-            navigationIcon?.let {
-                this.navigationIcon = it
-                this.navigationContentDescription = navigationContentDescription
-            }
-
-            if (a.hasValue(R.styleable.TitleBar_titleTextAppearance)) {
-                this.setTitleTextAppearance(
-                    context,
-                    a.getResourceId(R.styleable.TitleBar_titleTextAppearance, 0)
-                )
-            }
-
-            if (a.hasValue(R.styleable.TitleBar_titleTextColor)) {
-                this.setTitleTextColor(a.getColor(R.styleable.TitleBar_titleTextColor, -0x1))
-            }
-
-            if (a.hasValue(R.styleable.TitleBar_subtitleTextAppearance)) {
-                this.setSubtitleTextAppearance(
-                    context,
-                    a.getResourceId(R.styleable.TitleBar_subtitleTextAppearance, 0)
-                )
-            }
-
-            if (a.hasValue(R.styleable.TitleBar_subtitleTextColor)) {
-                this.setSubtitleTextColor(a.getColor(R.styleable.TitleBar_subtitleTextColor, -0x1))
-            }
-
-
-            if (a.hasValue(R.styleable.TitleBar_contentInsetLeft)
-                || a.hasValue(R.styleable.TitleBar_contentInsetRight)
-            ) {
-                this.setContentInsetsAbsolute(
-                    a.getDimensionPixelSize(R.styleable.TitleBar_contentInsetLeft, 0),
-                    a.getDimensionPixelSize(R.styleable.TitleBar_contentInsetRight, 0)
-                )
-            }
-
-            if (a.hasValue(R.styleable.TitleBar_contentInsetStart)
-                || a.hasValue(R.styleable.TitleBar_contentInsetEnd)
-            ) {
-                this.setContentInsetsRelative(
-                    a.getDimensionPixelSize(R.styleable.TitleBar_contentInsetStart, 0),
-                    a.getDimensionPixelSize(R.styleable.TitleBar_contentInsetEnd, 0)
-                )
-            }
-
-            if (a.hasValue(R.styleable.TitleBar_contentInsetStartWithNavigation)) {
-                this.contentInsetStartWithNavigation = a.getDimensionPixelOffset(
-                    R.styleable.TitleBar_contentInsetStartWithNavigation, 0
-                )
-            }
-
-            if (a.hasValue(R.styleable.TitleBar_contentInsetEndWithActions)) {
-                this.contentInsetEndWithActions = a.getDimensionPixelOffset(
-                    R.styleable.TitleBar_contentInsetEndWithActions, 0
-                )
-            }
-
-            if (!titleText.isNullOrBlank()) {
-                this.title = titleText
-            }
-
-            if (!subtitleText.isNullOrBlank()) {
-                this.subtitle = subtitleText
-            }
-
-            if (a.hasValue(R.styleable.TitleBar_contentLayout)) {
-                inflate(context, a.getResourceId(R.styleable.TitleBar_contentLayout, 0), this)
-            }
-        }
+        navigationIconTint = parsedNavigationIconTint
+        navigationIconTintMode = parsedNavigationIconTintMode
+        attachToActivity = parsedAttachToActivity
+        displayHomeAsUp = parsedDisplayHomeAsUp
+        fitStatusBar = parsedFitStatusBar
+        fitNavigationBar = parsedFitNavigationBar
+        toolbar = parsedToolbar
 
         if (!isInEditMode) {
 //            if (fitStatusBar) {
@@ -186,7 +211,6 @@ class TitleBar @JvmOverloads constructor(
             stateListAnimator = null
             elevation = context.elevation
         }
-        a.recycle()
     }
 
     override fun onAttachedToWindow() {

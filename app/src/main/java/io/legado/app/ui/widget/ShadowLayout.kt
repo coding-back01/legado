@@ -8,6 +8,7 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import android.widget.RelativeLayout
+import androidx.core.content.withStyledAttributes
 import io.legado.app.R
 import io.legado.app.utils.getCompatColor
 
@@ -59,23 +60,20 @@ class ShadowLayout @JvmOverloads constructor(
     init {
         setLayerType(View.LAYER_TYPE_SOFTWARE, null) // 关闭硬件加速
         setWillNotDraw(false) // 调用此方法后，才会执行 onDraw(Canvas) 方法
-        val typedArray =
-            context.obtainStyledAttributes(attrs, R.styleable.ShadowLayout)
-        mShadowColor = typedArray.getColor(
-            R.styleable.ShadowLayout_shadowColor,
-            context.getCompatColor(android.R.color.black)
-        )
-        mShadowRadius =
-            typedArray.getDimension(R.styleable.ShadowLayout_shadowRadius, dip2px(0f))
-        mShadowDx = typedArray.getDimension(R.styleable.ShadowLayout_shadowDx, dip2px(0f))
-        mShadowDy = typedArray.getDimension(R.styleable.ShadowLayout_shadowDy, dip2px(0f))
-        mShadowSide =
-            typedArray.getInt(R.styleable.ShadowLayout_shadowSide, ALL)
-        mShadowShape = typedArray.getInt(
-            R.styleable.ShadowLayout_shadowShape,
-            SHAPE_RECTANGLE
-        )
-        typedArray.recycle()
+        context.withStyledAttributes(attrs, R.styleable.ShadowLayout) {
+            mShadowColor = getColor(
+                R.styleable.ShadowLayout_shadowColor,
+                context.getCompatColor(android.R.color.black)
+            )
+            mShadowRadius = getDimension(R.styleable.ShadowLayout_shadowRadius, dip2px(0f))
+            mShadowDx = getDimension(R.styleable.ShadowLayout_shadowDx, dip2px(0f))
+            mShadowDy = getDimension(R.styleable.ShadowLayout_shadowDy, dip2px(0f))
+            mShadowSide = getInt(R.styleable.ShadowLayout_shadowSide, ALL)
+            mShadowShape = getInt(
+                R.styleable.ShadowLayout_shadowShape,
+                SHAPE_RECTANGLE
+            )
+        }
 
         setUpShadowPaint()
     }
