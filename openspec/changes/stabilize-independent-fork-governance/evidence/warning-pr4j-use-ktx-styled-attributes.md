@@ -78,6 +78,6 @@ getter 后自动回收。本批保留全部属性索引、默认值、赋值顺�
 | `lint-results-appDebug.txt` | `d4d49ddded60739b960846582e9702d0315b4ebc7de588414c9fccd210add95f` |
 
 `openspec validate --all --strict` 为 3 passed、0 failed，`git diff --check`
-无输出。当前结果只证明本地提交候选通过；仍须完成 draft PR 最终 head 与合并后
-`master` 的远端和本地验证，才可开始下一 warning 批次。当前没有连接设备，本批
-未运行设备测试，也不将其描述为通过。
+无输出。draft PR #63 已创建；当前结果只证明本地提交候选通过，仍须完成该 PR
+最终 head 与合并后 `master` 的远端和本地验证，才可开始下一 warning 批次。当前
+没有连接设备，本批未运行设备测试，也不将其描述为通过。
