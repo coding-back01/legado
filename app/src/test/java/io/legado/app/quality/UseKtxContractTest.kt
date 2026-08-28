@@ -174,6 +174,28 @@ class UseKtxContractTest {
         )
     }
 
+    @Test
+    fun `SharedPreferences 编辑保留同步与异步提交语义`() {
+        val backup = source(sharedPreferencesSourcePaths[0])
+        val restore = source(sharedPreferencesSourcePaths[1])
+        val themeStore = source(sharedPreferencesSourcePaths[2])
+
+        assertTrue(backup.contains("sp.edit(commit = true) {"))
+        assertFalse(backup.contains("val edit = sp.edit()"))
+        assertFalse(backup.contains("edit.commit()"))
+
+        assertTrue(restore.contains("appCtx.defaultSharedPreferences.edit {"))
+        assertFalse(restore.contains("val edit = appCtx.defaultSharedPreferences.edit()"))
+        assertFalse(restore.contains("edit.apply()"))
+
+        assertTrue(themeStore.contains("prefs.edit {"))
+        assertFalse(
+            themeStore.contains(
+                "prefs.edit().putInt(ThemeStorePrefKeys.IS_CONFIGURED_VERSION_KEY, version).apply()"
+            )
+        )
+    }
+
     private fun source(path: String): String = repoFile(path).readText()
 
     private fun repoFile(path: String): File = requireNotNull(
@@ -266,6 +288,12 @@ class UseKtxContractTest {
             "app/src/main/java/io/legado/app/utils/ACache.kt",
             "app/src/main/java/io/legado/app/utils/QRCodeUtils.kt",
             "app/src/main/java/io/legado/app/utils/ViewExtensions.kt"
+        )
+
+        val sharedPreferencesSourcePaths = listOf(
+            "app/src/main/java/io/legado/app/help/storage/Backup.kt",
+            "app/src/main/java/io/legado/app/help/storage/Restore.kt",
+            "app/src/main/java/io/legado/app/lib/theme/ThemeStore.kt"
         )
     }
 }

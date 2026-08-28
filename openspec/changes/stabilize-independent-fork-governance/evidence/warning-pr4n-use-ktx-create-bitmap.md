@@ -78,3 +78,23 @@ AndroidX Core 的顶层 `createBitmap(width, height, config)` 委托同一平台
 无输出。draft PR #67 已创建；当前结果只证明本地候选通过，仍须完成该 PR 最终 head
 与合并后 `master` 的远端和本地验证，才可开始下一 warning 批次。实时
 `adb devices -l` 为空，本批未运行设备测试，也不将其描述为通过。
+
+## Pull Request 与合并后闭环
+
+PR #67 的最终 head 为 `873f43aadefb60fb3691e0da0d1d1728a8484cf7`，merge
+commit 为 `595174680f4206b6b64996d45e003d18adee6104`。最终 head 的
+`Android Debug 验证` run `33165160288` 成功；合并后同一 merge commit 的
+`Test Build` run `33165534050` 也成功。短期 head 分支按治理序列要求保留。
+
+2026-08-28 从干净的合并后 `master` 使用 JDK 17.0.17 与固定 Android SDK
+再次强制执行 131 个 Gradle 任务，127 个单元测试 0 失败、1 跳过，Android lint
+为 0 error、703 warning、18 hint，Debug 构建、OpenSpec 严格校验和空白检查
+均成功。合并后报告哈希如下：
+
+| 报告 | SHA-256 |
+|---|---|
+| `lint-results-appDebug.xml` | `48661525fdd2969260fab838b1161cfb1703b65dbfd8ed69334e9c1afa4c4b5d` |
+| `lint-results-appDebug.html` | `cbba49a92b553db0229dd30de534ee879ed2aaa78267296cdaf023fb23de0c51` |
+| `lint-results-appDebug.txt` | `3add59ffc9e3cf8d2a47245817c5624401aed39e0091b78ecaa67ad7a93e9b6c` |
+
+至此 PR 4n 完成全部串行门禁，可以从该 merge commit 开始下一小批次。
