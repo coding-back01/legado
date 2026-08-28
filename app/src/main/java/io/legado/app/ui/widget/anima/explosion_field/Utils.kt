@@ -22,6 +22,7 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.view.View
 import android.widget.ImageView
+import androidx.core.graphics.createBitmap
 import io.legado.app.utils.printOnDebug
 
 
@@ -66,7 +67,7 @@ object Utils {
         retryCount: Int
     ): Bitmap? {
         try {
-            return Bitmap.createBitmap(width, height, config)
+            return createBitmap(width, height, config)
         } catch (e: OutOfMemoryError) {
             e.printOnDebug()
             if (retryCount > 0) {
