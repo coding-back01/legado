@@ -3,7 +3,6 @@ package io.legado.app.lib.theme
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.StateListDrawable
@@ -12,6 +11,7 @@ import androidx.annotation.Dimension
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntDef
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
 
 @Suppress("unused")
 object Selector {
@@ -281,7 +281,7 @@ object Selector {
         private var hasSetFocusedDrawable = false
 
         init {
-            mDefaultDrawable = ColorDrawable(Color.TRANSPARENT)
+            mDefaultDrawable = Color.TRANSPARENT.toDrawable()
         }
 
         fun setDefaultDrawable(drawable: Drawable?): DrawableSelector {

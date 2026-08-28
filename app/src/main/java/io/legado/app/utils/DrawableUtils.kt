@@ -4,11 +4,11 @@ package io.legado.app.utils
 
 import android.content.res.ColorStateList
 import android.graphics.PorterDuff
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
 import androidx.annotation.ColorInt
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.graphics.drawable.toDrawable
 
 /**
  * @author Karim Abou Zeid (kabouzeid)
@@ -20,7 +20,7 @@ object DrawableUtils {
         @ColorInt startColor: Int,
         @ColorInt endColor: Int
     ): TransitionDrawable {
-        return createTransitionDrawable(ColorDrawable(startColor), ColorDrawable(endColor))
+        return createTransitionDrawable(startColor.toDrawable(), endColor.toDrawable())
     }
 
     fun createTransitionDrawable(start: Drawable, end: Drawable): TransitionDrawable {
