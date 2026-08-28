@@ -8,6 +8,7 @@ import androidx.annotation.CheckResult
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.graphics.toColorInt
 import io.legado.app.utils.ColorUtils
 import io.legado.app.utils.LogUtils
@@ -333,7 +334,9 @@ private constructor(private val mContext: Context) : ThemeStoreInterface {
             val prefs = prefs(context)
             val lastVersion = prefs.getInt(ThemeStorePrefKeys.IS_CONFIGURED_VERSION_KEY, -1)
             if (version > lastVersion) {
-                prefs.edit().putInt(ThemeStorePrefKeys.IS_CONFIGURED_VERSION_KEY, version).apply()
+                prefs.edit {
+                    putInt(ThemeStorePrefKeys.IS_CONFIGURED_VERSION_KEY, version)
+                }
                 return false
             }
             return true
