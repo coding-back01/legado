@@ -70,6 +70,6 @@ Bitmap、Canvas 和 SharedPreferences 分组，继续保持 `PENDING_REVIEW`；�
 | `lint-results-appDebug.txt` | `f0496215b8135b1c46b64abb37cb4f94b5aea1d81af9cbe2620fcbab1c2c745d` |
 
 `openspec validate --all --strict` 为 3 passed、0 failed，`git diff --check`
-无输出。当前结果只证明本地提交候选通过；仍须完成 draft PR 最终 head 与合并后
-`master` 的远端和本地验证，才可开始下一 warning 批次。当前没有连接设备，本批
-未运行设备测试，也不将其描述为通过。
+无输出。draft PR #62 已创建；当前结果只证明本地提交候选通过，仍须完成该 PR
+最终 head 与合并后 `master` 的远端和本地验证，才可开始下一 warning 批次。当前
+没有连接设备，本批未运行设备测试，也不将其描述为通过。
