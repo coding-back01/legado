@@ -17,6 +17,7 @@ import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.withStyledAttributes
+import androidx.core.graphics.createBitmap
 import io.legado.app.R
 import io.legado.app.utils.getCompatColor
 import io.legado.app.utils.printOnDebug
@@ -296,13 +297,13 @@ class CircleImageView @JvmOverloads constructor(
 
         return try {
             val bitmap: Bitmap = if (drawable is ColorDrawable) {
-                Bitmap.createBitmap(
+                createBitmap(
                     COLOR_DRAWABLE_DIMENSION,
                     COLOR_DRAWABLE_DIMENSION,
                     BITMAP_CONFIG
                 )
             } else {
-                Bitmap.createBitmap(
+                createBitmap(
                     drawable.intrinsicWidth,
                     drawable.intrinsicHeight,
                     BITMAP_CONFIG

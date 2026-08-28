@@ -159,6 +159,21 @@ class UseKtxContractTest {
         )
     }
 
+    @Test
+    fun `Bitmap 构造使用等价 KTX 函数`() {
+        val createBitmapSources = createBitmapSourcePaths.map(::source)
+
+        createBitmapSources.forEach { source ->
+            assertFalse(source.contains("Bitmap.createBitmap("))
+        }
+        assertEquals(
+            9,
+            createBitmapSources.sumOf {
+                Regex("""\bcreateBitmap\(""").findAll(it).count()
+            }
+        )
+    }
+
     private fun source(path: String): String = repoFile(path).readText()
 
     private fun repoFile(path: String): File = requireNotNull(
@@ -243,6 +258,14 @@ class UseKtxContractTest {
             "app/src/main/java/io/legado/app/lib/theme/ViewUtils.kt",
             "app/src/main/java/io/legado/app/lib/theme/view/ThemeBottomNavigationVIew.kt",
             "app/src/main/java/io/legado/app/utils/DrawableUtils.kt"
+        )
+
+        val createBitmapSourcePaths = listOf(
+            "app/src/main/java/io/legado/app/ui/widget/anima/explosion_field/Utils.kt",
+            "app/src/main/java/io/legado/app/ui/widget/image/CircleImageView.kt",
+            "app/src/main/java/io/legado/app/utils/ACache.kt",
+            "app/src/main/java/io/legado/app/utils/QRCodeUtils.kt",
+            "app/src/main/java/io/legado/app/utils/ViewExtensions.kt"
         )
     }
 }

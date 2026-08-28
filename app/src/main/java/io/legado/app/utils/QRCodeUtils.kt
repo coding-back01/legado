@@ -9,6 +9,7 @@ import android.text.TextPaint
 import android.text.TextUtils
 import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
+import androidx.core.graphics.createBitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.DecodeHintType
@@ -95,7 +96,7 @@ object QRCodeUtils {
             }
 
             // 生成二维码图片的格式
-            var bitmap: Bitmap? = Bitmap.createBitmap(heightPix, heightPix, Bitmap.Config.ARGB_8888)
+            var bitmap: Bitmap? = createBitmap(heightPix, heightPix, Bitmap.Config.ARGB_8888)
             bitmap!!.setPixels(pixels, 0, heightPix, 0, 0, heightPix, heightPix)
             if (logo != null) {
                 bitmap = addLogo(bitmap, logo, ratio)
@@ -140,7 +141,7 @@ object QRCodeUtils {
 
         //logo大小为二维码整体大小
         val scaleFactor = srcWidth * ratio / logoWidth
-        var bitmap: Bitmap? = Bitmap.createBitmap(srcWidth, srcHeight, Bitmap.Config.ARGB_8888)
+        var bitmap: Bitmap? = createBitmap(srcWidth, srcHeight, Bitmap.Config.ARGB_8888)
         try {
             val canvas = Canvas(bitmap!!)
             canvas.drawBitmap(src, 0f, 0f, null)
@@ -406,7 +407,7 @@ object QRCodeUtils {
                     pixels[offset + x] = if (result[x, y]) codeColor else Color.WHITE
                 }
             }
-            val bitmap = Bitmap.createBitmap(
+            val bitmap = createBitmap(
                 width, height,
                 Bitmap.Config.ARGB_8888
             )
@@ -448,7 +449,7 @@ object QRCodeUtils {
         if (srcWidth <= 0 || srcHeight <= 0) {
             return null
         }
-        var bitmap: Bitmap? = Bitmap.createBitmap(
+        var bitmap: Bitmap? = createBitmap(
             srcWidth,
             srcHeight + textSize + offset * 2,
             Bitmap.Config.ARGB_8888
