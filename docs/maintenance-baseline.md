@@ -67,10 +67,10 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
 | `UnusedResources` | 中 | 594 | 588 | 6 | 0 | 0 | 588 | PR 3 显式加入 Startup 后减少 1 项；PR 4d（#57）对 5 个同时触发 `PluralsCandidate` 的资源完成全仓动态引用审计后删除；其余仍须逐项审计 |
 | `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认会改变两个文件选择器的 View Binding、图标尺寸与点击区域，本轮精确延期 |
-| `UseKtx` | 低 | 133 | 42 | 91 | 0 | 0 | 42 | PR 3 与 PR 4g、4h 已安全消除 14 项；PR 4i 将 41 个 `Uri.parse(String)` occurrence 转为委托同一解析器的 `String.toUri()`；PR 4j 将 20 个样式属性读取改为自动回收同一 `TypedArray` 的 `Context.withStyledAttributes`；PR 4k（#64）将 16 个字符串颜色 occurrence 改为委托同一解析器的 `String.toColorInt()`；其余继续逐类审查 |
+| `UseKtx` | 低 | 133 | 32 | 94 | 7 | 0 | 32 | PR 3 与 PR 4g 至 4k 已安全消除 91 项；PR 4l 对 3 个非空 `Bitmap.toDrawable` occurrence 完成等价转换，对 7 个必须保留可空 Bitmap 构造语义的 occurrence 精确局部抑制；其余继续逐类审查 |
 | `UselessParent` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认需移动漫画菜单边距、背景和测量职责，缺少稳定页面截图，本轮精确延期 |
 | `VectorPath` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 图形精度与渲染风险 |
-| **合计** |  | **881** | **732** | **144** | **5** | **43** | **689** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4k 已完成 149 项修复/抑制，并精确延期 43 项 |
+| **合计** |  | **881** | **722** | **147** | **12** | **43** | **679** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4l 已完成 159 项修复/抑制，并精确延期 43 项 |
 
 ## 精确局部抑制
 
@@ -80,6 +80,9 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `SetTextI18n` | `CheckSourceConfig.onFragmentCreated` 的超时秒数输入 | 1 | 字段保存 ASCII 整数并直接由 `toLong()` 回读；本地化数字或分组符会破坏往返解析 | 超时字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b（#55）聚焦契约、完整单元测试与 lint |
 | `SetTextI18n` | `ReplaceEditActivity.upReplaceView` 的替换超时毫秒输入 | 1 | 规则字段保存 ASCII 整数并直接由 `toLong()` 回读；改变持久化输入语义可能破坏既有规则编辑 | 规则编辑字段改为数值模型绑定，或解析器能够可靠接受当前 locale 的数字与分组符 | PR 4b（#55）聚焦契约、完整单元测试与 lint |
 | `TextFields` | `dialog_simulated_reading.xml` 的 `start_date` 日期选择字段 | 1 | 日期只由 `DatePickerDialog` 选择；`inputType="none"` 阻止软键盘直接编辑，字段仍保留键盘焦点与点击入口 | 字段改为允许可靠文本解析的直接输入，或替换为不会触发该检查的日期选择控件 | PR 4e（#58）聚焦契约、完整单元测试与 lint |
+| `UseKtx` | `ReadBookConfig.Config.curBgDrawable` 的内置与文件背景分支 | 2 | 两个解码结果均为可空 `Bitmap`；原构造在空值时返回空 `BitmapDrawable`，KTX 只接受非空 receiver，安全调用会改变兜底 Drawable | KTX 提供保持空 `BitmapDrawable` 语义的可空重载，或建立页面证据后明确批准改变解码失败兜底 | PR 4l 聚焦契约、完整单元测试与 lint；2 个实际构造 |
+| `UseKtx` | `BookCover.upDefaultCover` 的自定义默认封面构造 | 1 | 解码结果为可空 `Bitmap`；直接改用 KTX 无法保留原空 `BitmapDrawable` 返回语义 | KTX 提供等价可空重载，或建立默认封面解码失败行为测试后明确批准改变兜底 | PR 4l 聚焦契约、完整单元测试与 lint |
+| `UseKtx` | `WelcomeActivity.upBackgroundImage` 的深色与普通欢迎图分支 | 4 | 两个实际构造的解码结果为可空 `Bitmap`，且空值时仍会设置背景并提前返回；安全调用会改变回退到父类背景的控制流；lint 对每个构造重复登记一次 | KTX 提供等价可空重载，或建立两种主题下解码失败的 Activity 行为测试后明确批准改变回退控制流 | PR 4l 聚焦契约、完整单元测试与 lint；2 个实际构造、4 个 occurrence |
 
 ## 精确延期项
 

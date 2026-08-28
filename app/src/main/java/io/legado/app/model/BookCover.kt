@@ -79,6 +79,7 @@ object BookCover {
             return
         }
         defaultDrawable = kotlin.runCatching {
+            //noinspection UseKtx
             BitmapDrawable(appCtx.resources, BitmapUtils.decodeBitmap(path, 600, 900))
         }.getOrDefault(appCtx.resources.getDrawable(R.drawable.image_cover_default, null))
     }
