@@ -114,5 +114,5 @@ drawable、3 个 layout、1 个 anim、1 个 color selector 和 1 个 menu，共
 
 `openspec validate --all --strict` 为 3 passed、0 failed，`git diff --check`
 无输出。实时 `adb devices -l` 为空，本批未运行设备测试，也不将其描述为通过。
-draft PR 尚未创建；仍须完成该 PR 最终 head 与合并后 `master` 的远端和本地
+draft PR #70 已创建；仍须完成该 PR 最终 head 与合并后 `master` 的远端和本地
 双重复验，才可完成任务 5.5。任务 5.8 继续保持未完成，正式发布继续冻结。
