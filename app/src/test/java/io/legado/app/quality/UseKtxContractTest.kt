@@ -103,6 +103,19 @@ class UseKtxContractTest {
         )
     }
 
+    @Test
+    fun `字符串颜色解析使用等价 KTX 扩展`() {
+        val colorSources = colorSourcePaths.map(::source)
+
+        colorSources.forEach { source ->
+            assertFalse(source.contains("Color.parseColor("))
+        }
+        assertEquals(
+            22,
+            colorSources.sumOf { Regex("""\.toColorInt\(\)""").findAll(it).count() }
+        )
+    }
+
     private fun source(path: String): String = repoFile(path).readText()
 
     private fun repoFile(path: String): File = requireNotNull(
@@ -159,6 +172,15 @@ class UseKtxContractTest {
             "app/src/main/java/io/legado/app/ui/widget/text/AccentStrokeTextView.kt",
             "app/src/main/java/io/legado/app/ui/widget/text/BevelLabelView.kt",
             "app/src/main/java/io/legado/app/ui/widget/text/StrokeTextView.kt"
+        )
+
+        val colorSourcePaths = listOf(
+            "app/src/main/java/io/legado/app/help/config/ReadBookConfig.kt",
+            "app/src/main/java/io/legado/app/help/config/ThemeConfig.kt",
+            "app/src/main/java/io/legado/app/lib/theme/ThemeStore.kt",
+            "app/src/main/java/io/legado/app/ui/book/read/ReadMenu.kt",
+            "app/src/main/java/io/legado/app/ui/widget/anima/RotateLoading.kt",
+            "app/src/main/java/io/legado/app/ui/widget/image/ArcView.kt"
         )
     }
 }
