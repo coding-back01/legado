@@ -76,3 +76,23 @@ PR #67 合并后的 lint XML 包含 3 个 `SharedPreferences.edit` occurrence：
 无输出。draft PR #68 已创建；当前结果只证明本地候选通过，仍须完成该 PR 最终 head
 与合并后 `master` 的远端和本地验证，才可开始 Canvas 批次。实时
 `adb devices -l` 为空，本批未运行设备测试，也不将其描述为通过。
+
+## Pull Request 与合并后闭环
+
+PR #68 的最终 head 为 `25d04d1b53e0dd1ce4f4963d1dca382b2644b985`，merge
+commit 为 `15956395a4389efc108569877bb4465ed26ad797`。最终 head 的
+`Android Debug 验证` run `33167967205` 成功；合并后同一 merge commit 的
+`Test Build` run `33168293139` 也成功。短期 head 分支按治理序列要求保留。
+
+2026-08-28 从干净的合并后 `master` 使用 JDK 17.0.17 与固定 Android SDK
+再次强制执行 131 个 Gradle 任务，128 个单元测试 0 失败、1 跳过，Android lint
+为 0 error、700 warning、18 hint，Debug 构建、OpenSpec 严格校验和空白检查
+均成功。合并后报告哈希如下：
+
+| 报告 | SHA-256 |
+|---|---|
+| `lint-results-appDebug.xml` | `1b096ef8b77ea1585338b1391f41f330602a57b95d9c26b1885e1b1562b62e1a` |
+| `lint-results-appDebug.html` | `31a28c284ecf7c832c42f146a47d63622df51f23f02b0f4298e1ffd24de9aebb` |
+| `lint-results-appDebug.txt` | `2dfc974fb1536c57c90cf7a8afc9c826bca3c6cb1070825e2c18b302abde56d0` |
+
+至此 PR 4o 完成全部串行门禁，可以从该 merge commit 开始 Canvas 小批次。

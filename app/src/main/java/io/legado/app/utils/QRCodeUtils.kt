@@ -157,8 +157,6 @@ object QRCodeUtils {
                 ((srcHeight - logoHeight) / 2).toFloat(),
                 null
             )
-            canvas.save()
-            canvas.restore()
         } catch (e: Exception) {
             bitmap = null
             e.printOnDebug()
@@ -467,8 +465,6 @@ object QRCodeUtils {
                 (srcHeight + textSize / 2 + offset).toFloat(),
                 paint
             )
-            canvas.save()
-            canvas.restore()
         } catch (e: Exception) {
             bitmap = null
             e.printOnDebug()

@@ -196,6 +196,42 @@ class UseKtxContractTest {
         )
     }
 
+    @Test
+    fun `Canvas 状态转换使用等价 KTX 作用域`() {
+        val divider = source(canvasSourcePaths[0])
+        val qrCode = source(canvasSourcePaths[1])
+        val searchView = source(canvasSourcePaths[2])
+        val simulation = source(canvasSourcePaths[3])
+        val viewExtensions = source(canvasSourcePaths[4])
+
+        assertEquals(2, Regex("""\bcanvas\.withSave\s*\{""").findAll(divider).count())
+        assertFalse(divider.contains("canvas.save()"))
+        assertFalse(divider.contains("canvas.restore()"))
+
+        assertFalse(qrCode.contains("canvas.save()"))
+        assertFalse(qrCode.contains("canvas.restore()"))
+
+        assertTrue(searchView.contains("canvas.withTranslation(x, transY.toFloat()) {"))
+        assertFalse(searchView.contains("canvas.save()"))
+        assertFalse(searchView.contains("canvas.restore()"))
+
+        assertEquals(
+            2,
+            Regex("""\bcanvas\.withClip\(mPath0\)\s*\{""").findAll(simulation).count()
+        )
+        assertEquals(2, Regex("""\bcanvas\.withSave\s*\{""").findAll(simulation).count())
+        assertEquals(1, Regex("""\bcanvas\.save\(\)""").findAll(simulation).count())
+        assertEquals(1, Regex("""\bcanvas\.restore\(\)""").findAll(simulation).count())
+
+        assertTrue(
+            viewExtensions.contains(
+                "c.withTranslation(-scrollX.toFloat(), -scrollY.toFloat()) {"
+            )
+        )
+        assertFalse(viewExtensions.contains("c.save()"))
+        assertFalse(viewExtensions.contains("c.restore()"))
+    }
+
     private fun source(path: String): String = repoFile(path).readText()
 
     private fun repoFile(path: String): File = requireNotNull(
@@ -294,6 +330,14 @@ class UseKtxContractTest {
             "app/src/main/java/io/legado/app/help/storage/Backup.kt",
             "app/src/main/java/io/legado/app/help/storage/Restore.kt",
             "app/src/main/java/io/legado/app/lib/theme/ThemeStore.kt"
+        )
+
+        val canvasSourcePaths = listOf(
+            "app/src/main/java/io/legado/app/ui/widget/recycler/DividerNoLast.kt",
+            "app/src/main/java/io/legado/app/utils/QRCodeUtils.kt",
+            "app/src/main/java/io/legado/app/ui/widget/SearchView.kt",
+            "app/src/main/java/io/legado/app/ui/book/read/page/delegate/SimulationPageDelegate.kt",
+            "app/src/main/java/io/legado/app/utils/ViewExtensions.kt"
         )
     }
 }
