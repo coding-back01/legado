@@ -708,6 +708,7 @@ object ReadBookConfig {
                     1 -> {
                         val path = "bg" + File.separator + curBgStr()
                         val bitmap = BitmapUtils.decodeAssetsBitmap(appCtx, path, width, height)
+                        //noinspection UseKtx
                         BitmapDrawable(resources, bitmap?.resizeAndRecycle(width, height))
                     }
 
@@ -717,6 +718,7 @@ object ReadBookConfig {
                             else FileUtils.getPath(appCtx.externalFiles, "bg", curBgStr())
                         }
                         val bitmap = BitmapUtils.decodeBitmap(path, width, height)
+                        //noinspection UseKtx
                         BitmapDrawable(resources, bitmap?.resizeAndRecycle(width, height))
                     }
                 }

@@ -56,6 +56,7 @@ open class WelcomeActivity : BaseActivity<ActivityWelcomeBinding>() {
                             binding.tvLegado.visible(AppConfig.welcomeShowTextDark)
                             binding.ivBook.visible(AppConfig.welcomeShowIconDark)
                             binding.tvGzh.visible(AppConfig.welcomeShowTextDark)
+                            //noinspection UseKtx
                             window.decorView.background = BitmapDrawable(resources, it)
                             return
                         }
@@ -67,6 +68,7 @@ open class WelcomeActivity : BaseActivity<ActivityWelcomeBinding>() {
                             binding.tvLegado.visible(AppConfig.welcomeShowText)
                             binding.ivBook.visible(AppConfig.welcomeShowIcon)
                             binding.tvGzh.visible(AppConfig.welcomeShowText)
+                            //noinspection UseKtx
                             window.decorView.background = BitmapDrawable(resources, it)
                             return
                         }

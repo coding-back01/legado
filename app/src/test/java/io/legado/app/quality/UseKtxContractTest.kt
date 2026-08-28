@@ -116,6 +116,34 @@ class UseKtxContractTest {
         )
     }
 
+    @Test
+    fun `Bitmap Drawable 转换使用等价 KTX 扩展`() {
+        val bitmapDrawableSources = bitmapDrawableSourcePaths.map(::source)
+        val nullableBitmapDrawableSources = nullableBitmapDrawableSourcePaths.map(::source)
+
+        assertEquals(
+            2,
+            bitmapDrawableSources.sumOf {
+                Regex("""\.toDrawable\([^)]*resources\)""").findAll(it).count()
+            }
+        )
+        bitmapDrawableSources.forEach { source ->
+            assertFalse(source.contains("BitmapDrawable("))
+        }
+        assertEquals(
+            5,
+            nullableBitmapDrawableSources.sumOf {
+                Regex("""BitmapDrawable\(""").findAll(it).count()
+            }
+        )
+        assertEquals(
+            5,
+            nullableBitmapDrawableSources.sumOf {
+                Regex("""//noinspection UseKtx""").findAll(it).count()
+            }
+        )
+    }
+
     private fun source(path: String): String = repoFile(path).readText()
 
     private fun repoFile(path: String): File = requireNotNull(
@@ -181,6 +209,17 @@ class UseKtxContractTest {
             "app/src/main/java/io/legado/app/ui/book/read/ReadMenu.kt",
             "app/src/main/java/io/legado/app/ui/widget/anima/RotateLoading.kt",
             "app/src/main/java/io/legado/app/ui/widget/image/ArcView.kt"
+        )
+
+        val bitmapDrawableSourcePaths = listOf(
+            "app/src/main/java/io/legado/app/base/BaseActivity.kt",
+            "app/src/main/java/io/legado/app/utils/ACache.kt"
+        )
+
+        val nullableBitmapDrawableSourcePaths = listOf(
+            "app/src/main/java/io/legado/app/help/config/ReadBookConfig.kt",
+            "app/src/main/java/io/legado/app/model/BookCover.kt",
+            "app/src/main/java/io/legado/app/ui/welcome/WelcomeActivity.kt"
         )
     }
 }
