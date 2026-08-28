@@ -84,6 +84,6 @@ Gradle 任务实际执行。随后 103 个 lint 任务全部执行并成功，`B
 | `lint-results-appDebug.txt` | `2e156bb5f857bbe8bbd89a1e12f465ed2b535a99ab3fc90aaa76cec95fc15087` |
 
 `openspec validate --all --strict` 为 3 passed、0 failed，`git diff --check`
-无输出。当前结果只证明本地提交候选通过；仍须创建 draft PR，并完成该 PR 最终
-head 与合并后 `master` 的远端和本地验证，才可开始下一 warning 批次。当前没有
-连接设备，本批未运行设备测试，也不将其描述为通过。
+无输出。draft PR #65 已创建；当前结果只证明本地提交候选通过，仍须完成该 PR
+最终 head 与合并后 `master` 的远端和本地验证，才可开始下一 warning 批次。当前
+没有连接设备，本批未运行设备测试，也不将其描述为通过。
