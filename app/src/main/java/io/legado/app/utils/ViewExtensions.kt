@@ -166,10 +166,9 @@ fun View.screenshot(bitmap: Bitmap? = null, canvas: Canvas? = null): Bitmap? {
         }
         val c = canvas ?: Canvas()
         c.setBitmap(screenshot)
-        c.save()
-        c.translate(-scrollX.toFloat(), -scrollY.toFloat())
-        this.draw(c)
-        c.restore()
+        c.withTranslation(-scrollX.toFloat(), -scrollY.toFloat()) {
+            this@screenshot.draw(this)
+        }
         c.setBitmap(null)
         screenshot.prepareToDraw()
         screenshot
