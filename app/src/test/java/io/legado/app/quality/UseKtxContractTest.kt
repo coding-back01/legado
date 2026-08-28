@@ -144,6 +144,21 @@ class UseKtxContractTest {
         )
     }
 
+    @Test
+    fun `颜色 Drawable 构造使用等价 KTX 扩展`() {
+        val colorDrawableSources = colorDrawableSourcePaths.map(::source)
+
+        colorDrawableSources.forEach { source ->
+            assertFalse(source.contains("ColorDrawable("))
+        }
+        assertEquals(
+            9,
+            colorDrawableSources.sumOf {
+                Regex("""\.toDrawable\(\)""").findAll(it).count()
+            }
+        )
+    }
+
     private fun source(path: String): String = repoFile(path).readText()
 
     private fun repoFile(path: String): File = requireNotNull(
@@ -220,6 +235,14 @@ class UseKtxContractTest {
             "app/src/main/java/io/legado/app/help/config/ReadBookConfig.kt",
             "app/src/main/java/io/legado/app/model/BookCover.kt",
             "app/src/main/java/io/legado/app/ui/welcome/WelcomeActivity.kt"
+        )
+
+        val colorDrawableSourcePaths = listOf(
+            "app/src/main/java/io/legado/app/help/config/ReadBookConfig.kt",
+            "app/src/main/java/io/legado/app/lib/theme/Selector.kt",
+            "app/src/main/java/io/legado/app/lib/theme/ViewUtils.kt",
+            "app/src/main/java/io/legado/app/lib/theme/view/ThemeBottomNavigationVIew.kt",
+            "app/src/main/java/io/legado/app/utils/DrawableUtils.kt"
         )
     }
 }

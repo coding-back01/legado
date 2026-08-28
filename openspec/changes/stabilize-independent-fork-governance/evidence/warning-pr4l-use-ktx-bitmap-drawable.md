@@ -87,3 +87,23 @@ Gradle 任务实际执行。随后 103 个 lint 任务全部执行并成功，`B
 无输出。draft PR #65 已创建；当前结果只证明本地提交候选通过，仍须完成该 PR
 最终 head 与合并后 `master` 的远端和本地验证，才可开始下一 warning 批次。当前
 没有连接设备，本批未运行设备测试，也不将其描述为通过。
+
+## Pull Request 与合并后闭环
+
+PR #65 的最终 head 为 `86a018870122db41d90efae2a0ebde813c120114`，merge
+commit 为 `35797d31febb7de021f36667cebe0f3de9b6234a`。最终 head 的
+`Android Debug 验证` run `33147921852` 成功；合并后同一 merge commit 的
+`Test Build` run `33148208737` 也成功。短期 head 分支按治理序列要求保留。
+
+2026-08-28 从干净的合并后 `master` 使用 JDK 17.0.17 与固定 Android SDK
+再次强制执行 131 个 Gradle 任务，125 个单元测试 0 失败、1 跳过，Android lint
+为 0 error、722 warning、18 hint，Debug 构建、OpenSpec 严格校验和空白检查
+均成功。合并后报告哈希如下：
+
+| 报告 | SHA-256 |
+|---|---|
+| `lint-results-appDebug.xml` | `a5a78bec5704d72d1f9d2613459fe760e8d18fa8673afee6e7eadc65cf414a1b` |
+| `lint-results-appDebug.html` | `553393fe1105ed373f01a3c041605d080b8127e7b3b16e5f883b72755928d223` |
+| `lint-results-appDebug.txt` | `2e156bb5f857bbe8bbd89a1e12f465ed2b535a99ab3fc90aaa76cec95fc15087` |
+
+至此 PR 4l 完成全部串行门禁，可以从该 merge commit 开始下一小批次。
