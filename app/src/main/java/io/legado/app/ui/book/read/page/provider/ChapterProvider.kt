@@ -3,12 +3,12 @@ package io.legado.app.ui.book.read.page.provider
 import android.graphics.Paint.FontMetrics
 import android.graphics.RectF
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Build
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.core.os.postDelayed
+import androidx.core.net.toUri
 import io.legado.app.constant.AppLog
 import io.legado.app.constant.AppPattern
 import io.legado.app.constant.EventBus
@@ -888,14 +888,14 @@ object ChapterProvider {
             when {
                 fontPath.isContentScheme() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
                     appCtx.contentResolver
-                        .openFileDescriptor(Uri.parse(fontPath), "r")!!
+                        .openFileDescriptor(fontPath.toUri(), "r")!!
                         .use {
                             Typeface.Builder(it.fileDescriptor).build()
                         }
                 }
 
                 fontPath.isContentScheme() -> {
-                    Typeface.createFromFile(RealPathUtil.getPath(appCtx, Uri.parse(fontPath)))
+                    Typeface.createFromFile(RealPathUtil.getPath(appCtx, fontPath.toUri()))
                 }
 
                 fontPath.isNotEmpty() -> Typeface.createFromFile(fontPath)

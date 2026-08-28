@@ -34,6 +34,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import io.legado.app.R
@@ -323,7 +324,7 @@ fun Context.getClipText(): String? {
 fun Context.sendMail(mail: String) {
     try {
         val intent = Intent(Intent.ACTION_SENDTO)
-        intent.data = Uri.parse("mailto:$mail")
+        intent.data = "mailto:$mail".toUri()
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
     } catch (e: Exception) {

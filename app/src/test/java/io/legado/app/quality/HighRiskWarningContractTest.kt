@@ -54,7 +54,7 @@ class HighRiskWarningContractTest {
         )
 
         assertTrue(
-            Regex("Intent\\(\\s*Intent.ACTION_VIEW,\\s*Uri.parse\\(")
+            Regex("""Intent\(\s*Intent\.ACTION_VIEW,\s*"mqqopensdkapi:[^"]*"\.toUri\(\)""")
                 .containsMatchIn(joinGroup)
         )
     }

@@ -8,6 +8,7 @@ import android.icu.util.ULocale
 import android.net.Uri
 import android.text.Editable
 import cn.hutool.core.net.URLEncodeUtil
+import androidx.core.net.toUri
 import io.legado.app.constant.AppPattern
 import io.legado.app.constant.AppPattern.dataUriRegex
 import java.io.File
@@ -23,7 +24,7 @@ fun String?.isContentScheme(): Boolean = this?.startsWith("content://") == true
 fun String.toEditable(): Editable = Editable.Factory.getInstance().newEditable(this)
 
 fun String.parseToUri(): Uri {
-    return if (isUri()) Uri.parse(this) else {
+    return if (isUri()) toUri() else {
         Uri.fromFile(File(this))
     }
 }

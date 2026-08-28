@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import androidx.core.net.toUri
 import androidx.core.provider.DocumentsContractCompat
 
 import java.io.File
@@ -41,7 +42,7 @@ object RealPathUtil {
             } else if (isDownloadsDocument(uri)) {
                 val id = DocumentsContract.getDocumentId(uri)
                 val contentUri = ContentUris.withAppendedId(
-                    Uri.parse("content://downloads/public_downloads"),
+                    "content://downloads/public_downloads".toUri(),
                     java.lang.Long.valueOf(id)
                 )
                 //return getDataColumn(context, uri, null, null);

@@ -18,6 +18,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.addCallback
 import androidx.activity.viewModels
+import androidx.core.net.toUri
 import androidx.core.view.size
 import io.legado.app.R
 import io.legado.app.base.VMBaseActivity
@@ -280,7 +281,7 @@ class WebViewActivity : VMBaseActivity<ActivityWebViewBinding, WebViewModel>() {
         @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION", "KotlinRedundantDiagnosticSuppress")
         override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
             url?.let {
-                return shouldOverrideUrlLoading(Uri.parse(it))
+                return shouldOverrideUrlLoading(it.toUri())
             }
             return true
         }
