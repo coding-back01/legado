@@ -73,6 +73,6 @@ PR #67 合并后的 lint XML 包含 3 个 `SharedPreferences.edit` occurrence：
 | `lint-results-appDebug.txt` | `2dfc974fb1536c57c90cf7a8afc9c826bca3c6cb1070825e2c18b302abde56d0` |
 
 `openspec validate --all --strict` 为 3 passed、0 failed，`git diff --check`
-无输出。draft PR 尚未创建；当前结果只证明本地候选通过，仍须完成该 PR 最终 head
+无输出。draft PR #68 已创建；当前结果只证明本地候选通过，仍须完成该 PR 最终 head
 与合并后 `master` 的远端和本地验证，才可开始 Canvas 批次。实时
 `adb devices -l` 为空，本批未运行设备测试，也不将其描述为通过。
