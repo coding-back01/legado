@@ -3,6 +3,7 @@ package io.legado.app.lib.prefs
 import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.SwitchCompat
+import androidx.core.content.withStyledAttributes
 import androidx.preference.PreferenceViewHolder
 import androidx.preference.SwitchPreferenceCompat
 import io.legado.app.R
@@ -17,9 +18,14 @@ class SwitchPreference(context: Context, attrs: AttributeSet) :
 
     init {
         layoutResource = R.layout.view_preference
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.Preference)
-        isBottomBackground = typedArray.getBoolean(R.styleable.Preference_isBottomBackground, false)
-        typedArray.recycle()
+        var parsedIsBottomBackground = false
+        context.withStyledAttributes(attrs, R.styleable.Preference) {
+            parsedIsBottomBackground = getBoolean(
+                R.styleable.Preference_isBottomBackground,
+                parsedIsBottomBackground
+            )
+        }
+        isBottomBackground = parsedIsBottomBackground
     }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {

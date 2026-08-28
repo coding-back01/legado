@@ -10,6 +10,7 @@ import android.util.TypedValue
 import android.view.View
 import androidx.annotation.ColorInt
 import androidx.annotation.IntDef
+import androidx.core.content.withStyledAttributes
 import io.legado.app.R
 import io.legado.app.lib.theme.accentColor
 
@@ -50,24 +51,45 @@ class BevelLabelView @JvmOverloads constructor(
     private var mY: Int = 0
 
     init {
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.BevelLabelView)
-        mBgColor = typedArray.getColor(
-            R.styleable.BevelLabelView_label_bg_color,
-            context.accentColor
-        ) //默认红色
-        mText = typedArray.getString(R.styleable.BevelLabelView_label_text) ?: ""
-        mTextSize =
-            typedArray.getDimensionPixelOffset(
+        var parsedBgColor = context.accentColor
+        var parsedText = ""
+        var parsedTextSize = sp2px(11)
+        var parsedTextColor = Color.WHITE
+        var parsedLength = dip2px(40)
+        var parsedCorner = 0
+        var parsedMode = 1
+        context.withStyledAttributes(attrs, R.styleable.BevelLabelView) {
+            parsedBgColor = getColor(
+                R.styleable.BevelLabelView_label_bg_color,
+                parsedBgColor
+            ) //默认红色
+            parsedText = getString(R.styleable.BevelLabelView_label_text) ?: parsedText
+            parsedTextSize = getDimensionPixelOffset(
                 R.styleable.BevelLabelView_label_text_size,
-                sp2px(11)
+                parsedTextSize
             )
-        mTextColor = typedArray.getColor(R.styleable.BevelLabelView_label_text_color, Color.WHITE)
-        mLength =
-            typedArray.getDimensionPixelOffset(R.styleable.BevelLabelView_label_length, dip2px(40))
-        mCorner = typedArray.getDimensionPixelOffset(R.styleable.BevelLabelView_label_corner, 0)
-        mMode = typedArray.getInt(R.styleable.BevelLabelView_label_mode, 1)
+            parsedTextColor = getColor(
+                R.styleable.BevelLabelView_label_text_color,
+                parsedTextColor
+            )
+            parsedLength = getDimensionPixelOffset(
+                R.styleable.BevelLabelView_label_length,
+                parsedLength
+            )
+            parsedCorner = getDimensionPixelOffset(
+                R.styleable.BevelLabelView_label_corner,
+                parsedCorner
+            )
+            parsedMode = getInt(R.styleable.BevelLabelView_label_mode, parsedMode)
+        }
+        mBgColor = parsedBgColor
+        mText = parsedText
+        mTextSize = parsedTextSize
+        mTextColor = parsedTextColor
+        mLength = parsedLength
+        mCorner = parsedCorner
+        mMode = parsedMode
         mPaint.isAntiAlias = true
-        typedArray.recycle()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

@@ -67,10 +67,10 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
 | `UnusedResources` | 中 | 594 | 588 | 6 | 0 | 0 | 588 | PR 3 显式加入 Startup 后减少 1 项；PR 4d（#57）对 5 个同时触发 `PluralsCandidate` 的资源完成全仓动态引用审计后删除；其余仍须逐项审计 |
 | `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认会改变两个文件选择器的 View Binding、图标尺寸与点击区域，本轮精确延期 |
-| `UseKtx` | 低 | 133 | 78 | 55 | 0 | 0 | 78 | PR 3 与 PR 4g、4h 已安全消除 14 项；PR 4i 将 41 个 `Uri.parse(String)` occurrence 转为委托同一解析器的 `String.toUri()`；其余继续逐类审查 |
+| `UseKtx` | 低 | 133 | 58 | 75 | 0 | 0 | 58 | PR 3 与 PR 4g、4h 已安全消除 14 项；PR 4i 将 41 个 `Uri.parse(String)` occurrence 转为委托同一解析器的 `String.toUri()`；PR 4j 将 20 个样式属性读取改为自动回收同一 `TypedArray` 的 `Context.withStyledAttributes`；其余继续逐类审查 |
 | `UselessParent` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认需移动漫画菜单边距、背景和测量职责，缺少稳定页面截图，本轮精确延期 |
 | `VectorPath` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 图形精度与渲染风险 |
-| **合计** |  | **881** | **768** | **108** | **5** | **43** | **725** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4i 已完成 113 项修复/抑制，并精确延期 43 项 |
+| **合计** |  | **881** | **748** | **128** | **5** | **43** | **705** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4j 已完成 133 项修复/抑制，并精确延期 43 项 |
 
 ## 精确局部抑制
 

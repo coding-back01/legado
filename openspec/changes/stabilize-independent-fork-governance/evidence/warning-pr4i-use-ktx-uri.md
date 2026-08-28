@@ -73,3 +73,23 @@ Bitmap、Canvas 和 SharedPreferences 分组，继续保持 `PENDING_REVIEW`；�
 无输出。draft PR #62 已创建；当前结果只证明本地提交候选通过，仍须完成该 PR
 最终 head 与合并后 `master` 的远端和本地验证，才可开始下一 warning 批次。当前
 没有连接设备，本批未运行设备测试，也不将其描述为通过。
+
+## Pull Request 与合并后闭环
+
+PR #62 的最终 head 为 `b27b78577be946bca10cfa67b046acd94dc6ff67`，merge
+commit 为 `080ddf962b079809c0ab82ba88cfa0137936480c`。最终 head 的
+`Android Debug 验证` run `33137769890` 成功；合并后同一 merge commit 的
+`Test Build` run `33138049265` 也成功。短期 head 分支按治理序列要求保留。
+
+2026-08-28 从干净的合并后 `master` 使用 JDK 17.0.17 与固定 Android SDK
+再次强制执行 131 个 Gradle 任务，122 个单元测试 0 失败、1 跳过，Android lint
+为 0 error、768 warning、18 hint，Debug 构建、OpenSpec 严格校验和空白检查
+均成功。合并后报告哈希如下：
+
+| 报告 | SHA-256 |
+|---|---|
+| `lint-results-appDebug.xml` | `a2382624beb067360f6b4d941f3db482059091584600871f63ecae808b2f3a78` |
+| `lint-results-appDebug.html` | `a8e5599b69cdc57cd01990c050b4045ebd0ae73d0845546dcc3cd461ff820ff4` |
+| `lint-results-appDebug.txt` | `f0496215b8135b1c46b64abb37cb4f94b5aea1d81af9cbe2620fcbab1c2c745d` |
+
+至此 PR 4i 完成全部串行门禁，可以从该 merge commit 开始下一小批次。

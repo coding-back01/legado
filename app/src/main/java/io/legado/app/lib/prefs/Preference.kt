@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.withStyledAttributes
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceViewHolder
@@ -28,9 +29,14 @@ open class Preference(context: Context, attrs: AttributeSet) :
 
     init {
         layoutResource = R.layout.view_preference
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.Preference)
-        isBottomBackground = typedArray.getBoolean(R.styleable.Preference_isBottomBackground, false)
-        typedArray.recycle()
+        var parsedIsBottomBackground = false
+        context.withStyledAttributes(attrs, R.styleable.Preference) {
+            parsedIsBottomBackground = getBoolean(
+                R.styleable.Preference_isBottomBackground,
+                parsedIsBottomBackground
+            )
+        }
+        isBottomBackground = parsedIsBottomBackground
     }
 
     companion object {

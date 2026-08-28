@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.withStyledAttributes
 import io.legado.app.R
 
 /**
@@ -29,14 +30,23 @@ class ArcView @JvmOverloads constructor(
     val path = Path()
 
     init {
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.ArcView)
-        mArcHeight = typedArray.getDimensionPixelSize(R.styleable.ArcView_arcHeight, 0)
-        mBgColor = typedArray.getColor(
-            R.styleable.ArcView_bgColor,
-            Color.parseColor("#303F9F")
-        )
-        mDirectionTop = typedArray.getBoolean(R.styleable.ArcView_arcDirectionTop, false)
-        typedArray.recycle()
+        var parsedArcHeight = 0
+        var parsedBgColor = Color.parseColor("#303F9F")
+        var parsedDirectionTop = false
+        context.withStyledAttributes(attrs, R.styleable.ArcView) {
+            parsedArcHeight = getDimensionPixelSize(R.styleable.ArcView_arcHeight, parsedArcHeight)
+            parsedBgColor = getColor(
+                R.styleable.ArcView_bgColor,
+                parsedBgColor
+            )
+            parsedDirectionTop = getBoolean(
+                R.styleable.ArcView_arcDirectionTop,
+                parsedDirectionTop
+            )
+        }
+        mArcHeight = parsedArcHeight
+        mBgColor = parsedBgColor
+        mDirectionTop = parsedDirectionTop
     }
 
     override fun onDraw(canvas: Canvas) {

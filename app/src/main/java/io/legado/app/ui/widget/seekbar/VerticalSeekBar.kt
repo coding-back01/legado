@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.widget.ProgressBar
 import androidx.appcompat.widget.AppCompatSeekBar
+import androidx.core.content.withStyledAttributes
 import androidx.core.view.ViewCompat
 import io.legado.app.R
 import io.legado.app.lib.theme.accentColor
@@ -63,12 +64,12 @@ class VerticalSeekBar @JvmOverloads constructor(context: Context, attrs: Attribu
         ViewCompat.setLayoutDirection(this, ViewCompat.LAYOUT_DIRECTION_LTR)
 
         if (attrs != null) {
-            val a = context.obtainStyledAttributes(attrs, R.styleable.VerticalSeekBar)
-            val rotationAngle = a.getInteger(R.styleable.VerticalSeekBar_seekBarRotation, 0)
-            if (isValidRotationAngle(rotationAngle)) {
-                mRotationAngle = rotationAngle
+            context.withStyledAttributes(attrs, R.styleable.VerticalSeekBar) {
+                val rotationAngle = getInteger(R.styleable.VerticalSeekBar_seekBarRotation, 0)
+                if (isValidRotationAngle(rotationAngle)) {
+                    mRotationAngle = rotationAngle
+                }
             }
-            a.recycle()
         }
     }
 

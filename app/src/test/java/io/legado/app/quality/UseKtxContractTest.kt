@@ -88,6 +88,21 @@ class UseKtxContractTest {
         )
     }
 
+    @Test
+    fun `样式属性读取使用自动回收的 KTX 扩展`() {
+        val styledAttributeSources = styledAttributeSourcePaths.map(::source)
+
+        styledAttributeSources.forEach { source ->
+            assertFalse(source.contains("context.obtainStyledAttributes("))
+        }
+        assertEquals(
+            20,
+            styledAttributeSources.sumOf {
+                Regex("""context\.withStyledAttributes\(""").findAll(it).count()
+            }
+        )
+    }
+
     private fun source(path: String): String = repoFile(path).readText()
 
     private fun repoFile(path: String): File = requireNotNull(
@@ -121,6 +136,29 @@ class UseKtxContractTest {
             "app/src/main/java/io/legado/app/utils/RealPathUtil.kt",
             "app/src/main/java/io/legado/app/utils/StringExtensions.kt",
             "app/src/main/java/io/legado/app/utils/SystemUtils.kt"
+        )
+
+        val styledAttributeSourcePaths = listOf(
+            "app/src/main/java/io/legado/app/lib/prefs/ColorPreference.kt",
+            "app/src/main/java/io/legado/app/lib/prefs/NameListPreference.kt",
+            "app/src/main/java/io/legado/app/lib/prefs/Preference.kt",
+            "app/src/main/java/io/legado/app/lib/prefs/SwitchPreference.kt",
+            "app/src/main/java/io/legado/app/lib/theme/view/ThemeRadioNoButton.kt",
+            "app/src/main/java/io/legado/app/ui/widget/DetailSeekBar.kt",
+            "app/src/main/java/io/legado/app/ui/widget/ShadowLayout.kt",
+            "app/src/main/java/io/legado/app/ui/widget/TitleBar.kt",
+            "app/src/main/java/io/legado/app/ui/widget/anima/RefreshProgressBar.kt",
+            "app/src/main/java/io/legado/app/ui/widget/anima/RotateLoading.kt",
+            "app/src/main/java/io/legado/app/ui/widget/dynamiclayout/DynamicFrameLayout.kt",
+            "app/src/main/java/io/legado/app/ui/widget/image/ArcView.kt",
+            "app/src/main/java/io/legado/app/ui/widget/image/CircleImageView.kt",
+            "app/src/main/java/io/legado/app/ui/widget/image/FilletImageView.kt",
+            "app/src/main/java/io/legado/app/ui/widget/recycler/DividerNoLast.kt",
+            "app/src/main/java/io/legado/app/ui/widget/seekbar/VerticalSeekBar.kt",
+            "app/src/main/java/io/legado/app/ui/widget/text/AccentBgTextView.kt",
+            "app/src/main/java/io/legado/app/ui/widget/text/AccentStrokeTextView.kt",
+            "app/src/main/java/io/legado/app/ui/widget/text/BevelLabelView.kt",
+            "app/src/main/java/io/legado/app/ui/widget/text/StrokeTextView.kt"
         )
     }
 }
