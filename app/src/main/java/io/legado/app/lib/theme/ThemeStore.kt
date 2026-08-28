@@ -3,12 +3,12 @@ package io.legado.app.lib.theme
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.Color
 import androidx.annotation.AttrRes
 import androidx.annotation.CheckResult
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import io.legado.app.utils.ColorUtils
 import io.legado.app.utils.LogUtils
 import splitties.init.appCtx
@@ -195,7 +195,7 @@ private constructor(private val mContext: Context) : ThemeStoreInterface {
                 ThemeUtils.resolveColor(
                     context,
                     androidx.appcompat.R.attr.colorPrimary,
-                    Color.parseColor("#455A64")
+                    "#455A64".toColorInt()
                 )
             )
         }
@@ -208,7 +208,7 @@ private constructor(private val mContext: Context) : ThemeStoreInterface {
                 ThemeUtils.resolveColor(
                     context,
                     androidx.appcompat.R.attr.colorPrimaryDark,
-                    Color.parseColor("#37474F")
+                    "#37474F".toColorInt()
                 )
             )
         }
@@ -221,7 +221,7 @@ private constructor(private val mContext: Context) : ThemeStoreInterface {
                 ThemeUtils.resolveColor(
                     context,
                     androidx.appcompat.R.attr.colorAccent,
-                    Color.parseColor("#263238")
+                    "#263238".toColorInt()
                 )
             )
         }

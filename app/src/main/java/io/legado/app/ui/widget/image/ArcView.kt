@@ -5,6 +5,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.withStyledAttributes
+import androidx.core.graphics.toColorInt
 import io.legado.app.R
 
 /**
@@ -31,7 +32,7 @@ class ArcView @JvmOverloads constructor(
 
     init {
         var parsedArcHeight = 0
-        var parsedBgColor = Color.parseColor("#303F9F")
+        var parsedBgColor = "#303F9F".toColorInt()
         var parsedDirectionTop = false
         context.withStyledAttributes(attrs, R.styleable.ArcView) {
             parsedArcHeight = getDimensionPixelSize(R.styleable.ArcView_arcHeight, parsedArcHeight)

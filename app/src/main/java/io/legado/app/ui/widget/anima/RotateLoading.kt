@@ -4,12 +4,12 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.withStyledAttributes
+import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import io.legado.app.R
 import io.legado.app.lib.theme.accentColor
@@ -118,7 +118,7 @@ class RotateLoading @JvmOverloads constructor(
             return
         }
 
-        mPaint.color = Color.parseColor("#1a000000")
+        mPaint.color = "#1a000000".toColorInt()
         shadowRectF?.let {
             canvas.drawArc(it, topDegree.toFloat(), arc, false, mPaint)
             canvas.drawArc(it, bottomDegree.toFloat(), arc, false, mPaint)
