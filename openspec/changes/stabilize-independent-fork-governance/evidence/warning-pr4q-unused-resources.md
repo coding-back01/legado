@@ -116,3 +116,24 @@ drawable、3 个 layout、1 个 anim、1 个 color selector 和 1 个 menu，共
 无输出。实时 `adb devices -l` 为空，本批未运行设备测试，也不将其描述为通过。
 draft PR #70 已创建；仍须完成该 PR 最终 head 与合并后 `master` 的远端和本地
 双重复验，才可完成任务 5.5。任务 5.8 继续保持未完成，正式发布继续冻结。
+
+## Pull Request 与合并后闭环
+
+PR #70 的最终 head 为 `180fac6ed8916d0450b7041f49b74faba64a8c07`，merge
+commit 为 `d5c1065ae76898008bea2c6e8df8f45f247e119f`。最终 head 的
+`Android Debug 验证` run `33191500939` 成功；合并后同一 merge commit 的
+`Test Build` run `33191933272` 也成功。短期 head 分支按治理序列要求保留。
+
+2026-08-29 从干净的合并后 `master` 使用 JDK 17.0.17 与固定 Android SDK
+再次强制执行 131 个 Gradle 任务，129 个单元测试 0 失败、1 跳过，Android lint
+为 0 error、104 warning、18 hint，`UnusedResources` 为 2；Debug 构建、OpenSpec
+严格校验和空白检查均成功。合并后报告哈希如下：
+
+| 报告 | SHA-256 |
+|---|---|
+| `lint-results-appDebug.xml` | `0a2edcde943acb4ca3d1084d94fb29a977a666305cd61727137521d342844b2e` |
+| `lint-results-appDebug.html` | `e387659387f87749ed089714358700f4188a39a27e9baca311ecf77185c4721a` |
+| `lint-results-appDebug.txt` | `72c5d488bb734d04575002c4c934c197b2c36071bf3cc1d7665d3c9f69bcb5fa` |
+
+实时 `adb devices -l` 仍为空，设备测试未运行。至此 PR 4q 完成全部串行门禁，
+任务 5.5 可以完成，并可从该 merge commit 开始剩余 warning 的最终三态审计。
