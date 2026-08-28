@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.view.isVisible
 import io.legado.app.R
 import io.legado.app.lib.theme.accentColor
 import io.legado.app.utils.dpToPx
@@ -157,7 +158,7 @@ class RotateLoading @JvmOverloads constructor(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (visibility == VISIBLE) {
+        if (isVisible) {
             startInternal()
         }
     }

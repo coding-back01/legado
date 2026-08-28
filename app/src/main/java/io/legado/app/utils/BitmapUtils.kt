@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.Bitmap.Config
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import androidx.core.graphics.get
 import com.google.android.renderscript.Toolkit
 import java.io.*
 import kotlin.math.*
@@ -249,10 +250,10 @@ fun Bitmap.getMeanColor(): Int {
     var pixelSumGreen = 0
     for (i in 0..99) {
         for (j in 70..99) {
-            pixel = this.getPixel(
+            pixel = this[
                 (i * width / 100.toFloat()).roundToInt(),
                 (j * height / 100.toFloat()).roundToInt()
-            )
+            ]
             pixelSumRed += Color.red(pixel)
             pixelSumGreen += Color.green(pixel)
             pixelSumBlue += Color.blue(pixel)
