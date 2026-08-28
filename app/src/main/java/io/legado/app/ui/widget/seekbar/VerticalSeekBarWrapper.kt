@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 
 import androidx.core.view.ViewCompat
+import androidx.core.view.isNotEmpty
 import kotlin.math.max
 
 class VerticalSeekBarWrapper @JvmOverloads constructor(
@@ -18,7 +19,7 @@ class VerticalSeekBarWrapper @JvmOverloads constructor(
 
     private val childSeekBar: VerticalSeekBar?
         get() {
-            val child = if (childCount > 0) getChildAt(0) else null
+            val child = if (isNotEmpty()) getChildAt(0) else null
             return if (child is VerticalSeekBar) child else null
         }
 

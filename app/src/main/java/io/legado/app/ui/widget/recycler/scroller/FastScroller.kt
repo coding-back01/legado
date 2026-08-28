@@ -413,7 +413,7 @@ class FastScroller : LinearLayout {
     }
 
     private fun isViewVisible(view: View?): Boolean {
-        return view != null && view.visibility == View.VISIBLE
+        return view?.isVisible == true
     }
 
     private fun cancelAnimation(animator: ViewPropertyAnimator?) {
