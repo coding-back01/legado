@@ -72,6 +72,6 @@ PR #65 合并后的 lint XML 包含 10 个 `Int.toDrawable` occurrence，映射�
 | `lint-results-appDebug.txt` | `a484512e7b240d1166ffcb0e9d4a64af311183f6cbd28ada49e807a12aebb4fd` |
 
 `openspec validate --all --strict` 为 3 passed、0 failed，`git diff --check`
-无输出。当前结果只证明本地提交候选通过；仍须创建 draft PR，并完成该 PR 最终
-head 与合并后 `master` 的远端和本地验证，才可开始下一 warning 批次。当前没有
-连接设备，本批未运行设备测试，也不将其描述为通过。
+无输出。draft PR #66 已创建；当前结果只证明本地提交候选通过，仍须完成该 PR
+最终 head 与合并后 `master` 的远端和本地验证，才可开始下一 warning 批次。当前
+没有连接设备，本批未运行设备测试，也不将其描述为通过。
