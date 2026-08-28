@@ -68,6 +68,6 @@ Simulation 仅保留 1 对非目标原始状态调用。旧生产代码运行该
 | `lint-results-appDebug.txt` | `eacd290bc2351b830d79236a704609c3a5218499af62c513bf2e965e16b06c6f` |
 
 `openspec validate --all --strict` 为 3 passed、0 failed，`git diff --check`
-无输出。draft PR 尚未创建；当前结果只证明本地候选通过，仍须完成该 PR 最终 head
+无输出。draft PR #69 已创建；当前结果只证明本地候选通过，仍须完成该 PR 最终 head
 与合并后 `master` 的远端和本地验证，才可完成任务 5.4。实时
 `adb devices -l` 为空，本批未运行设备测试，也不将其描述为通过。
