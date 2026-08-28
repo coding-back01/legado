@@ -67,7 +67,7 @@ PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称�
 | `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 0 | 1 | 资源维护债务 |
 | `UnusedResources` | 中 | 594 | 588 | 6 | 0 | 0 | 588 | PR 3 显式加入 Startup 后减少 1 项；PR 4d（#57）对 5 个同时触发 `PluralsCandidate` 的资源完成全仓动态引用审计后删除；其余仍须逐项审计 |
 | `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认会改变两个文件选择器的 View Binding、图标尺寸与点击区域，本轮精确延期 |
-| `UseKtx` | 低 | 133 | 13 | 113 | 7 | 0 | 13 | PR 3 与 PR 4g 至 4k 已安全消除 91 项；PR 4l（#65）完成 3 个非空 Bitmap Drawable 转换并精确抑制 7 个可空兼容 occurrence；PR 4m（#66）完成 10 个颜色 Drawable 转换；PR 4n 将 9 个三参数 `Bitmap.createBitmap` 改为等价 KTX 构造；其余继续逐类审查 |
+| `UseKtx` | 低 | 133 | 13 | 113 | 7 | 0 | 13 | PR 3 与 PR 4g 至 4k 已安全消除 91 项；PR 4l（#65）完成 3 个非空 Bitmap Drawable 转换并精确抑制 7 个可空兼容 occurrence；PR 4m（#66）完成 10 个颜色 Drawable 转换；PR 4n（#67）将 9 个三参数 `Bitmap.createBitmap` 改为等价 KTX 构造；其余继续逐类审查 |
 | `UselessParent` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认需移动漫画菜单边距、背景和测量职责，缺少稳定页面截图，本轮精确延期 |
 | `VectorPath` | 中 | 1 | 1 | 0 | 0 | 0 | 1 | 图形精度与渲染风险 |
 | **合计** |  | **881** | **703** | **166** | **12** | **43** | **660** | 逐 ID 审查中；PR 3 与 PR 4a 至 PR 4n 已完成 178 项修复/抑制，并精确延期 43 项 |

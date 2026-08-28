@@ -75,6 +75,6 @@ AndroidX Core 的顶层 `createBitmap(width, height, config)` 委托同一平台
 | `lint-results-appDebug.txt` | `3add59ffc9e3cf8d2a47245817c5624401aed39e0091b78ecaa67ad7a93e9b6c` |
 
 `openspec validate --all --strict` 为 3 passed、0 failed，`git diff --check`
-无输出。draft PR 尚未创建；当前结果只证明本地候选通过，仍须完成该 PR 最终 head
+无输出。draft PR #67 已创建；当前结果只证明本地候选通过，仍须完成该 PR 最终 head
 与合并后 `master` 的远端和本地验证，才可开始下一 warning 批次。实时
 `adb devices -l` 为空，本批未运行设备测试，也不将其描述为通过。
