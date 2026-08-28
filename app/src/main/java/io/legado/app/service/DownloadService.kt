@@ -6,10 +6,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.Uri
 import android.os.Environment
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import io.legado.app.R
 import io.legado.app.base.BaseService
@@ -100,7 +100,7 @@ class DownloadService : BaseService() {
         }
         kotlin.runCatching {
             // 指定下载地址
-            val request = DownloadManager.Request(Uri.parse(url))
+            val request = DownloadManager.Request(url.toUri())
             // 设置通知
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
             // 设置下载文件保存的路径和文件名

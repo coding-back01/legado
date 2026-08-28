@@ -2,6 +2,7 @@ package io.legado.app.model.localBook
 
 import android.net.Uri
 import android.util.Base64
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.script.ScriptBindings
 import com.script.rhino.RhinoScriptEngine
@@ -103,7 +104,7 @@ object LocalBook {
 
     fun getLastModified(book: Book): Result<Long> {
         return kotlin.runCatching {
-            val uri = Uri.parse(book.bookUrl)
+            val uri = book.bookUrl.toUri()
             if (uri.isContentScheme()) {
                 return@runCatching DocumentFile.fromSingleUri(appCtx, uri)!!.lastModified()
             }
@@ -382,7 +383,7 @@ object LocalBook {
             }
             if (deleteOriginal) {
                 if (book.bookUrl.isContentScheme()) {
-                    val uri = Uri.parse(book.bookUrl)
+                    val uri = book.bookUrl.toUri()
                     DocumentFile.fromSingleUri(appCtx, uri)?.delete()
                 } else {
                     FileUtils.delete(book.bookUrl)
@@ -427,7 +428,7 @@ object LocalBook {
         inputStream.use {
             val defaultBookTreeUri = AppConfig.defaultBookTreeUri
             if (defaultBookTreeUri.isNullOrBlank()) throw NoBooksDirException()
-            val treeUri = Uri.parse(defaultBookTreeUri)
+            val treeUri = defaultBookTreeUri.toUri()
             return if (treeUri.isContentScheme()) {
                 val treeDoc = DocumentFile.fromTreeUri(appCtx, treeUri)
                 var doc = treeDoc!!.findFile(fileName)

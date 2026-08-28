@@ -3,9 +3,9 @@ package io.legado.app.utils
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.provider.Settings
 import android.view.Display
+import androidx.core.net.toUri
 import splitties.init.appCtx
 import splitties.systemservices.displayManager
 import splitties.systemservices.powerManager
@@ -24,7 +24,7 @@ object SystemUtils {
             try {
                 @SuppressLint("BatteryLife")
                 val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                intent.data = Uri.parse("package:" + activity.packageName)
+                intent.data = ("package:" + activity.packageName).toUri()
                 activity.startActivity(intent)
             } catch (ignored: Throwable) {
             }

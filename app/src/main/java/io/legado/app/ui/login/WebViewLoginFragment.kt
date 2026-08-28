@@ -16,6 +16,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.activityViewModels
+import androidx.core.net.toUri
 import io.legado.app.R
 import io.legado.app.base.BaseFragment
 import io.legado.app.constant.AppConst
@@ -104,7 +105,7 @@ class WebViewLoginFragment : BaseFragment(R.layout.fragment_web_view_login) {
 
             @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION", "KotlinRedundantDiagnosticSuppress")
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-                return shouldOverrideUrlLoading(Uri.parse(url))
+                return shouldOverrideUrlLoading(url.toUri())
             }
 
             private fun shouldOverrideUrlLoading(url: Uri): Boolean {

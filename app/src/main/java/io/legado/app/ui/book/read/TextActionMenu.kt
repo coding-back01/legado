@@ -5,7 +5,6 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
-import android.net.Uri
 import android.os.Build
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -18,6 +17,7 @@ import androidx.appcompat.view.SupportMenuInflater
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.view.menu.MenuItemImpl
 import androidx.core.view.isVisible
+import androidx.core.net.toUri
 import io.legado.app.R
 import io.legado.app.base.adapter.ItemViewHolder
 import io.legado.app.base.adapter.RecyclerAdapter
@@ -218,7 +218,7 @@ class TextActionMenu(private val context: Context, private val callBack: CallBac
                 kotlin.runCatching {
                     val intent = if (callBack.selectedText.isAbsUrl()) {
                         Intent(Intent.ACTION_VIEW).apply {
-                            data = Uri.parse(callBack.selectedText)
+                            data = callBack.selectedText.toUri()
                         }
                     } else {
                         Intent(Intent.ACTION_WEB_SEARCH).apply {

@@ -24,6 +24,7 @@ import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.size
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import com.script.rhino.runScriptWithContext
 import io.legado.app.R
@@ -267,7 +268,7 @@ class ReadRssActivity : VMBaseActivity<ActivityRssReadBinding, ReadRssViewModel>
         if (path.isNullOrEmpty()) {
             selectSaveFolder(webPic)
         } else {
-            viewModel.saveImage(webPic, Uri.parse(path))
+            viewModel.saveImage(webPic, path.toUri())
         }
     }
 
@@ -402,7 +403,7 @@ class ReadRssActivity : VMBaseActivity<ActivityRssReadBinding, ReadRssViewModel>
 
         @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION", "KotlinRedundantDiagnosticSuppress")
         override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-            return shouldOverrideUrlLoading(Uri.parse(url))
+            return shouldOverrideUrlLoading(url.toUri())
         }
 
         /**

@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.core.os.postDelayed
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
 import io.legado.app.R
@@ -138,7 +139,7 @@ class FileAssociationActivity :
                     mode = HandleFileContract.DIR_SYS
                 }
             } else {
-                importBook(Uri.parse(treeUriStr), uri)
+                importBook(treeUriStr.toUri(), uri)
             }
         } else {
             importBook(null, uri)
