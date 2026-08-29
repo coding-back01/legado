@@ -1,43 +1,102 @@
-name: Test Build
+name: 维护门禁
 
 on:
   push:
     branches:
       - master
-    paths:
-      - '**'
-      - '!**/ISSUE_TEMPLATE/**'
-      - '!**/modules/web/**'
   pull_request:
-    paths-ignore:
-      - '**/modules/web/**'
-  workflow_run:
-    workflows: [Build Web]
-    branches: [master]
-    types:
-      - completed
   workflow_dispatch:
+    inputs:
+      scope_probe:
+        description: 仅用于验证路径分类和稳定聚合检查
+        required: false
+        default: auto
+        type: choice
+        options:
+          - auto
+          - android
+          - web
+          - docs
+          - all
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: maintenance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  verify:
-    name: Android Debug 验证
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+  scope:
+    name: 识别变更范围
     runs-on: ubuntu-latest
+    outputs:
+      android: ${{ steps.classify.outputs.android }}
+      web: ${{ steps.classify.outputs.web }}
+      base_sha: ${{ steps.classify.outputs.base_sha }}
+      head_sha: ${{ steps.classify.outputs.head_sha }}
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
+      - name: 分类并锁定验证提交范围
+        id: classify
+        shell: bash
+        env:
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SCOPE_PROBE: ${{ github.event.inputs.scope_probe || 'auto' }}
+        run: |
+          set -euo pipefail
+          head_sha=$(git rev-parse "${EVENT_HEAD_SHA}^{commit}")
+          base_sha="$EVENT_BASE_SHA"
+          if [[ -z "$base_sha" || "$base_sha" =~ ^0+$ ]] || \
+             ! git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
+            if git cat-file -e "${head_sha}^" 2>/dev/null; then
+              base_sha=$(git rev-parse "${head_sha}^")
+            else
+              base_sha=$(git hash-object -t tree /dev/null)
+            fi
+          fi
+
+          case "$SCOPE_PROBE" in
+            auto)
+              git diff --name-only -z "$base_sha" "$head_sha" |
+                bash .github/scripts/classify-maintenance-scope.sh
+              ;;
+            android)
+              printf 'android=true\nweb=false\n' >> "$GITHUB_OUTPUT"
+              ;;
+            web)
+              printf 'android=false\nweb=true\n' >> "$GITHUB_OUTPUT"
+              ;;
+            docs)
+              printf 'android=false\nweb=false\n' >> "$GITHUB_OUTPUT"
+              ;;
+            all)
+              printf 'android=true\nweb=true\n' >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "未知 scope_probe: $SCOPE_PROBE" >&2
+              exit 1
+              ;;
+          esac
+
+          printf 'base_sha=%s\nhead_sha=%s\n' "$base_sha" "$head_sha" >> "$GITHUB_OUTPUT"
+
+  android:
+    name: Android 质量检查
+    needs: scope
+    if: needs.scope.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v5
+
       - name: 配置 JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
@@ -47,21 +106,255 @@ jobs:
         run: |
           : > app/src/main/assets/18PlusList.txt
 
-      - name: 配置 Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - name: 配置 Gradle 缓存
+        uses: gradle/actions/setup-gradle@v5
 
-      - name: 运行单元测试并构建 Debug APK
+      - name: 运行 Android lint
+        run: >-
+          ./gradlew :app:lintAppDebug
+          --build-cache
+          --no-daemon
+          --warning-mode all
+
+      - name: 上传 Android lint 报告
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: android-lint-${{ github.sha }}
+          path: |
+            app/build/reports/lint-results-appDebug.xml
+            app/build/reports/lint-results-appDebug.html
+            app/build/reports/lint-results-appDebug.txt
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: 运行 Android 单元测试
+        run: >-
+          ./gradlew :app:testAppDebugUnitTest
+          --build-cache
+          --no-daemon
+          --warning-mode all
+
+      - name: 构建 Debug APK
+        run: >-
+          ./gradlew :app:assembleAppDebug
+          --build-cache
+          --no-daemon
+          --warning-mode all
+
+      - name: 上传 Debug APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: legado-app-debug-${{ github.sha }}
+          path: app/build/outputs/apk/app/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
+
+  web:
+    name: Web 质量检查
+    needs: scope
+    if: needs.scope.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v5
+
+      - name: 配置 pnpm 9.15.9
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.9
+          run_install: false
+
+      - name: 配置 Node.js 22 与 pnpm 缓存
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: modules/web/pnpm-lock.yaml
+
+      - name: 冻结安装网页端依赖
+        working-directory: modules/web
+        run: pnpm install --frozen-lockfile
+
+      - name: 运行章节 HTML 安全测试
+        working-directory: modules/web
+        run: pnpm test:chapter-html
+
+      - name: 运行网页端类型检查
+        working-directory: modules/web
+        run: pnpm type-check
+
+      - name: 运行只读 ESLint
+        working-directory: modules/web
+        run: pnpm exec eslint .
+
+      - name: 构建并同步网页端产物
+        working-directory: modules/web
+        run: pnpm build
+
+      - name: 核对 Android Web 静态资源
         shell: bash
         run: |
           set -euo pipefail
-          ./gradlew :app:testAppDebugUnitTest :app:assembleAppDebug \
-            --build-cache \
-            --no-daemon \
-            --warning-mode all
+          asset_status=$(git status --porcelain --untracked-files=all -- app/src/main/assets/web/vue)
+          if [[ -n "$asset_status" ]]; then
+            printf '%s\n' "$asset_status"
+            exit 1
+          fi
 
-      - name: 上传 Debug APK
-        uses: actions/upload-artifact@v4
+  repository:
+    name: OpenSpec 与仓库检查
+    needs: scope
+    runs-on: ubuntu-latest
+    env:
+      ACTIONLINT_VERSION: 1.7.12
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v5
         with:
-          name: legado-app-debug
-          if-no-files-found: error
-          path: app/build/outputs/apk/app/debug/*.apk
+          fetch-depth: 0
+
+      - name: 配置 Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: 安装固定版本 OpenSpec
+        run: npm install --global @fission-ai/openspec@1.8.0
+
+      - name: 严格校验 OpenSpec
+        run: openspec validate --all --strict
+
+      - name: 安装并运行固定版本 actionlint
+        shell: bash
+        run: |
+          set -euo pipefail
+          actionlint_dir="$RUNNER_TEMP/actionlint"
+          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          mkdir -p "$actionlint_dir"
+          curl --fail --location --show-error --silent \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/${archive}" \
+            --output "$actionlint_dir/$archive"
+          printf '%s  %s\n' "$ACTIONLINT_SHA256" "$actionlint_dir/$archive" |
+            sha256sum --check --strict
+          tar -xzf "$actionlint_dir/$archive" -C "$actionlint_dir" actionlint
+          "$actionlint_dir/actionlint" -color
+
+      - name: 运行维护门禁契约测试
+        run: python3 .github/scripts/test_maintenance_workflow.py
+
+      - name: 检查提交范围空白错误
+        env:
+          BASE_SHA: ${{ needs.scope.outputs.base_sha }}
+          HEAD_SHA: ${{ needs.scope.outputs.head_sha }}
+        run: git diff --check "$BASE_SHA" "$HEAD_SHA"
+
+  codeql:
+    name: CodeQL（${{ matrix.label }}）
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: java-kotlin
+            label: Android
+            build-mode: manual
+          - language: javascript-typescript
+            label: Web
+            build-mode: none
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v5
+
+      - name: 配置 JDK 17
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: 配置 Gradle 缓存
+        if: matrix.language == 'java-kotlin'
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: 初始化 CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: 清理成人内容列表
+        if: matrix.language == 'java-kotlin'
+        shell: bash
+        run: |
+          : > app/src/main/assets/18PlusList.txt
+
+      - name: 为 CodeQL 构建 Android Debug
+        if: matrix.language == 'java-kotlin'
+        run: >-
+          ./gradlew :app:assembleAppDebug
+          --build-cache
+          --no-daemon
+          --warning-mode all
+
+      - name: 分析并上传 CodeQL 结果
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:${{ matrix.language }}
+
+  gate:
+    name: 维护门禁
+    needs: [scope, android, web, repository, codeql]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: 聚合实际运行与合法跳过结果
+        shell: bash
+        env:
+          SCOPE_RESULT: ${{ needs.scope.result }}
+          ANDROID_REQUIRED: ${{ needs.scope.outputs.android }}
+          ANDROID_RESULT: ${{ needs.android.result }}
+          WEB_REQUIRED: ${{ needs.scope.outputs.web }}
+          WEB_RESULT: ${{ needs.web.result }}
+          REPOSITORY_RESULT: ${{ needs.repository.result }}
+          CODEQL_RESULT: ${{ needs.codeql.result }}
+        run: |
+          set -euo pipefail
+          fail=false
+
+          require_success() {
+            local name=$1
+            local result=$2
+            if [[ "$result" != success ]]; then
+              echo "$name 未成功：$result"
+              fail=true
+            fi
+          }
+
+          require_scoped_result() {
+            local name=$1
+            local required=$2
+            local result=$3
+            if [[ "$required" == true ]]; then
+              require_success "$name" "$result"
+            elif [[ "$result" != skipped ]]; then
+              echo "$name 应合法跳过，实际为：$result"
+              fail=true
+            else
+              echo "$name 合法跳过"
+            fi
+          }
+
+          require_success "范围识别" "$SCOPE_RESULT"
+          require_success "OpenSpec 与仓库检查" "$REPOSITORY_RESULT"
+          require_success "CodeQL" "$CODEQL_RESULT"
+          require_scoped_result "Android 质量检查" "$ANDROID_REQUIRED" "$ANDROID_RESULT"
+          require_scoped_result "Web 质量检查" "$WEB_REQUIRED" "$WEB_RESULT"
+
+          if [[ "$fail" == true ]]; then
+            exit 1
+          fi

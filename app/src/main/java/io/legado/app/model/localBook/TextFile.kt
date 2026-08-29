@@ -6,17 +6,18 @@ import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
 import io.legado.app.data.entities.TxtTocRule
 import io.legado.app.exception.EmptyFileException
+import io.legado.app.exception.RegexTimeoutException
 import io.legado.app.help.DefaultData
 import io.legado.app.help.book.isLocalModified
 import io.legado.app.utils.EncodingDetect
 import io.legado.app.utils.MD5Utils
+import io.legado.app.utils.RegexSafety
 import io.legado.app.utils.StringUtils
 import io.legado.app.utils.Utf8BomUtils
 import java.io.FileNotFoundException
 import java.nio.charset.Charset
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import java.util.regex.PatternSyntaxException
 import kotlin.math.min
 
 class TextFile(private var book: Book) {
@@ -92,7 +93,18 @@ class TextFile(private var book: Book) {
                 }
             }
         }
-        val (toc, wordCount) = analyze(book.tocUrl.toPattern(Pattern.MULTILINE))
+        val tocPattern = try {
+            RegexSafety.compile(book.tocUrl, Pattern.MULTILINE)
+        } catch (e: IllegalArgumentException) {
+            AppLog.put("TXT目录规则正则语法错误、过长或不支持", e)
+            null
+        }
+        val (toc, wordCount) = try {
+            analyze(tocPattern)
+        } catch (e: RegexTimeoutException) {
+            AppLog.put("TXT目录规则匹配超过安全步数预算，改用无规则拆分", e)
+            analyze()
+        }
         book.wordCount = StringUtils.wordCountFormat(wordCount)
         toc.forEachIndexed { index, bookChapter ->
             bookChapter.index = index
@@ -185,7 +197,7 @@ class TextFile(private var book: Book) {
                 //当前Block下使过的String的指针
                 var seekPos = 0
                 //进行正则匹配
-                val matcher: Matcher = pattern.matcher(blockContent)
+                val matcher: Matcher = pattern.matcher(RegexSafety.limitInput(blockContent))
                 //如果存在相应章节
                 while (matcher.find()) { //获取匹配到的字符在字符串中的起始位置
                     val chapterStart = matcher.start()
@@ -439,19 +451,24 @@ class TextFile(private var book: Book) {
         var tocPattern: Pattern? = null
         for (tocRule in rules) {
             val pattern = try {
-                tocRule.rule.toPattern(Pattern.MULTILINE)
-            } catch (e: PatternSyntaxException) {
-                AppLog.put("TXT目录规则正则语法错误:${tocRule.name}\n$e", e)
+                RegexSafety.compile(tocRule.rule, Pattern.MULTILINE)
+            } catch (e: IllegalArgumentException) {
+                AppLog.put("TXT目录规则正则语法错误、过长或不支持:${tocRule.name}\n$e", e)
                 continue
             }
-            val matcher = pattern.matcher(content)
+            val matcher = pattern.matcher(RegexSafety.limitInput(content))
             var start = 0
             var num = 0
-            while (matcher.find()) {
-                if (start == 0 || matcher.start() - start > 1000) {
-                    num++
-                    start = matcher.end()
+            try {
+                while (matcher.find()) {
+                    if (start == 0 || matcher.start() - start > 1000) {
+                        num++
+                        start = matcher.end()
+                    }
                 }
+            } catch (e: RegexTimeoutException) {
+                AppLog.put("TXT目录规则匹配超过安全步数预算:${tocRule.name}", e)
+                continue
             }
             if (num >= maxNum) {
                 maxNum = num

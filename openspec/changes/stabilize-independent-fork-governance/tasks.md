@@ -64,21 +64,21 @@
 - [x] 5.3 处理无障碍和有可靠证据的性能 warning；截图、UI 层级、基准或单元测试不足时不得标记 `FIXED`。
 - [x] 5.4 将 `UseKtx` 等机械建议拆成独立批次，只转换语义等价且检查可覆盖的位置，避免全项目格式化或顺手重构。
 - [x] 5.5 对 `UnusedResources` 先搜索 XML、代码、反射、名称拼接、书源规则、Web/assets 和运行时动态引用；只有能够排除动态使用的资源才允许删除并运行资源构建验证。
-- [ ] 5.6 对确认误报或刻意兼容行为只添加精确局部抑制，并在账本记录文件、位置、理由和验证；不得放宽同 ID 的其他位置。
-- [ ] 5.7 对风险或验证成本过高的 occurrence 标记 `DEFERRED`，记录风险、具体原因、剩余数量和可重新启动条件；延期本身不阻止总变更，但缺少记录会阻止。
-- [ ] 5.8 每个 warning PR 都运行改动范围测试、Android lint、Debug 构建、OpenSpec 严格校验和 `git diff --check`，更新账本并在前一 PR 合并后才开始下一批。
-- [ ] 5.9 完成全部安全批次后生成最终 warning 统计，确认 Android lint 仍为 0 error、没有 `PENDING_REVIEW`，每个 lint ID 的三态数量与完整 CI occurrence 报告对账，且所有局部抑制和延期范围均有精确记录。
+- [x] 5.6 对确认误报或刻意兼容行为只添加精确局部抑制，并在账本记录文件、位置、理由和验证；不得放宽同 ID 的其他位置。
+- [x] 5.7 对风险或验证成本过高的 occurrence 标记 `DEFERRED`，记录风险、具体原因、剩余数量和可重新启动条件；延期本身不阻止总变更，但缺少记录会阻止。
+- [x] 5.8 每个 warning PR 都运行改动范围测试、Android lint、Debug 构建、OpenSpec 严格校验和 `git diff --check`，更新账本并在前一 PR 合并后才开始下一批。
+- [x] 5.9 完成全部安全批次后生成最终 warning 统计，确认 Android lint 仍为 0 error、没有 `PENDING_REVIEW`，每个 lint ID 的三态数量与完整 CI occurrence 报告对账，且所有局部抑制和延期范围均有精确记录。
 
 ## 6. PR 5：持续 CI、CodeQL 与 master 门禁
 
-- [ ] 6.1 扩展 Android 验证 workflow，使用 JDK 17 执行单元测试、`lintAppDebug` 和 Debug 构建；任何命令失败即停止，并始终上传可审计的 lint 报告而不接触正式签名 Secrets。
-- [ ] 6.2 重构 Web workflow，使用 Node 20+ 与固定的 pnpm 9.15.9 冻结安装，依次执行类型检查、只读 ESLint 和构建，并检查同步产物是否与提交一致；移除只对旧上游生效的自动提交条件。
-- [ ] 6.3 增加独立 OpenSpec/仓库检查，显式安装 `@fission-ai/openspec@1.8.0` 后执行 `openspec validate --all --strict`，并执行适用的 YAML/actionlint 与 `git diff --check`。
-- [ ] 6.4 增加 GitHub CodeQL workflow，使用最小必要权限：`contents: read`、上传 SARIF 所需的 `security-events: write`，只有分析需要时才加入 `packages: read`；fork PR 使用不暴露 Secrets 的降权路径，验证失败不得用 `continue-on-error` 隐藏。
-- [ ] 6.5 为 Android、Web、OpenSpec 和 CodeQL 建立在每个 PR 与 `master` 提交上都稳定出现的聚合 gate；不得让 workflow 级 `paths` 造成 required context 缺失。Android、Web 等子任务可以按路径合法跳过，但 CodeQL 必须在每个 PR 与 `master` 提交上实际分析，`if: always()` 聚合结果必须区分合法跳过与真实失败并对后者失败。
-- [ ] 6.6 为质量和安全工作流设置适当并发、缓存和 artifact 保留策略，确认 PR 验证只产生 Debug/报告，不读取或发布正式签名材料。
-- [ ] 6.7 在 PR 5 上分别用 Android-only、Web-only、文档/OpenSpec-only 改动或等价测试实际观察全部聚合 context 稳定存在且成功，记录精确检查名；同时手动对 PR head 运行完整 CodeQL 分支分析。
-- [ ] 6.8 在合并 PR 5 前读取其 CodeQL 检查结果、分析/SARIF 摘要和可用告警：高危/严重项修复、替换或禁用受影响功能后才可合并；中危逐项记录判断；低危登记维护清单。扫描成功不得代替告警审查。
+- [x] 6.1 扩展 Android 验证 workflow，使用 JDK 17 执行单元测试、`lintAppDebug` 和 Debug 构建；任何命令失败即停止，并始终上传可审计的 lint 报告而不接触正式签名 Secrets。
+- [x] 6.2 重构 Web workflow，使用 Node 20+ 与固定的 pnpm 9.15.9 冻结安装，依次执行类型检查、只读 ESLint 和构建，并检查同步产物是否与提交一致；移除只对旧上游生效的自动提交条件。
+- [x] 6.3 增加独立 OpenSpec/仓库检查，显式安装 `@fission-ai/openspec@1.8.0` 后执行 `openspec validate --all --strict`，并执行适用的 YAML/actionlint 与 `git diff --check`。
+- [x] 6.4 增加 GitHub CodeQL workflow，使用最小必要权限：`contents: read`、上传 SARIF 所需的 `security-events: write`，只有分析需要时才加入 `packages: read`；fork PR 使用不暴露 Secrets 的降权路径，验证失败不得用 `continue-on-error` 隐藏。
+- [x] 6.5 为 Android、Web、OpenSpec 和 CodeQL 建立在每个 PR 与 `master` 提交上都稳定出现的聚合 gate；不得让 workflow 级 `paths` 造成 required context 缺失。Android、Web 等子任务可以按路径合法跳过，但 CodeQL 必须在每个 PR 与 `master` 提交上实际分析，`if: always()` 聚合结果必须区分合法跳过与真实失败并对后者失败。
+- [x] 6.6 为质量和安全工作流设置适当并发、缓存和 artifact 保留策略，确认 PR 验证只产生 Debug/报告，不读取或发布正式签名材料。
+- [x] 6.7 在 PR 5 上分别用 Android-only、Web-only、文档/OpenSpec-only 改动或等价测试实际观察全部聚合 context 稳定存在且成功，记录精确检查名；同时手动对 PR head 运行完整 CodeQL 分支分析。
+- [x] 6.8 在合并 PR 5 前读取其 CodeQL 检查结果、分析/SARIF 摘要和可用告警：高危/严重项修复、替换或禁用受影响功能后才可合并；中危逐项记录判断；低危登记维护清单。扫描成功不得代替告警审查。
 - [ ] 6.9 创建并合并 `codex/maintenance-gates` PR 5；合并后再次确认相同聚合检查在 `master` 成功，并重新读取 Dependabot、CodeQL 和 Secret Scanning 告警，任何新增高危/严重项阻止后续阶段。
 - [ ] 6.10 仅在 6.9 完成后，读取现有 `master` ruleset 的精确 ID、名称、target、enforcement、conditions、rules 和 bypass actors 并保存完整前置快照；按该 ID 最小加入已验证的精确聚合 context 与高危/严重 code-scanning 阈值，不得削弱或覆盖已有规则，随后读回并逐字段核对。
 - [ ] 6.11 单独快照并启用仓库“合并后自动删除 head branch”设置；读回验证后，确认 ruleset 与仓库设置不存在引用漂移、缺失 context 或意外放宽。

@@ -20,7 +20,6 @@ import io.legado.app.utils.*
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.Dispatchers
 import java.util.regex.Pattern
-import java.util.regex.PatternSyntaxException
 
 class TxtTocRuleEditDialog() : BaseDialogFragment(R.layout.dialog_toc_regex_edit, true),
     Toolbar.OnMenuItemClickListener {
@@ -79,9 +78,9 @@ class TxtTocRuleEditDialog() : BaseDialogFragment(R.layout.dialog_toc_regex_edit
         }
 
         try {
-            Pattern.compile(tocRule.rule, Pattern.MULTILINE)
-        } catch (ex: PatternSyntaxException) {
-            AppLog.put("正则语法错误或不支持(txt)：${ex.localizedMessage}", ex, true)
+            RegexSafety.compile(tocRule.rule, Pattern.MULTILINE)
+        } catch (ex: IllegalArgumentException) {
+            AppLog.put("正则语法错误、过长或不支持(txt)：${ex.localizedMessage}", ex, true)
             return false
         }
 
