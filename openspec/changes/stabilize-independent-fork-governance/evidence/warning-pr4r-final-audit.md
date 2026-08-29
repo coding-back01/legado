@@ -160,8 +160,29 @@ fallback、应用图标和 launcher alias 在 API 21/36 与多密度下的打包
 `openspec validate --all --strict` 为 3 passed、0 failed，`git diff --check` 无输出。
 实时 `adb devices -l` 为空，设备测试未运行，也不将其描述为通过。
 
-## 待完成 PR 门禁
+## Pull Request 与合并后闭环
 
-本地验证已满足 draft PR 前置。仍须提交并创建 PR 4r，等待最终 head 的远端检查成功，
-使用 merge commit 合并，并在合并后 `master` 上再次完成远端和本地 131 任务双重复验。
-在该闭环完成之前，任务 5.6、5.7、5.8、5.9 保持未完成，正式发布继续冻结。
+PR #71 的最终 head 为 `836d4d90f1128159f88a23fcf733b1c87f8d19ea`，merge
+commit 为 `4e1c3474aac3d90f9f02af940dfdfafbb0c07d17`。最终 head 的
+`Android Debug 验证` run `33194066413` 和合并后同一 merge commit 的
+`Test Build` run `33194420314` 均成功；短期 head 分支按治理序列要求保留。
+
+2026-08-29 从干净的合并后 `master` 使用 JDK 17.0.17 与固定 Android SDK 再次
+强制执行 131 个 Gradle 任务，全部实际执行并在 3 分 7 秒内成功。测试 XML 汇总为
+28 个测试套件、129 个测试、0 失败、0 error、1 跳过；Android lint 为 0 error、
+104 warning、18 hint，Debug APK `legado_app_3.26.082910.apk` 构建成功。三份报告
+SHA-256 为：
+
+| 报告 | SHA-256 |
+|---|---|
+| `lint-results-appDebug.xml` | `0a2edcde943acb4ca3d1084d94fb29a977a666305cd61727137521d342844b2e` |
+| `lint-results-appDebug.html` | `04ec2c2793a5c24a58e2031b48f059404f5e8d058f2a2cc69c02d50978e196a7` |
+| `lint-results-appDebug.txt` | `72c5d488bb734d04575002c4c934c197b2c36071bf3cc1d7665d3c9f69bcb5fa` |
+
+合并后再次逐 lint ID 执行账本与 XML 只读对账，26 个 ID 全部通过：原始 881、
+当前 104、`FIXED=765`、`SUPPRESSED_WITH_REASON=12`、`DEFERRED=104`、
+`PENDING_REVIEW=0`。`openspec validate --all --strict` 为 3 passed、0 failed，
+`git diff --check` 无输出。实时 `adb devices -l` 仍为空，设备测试未运行。
+
+至此所有 warning 批次均完成本地、PR 最终 head、合并后远端和合并后本地串行门禁，
+任务 5.6、5.7、5.8、5.9 可以完成；正式发布继续冻结，下一阶段进入 PR 5 持续门禁。
