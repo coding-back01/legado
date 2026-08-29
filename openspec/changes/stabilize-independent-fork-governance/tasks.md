@@ -77,8 +77,8 @@
 - [x] 6.4 增加 GitHub CodeQL workflow，使用最小必要权限：`contents: read`、上传 SARIF 所需的 `security-events: write`，只有分析需要时才加入 `packages: read`；fork PR 使用不暴露 Secrets 的降权路径，验证失败不得用 `continue-on-error` 隐藏。
 - [x] 6.5 为 Android、Web、OpenSpec 和 CodeQL 建立在每个 PR 与 `master` 提交上都稳定出现的聚合 gate；不得让 workflow 级 `paths` 造成 required context 缺失。Android、Web 等子任务可以按路径合法跳过，但 CodeQL 必须在每个 PR 与 `master` 提交上实际分析，`if: always()` 聚合结果必须区分合法跳过与真实失败并对后者失败。
 - [x] 6.6 为质量和安全工作流设置适当并发、缓存和 artifact 保留策略，确认 PR 验证只产生 Debug/报告，不读取或发布正式签名材料。
-- [ ] 6.7 在 PR 5 上分别用 Android-only、Web-only、文档/OpenSpec-only 改动或等价测试实际观察全部聚合 context 稳定存在且成功，记录精确检查名；同时手动对 PR head 运行完整 CodeQL 分支分析。
-- [ ] 6.8 在合并 PR 5 前读取其 CodeQL 检查结果、分析/SARIF 摘要和可用告警：高危/严重项修复、替换或禁用受影响功能后才可合并；中危逐项记录判断；低危登记维护清单。扫描成功不得代替告警审查。
+- [x] 6.7 在 PR 5 上分别用 Android-only、Web-only、文档/OpenSpec-only 改动或等价测试实际观察全部聚合 context 稳定存在且成功，记录精确检查名；同时手动对 PR head 运行完整 CodeQL 分支分析。
+- [x] 6.8 在合并 PR 5 前读取其 CodeQL 检查结果、分析/SARIF 摘要和可用告警：高危/严重项修复、替换或禁用受影响功能后才可合并；中危逐项记录判断；低危登记维护清单。扫描成功不得代替告警审查。
 - [ ] 6.9 创建并合并 `codex/maintenance-gates` PR 5；合并后再次确认相同聚合检查在 `master` 成功，并重新读取 Dependabot、CodeQL 和 Secret Scanning 告警，任何新增高危/严重项阻止后续阶段。
 - [ ] 6.10 仅在 6.9 完成后，读取现有 `master` ruleset 的精确 ID、名称、target、enforcement、conditions、rules 和 bypass actors 并保存完整前置快照；按该 ID 最小加入已验证的精确聚合 context 与高危/严重 code-scanning 阈值，不得削弱或覆盖已有规则，随后读回并逐字段核对。
 - [ ] 6.11 单独快照并启用仓库“合并后自动删除 head branch”设置；读回验证后，确认 ruleset 与仓库设置不存在引用漂移、缺失 context 或意外放宽。

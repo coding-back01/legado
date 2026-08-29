@@ -153,10 +153,36 @@ API 返回 7 个打开的 high 告警，而不是零告警：
 “未识别补偿控制”的 false positive 精确关闭并记录。其他 6 个告警必须由最终分析自动关闭，
 不得人工接受。
 
+## 最终 head 范围探针与告警闭环
+
+安全修复 head 为
+`f7a70178d3194a42f9b92322c586e0dfb7740e42`。以下五个 run 均锁定该 SHA，
+双 CodeQL 在每个 run 中实际分析，`OpenSpec 与仓库检查` 和最终 `维护门禁` 均成功：
+
+| 类型 | run | Android 质量 | Web 质量 | 结果 |
+|---|---:|---|---|---|
+| Pull Request 自动完整运行 | [`33233604598`](https://github.com/coding-back01/legado/actions/runs/33233604598) | 成功 | 成功 | 全部 job 与 `维护门禁` 成功 |
+| 手动完整分支分析 | [`33233628790`](https://github.com/coding-back01/legado/actions/runs/33233628790) | 成功 | 成功 | 全部 job 与 `维护门禁` 成功 |
+| Android-only | [`33241360363`](https://github.com/coding-back01/legado/actions/runs/33241360363) | 成功 | 合法跳过 | 双 CodeQL 与 `维护门禁` 成功 |
+| Web-only | [`33241607714`](https://github.com/coding-back01/legado/actions/runs/33241607714) | 合法跳过 | 成功 | 双 CodeQL 与 `维护门禁` 成功 |
+| 文档/OpenSpec-only | [`33233637486`](https://github.com/coding-back01/legado/actions/runs/33233637486) | 合法跳过 | 合法跳过 | 双 CodeQL 与 `维护门禁` 成功 |
+
+首次同时提交四个手动探针时，GitHub concurrency 只允许一个 pending run，因后续入队而取消了
+尚未执行的 `33233632123` 和 `33233634827`。它们不作为测试失败或通过证据；Android-only
+与 Web-only 已在其他手动 run 完成后按上表串行重发并成功。
+
+最终分析自动将原 `#1`–`#7` 全部标记为 fixed，其中旧正则 sink `#3` 因编译入口迁入
+`RegexSafety` 而关闭；同一数据流在 helper 的 `Pattern.compile` 处生成新告警 `#8`。
+这证明 CodeQL 仍跟踪了用户输入，但没有把 `StepLimitedCharSequence` 的共享访问计数识别为
+净化或资源控制。在上述 7/7 聚焦测试、136 个完整 JVM 测试、全部内置规则 512 KiB
+兼容测试和五类远端 run 均通过后，才于 2026-08-29 15:52 +0800 精确将 `#8` 按
+`false positive` 关闭；评论完整记录 4,096 字符上限、每字符 128 步、100,000,000 步绝对
+上限、超限回退和测试名称。关闭后该分支 CodeQL 状态为 open 0、dismissed 1、fixed 7，
+没有对规则或其他位置进行批量忽略。
+
 ## 远端待完成门禁
 
-以上本地结果和首轮远端探针满足任务 6.1–6.6，并形成 6.7–6.8 的部分证据。任务
-6.7–6.11 仍保持未完成：必须先把安全修复推送到 Draft PR，在最终精确 head 上重新运行
-完整和三类范围探针，审查分析/SARIF 与告警并确认 high/critical 为零后才可转 Ready、合并
-和验证 `master`；只有稳定检查名在最终 head 真实观察后才允许最小修改现有 ruleset 和
-自动删分支设置。正式发布继续冻结。
+以上证据满足任务 6.1–6.8。任务 6.9–6.11 仍保持未完成：证据提交后的最终 PR head
+必须再次通过自动 `维护门禁` 且 CodeQL open high/critical 保持为零，随后才可转 Ready、
+使用 merge commit 合并并验证 `master`；只有合并后的稳定检查名真实成功后，才允许按现有
+ruleset 精确 ID 做最小门禁更新和单独启用自动删分支。正式发布继续冻结。
