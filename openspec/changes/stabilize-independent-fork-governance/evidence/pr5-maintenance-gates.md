@@ -1,11 +1,12 @@
 # PR 5 持续维护门禁证据
 
-本文记录 `codex/maintenance-gates` 在创建 Pull Request 前的 RED/GREEN、本地质量检查和安全边界。远端范围探针、CodeQL 分析与告警审查、合并后 `master`、ruleset 和自动删分支设置仍按任务 6.7–6.11 单独闭环；本地 workflow 契约通过不代替这些远端证据。
+本文记录 `codex/maintenance-gates` 的 RED/GREEN、本地质量检查、Draft Pull Request 范围探针和 CodeQL 告警处置。最终 head 的三类范围探针、告警关闭、合并后 `master`、ruleset 和自动删分支设置仍按任务 6.7–6.11 串行闭环；扫描或 workflow 成功不代替告警审查。
 
 ## 验证对象
 
 - 基线：`master@4e1c3474aac3d90f9f02af940dfdfafbb0c07d17`
 - 分支：`codex/maintenance-gates`
+- Draft Pull Request：[#72](https://github.com/coding-back01/legado/pull/72)
 - 日期：2026-08-29
 - 范围：Android、Web、OpenSpec/仓库检查、CodeQL 和稳定聚合门禁
 
@@ -65,7 +66,7 @@ JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home \
   --rerun-tasks --build-cache --no-daemon --warning-mode all
 ```
 
-结果为 `BUILD SUCCESSFUL`，耗时 3 分 10 秒，131/131 个 Gradle 任务实际执行。测试 XML 汇总为 28 个测试套件、129 个测试、0 failure、0 error、1 skip；lint 为 0 error、104 warning、18 hint。Debug APK `legado_app_3.26.082911.apk` 构建成功，大小为 29,943,675 字节。
+首次结果为 `BUILD SUCCESSFUL`，耗时 3 分 10 秒，131/131 个 Gradle 任务实际执行。测试 XML 汇总为 28 个测试套件、129 个测试、0 failure、0 error、1 skip；lint 为 0 error、104 warning、18 hint。Debug APK `legado_app_3.26.082911.apk` 构建成功，大小为 29,943,675 字节。
 
 lint 报告 SHA-256：
 
@@ -74,6 +75,16 @@ lint 报告 SHA-256：
 | `lint-results-appDebug.xml` | `0a2edcde943acb4ca3d1084d94fb29a977a666305cd61727137521d342844b2e` |
 | `lint-results-appDebug.html` | `25b63402e01db26a7aa07fb04502b1463b0edf1eaf4c21d36a1090911e940973` |
 | `lint-results-appDebug.txt` | `72c5d488bb734d04575002c4c934c197b2c36071bf3cc1d7665d3c9f69bcb5fa` |
+
+CodeQL 修复加入后以同一固定环境再次执行相同的三个 Gradle 任务和 `--rerun-tasks`，
+结果为 `BUILD SUCCESSFUL`，耗时 3 分 5 秒，131/131 个任务实际执行；测试增至
+136 个，0 failure、0 error、1 skip，lint 仍为 0 error、104 warning、18 hint。
+Debug APK `legado_app_3.26.082912.apk` 构建成功，大小为 29,946,766 字节。
+最终 XML 与文本报告摘要仍分别为
+`0a2edcde943acb4ca3d1084d94fb29a977a666305cd61727137521d342844b2e` 和
+`72c5d488bb734d04575002c4c934c197b2c36071bf3cc1d7665d3c9f69bcb5fa`；HTML 因
+本次报告页面内容更新，摘要为
+`e64cb26f734c9f772b7e0995fa55103d5bac0a821c327fe61c25393d5233ed5a`。
 
 ## Web、OpenSpec 与范围边界
 
@@ -89,8 +100,63 @@ pnpm build
 
 冻结安装、16 个章节 HTML 安全测试、类型检查、只读 ESLint 和构建全部成功；本地构建按既有脚本不复制 GitHub Actions assets，目标 Android Web assets 无未提交差异。`openspec validate --all --strict` 为 3 passed、0 failed；`git diff --check` 无输出。
 
+CodeQL 修复后再次运行同一 Web 链，16/16 安全测试、类型检查、只读 ESLint 和构建
+全部成功；12/12 个 workflow 契约、OpenSpec 3/3 严格校验和 `git diff --check`
+同时通过。actionlint 1.7.12 的 Darwin arm64 官方压缩包经摘要
+`aba9ced2dee8d27fecca3dc7feb1a7f9a52caefa1eb46f3271ea66b6e0e6953f`
+核对后运行成功。
+
 本 PR 不修改最低 API 21、Room schema、书源/订阅源规则、导入 URI、备份格式、普通正式版包名、签名材料或依赖版本；验证 workflow 只产生 Debug APK 和报告，不读取或发布正式签名产物。
+
+## 首轮远端范围探针
+
+Draft PR 首个 head 为
+`d6a6b77c20f72923a271ecd81fd48b2085c2a4c0`。自动 Pull Request 完整运行
+[`33231305120`](https://github.com/coding-back01/legado/actions/runs/33231305120)
+成功，并实际产生以下稳定检查名：`识别变更范围`、`Android 质量检查`、
+`Web 质量检查`、`OpenSpec 与仓库检查`、`CodeQL（Android）`、`CodeQL（Web）`
+和聚合 `维护门禁`。
+
+同一 head 的等价范围探针结果：
+
+| 探针 | run | 适用任务 | 合法跳过 | 共同结果 |
+|---|---:|---|---|---|
+| Android-only | [`33231350902`](https://github.com/coding-back01/legado/actions/runs/33231350902) | Android 成功 | Web | 双 CodeQL、仓库检查、`维护门禁` 成功 |
+| Web-only | [`33231704853`](https://github.com/coding-back01/legado/actions/runs/33231704853) | Web 成功 | Android | 双 CodeQL、仓库检查、`维护门禁` 成功 |
+
+这些 run 证明实际任务和合法跳过能被 `维护门禁` 正确区分，但还不能完成 6.7：
+安全修复产生新 head 后必须重新运行完整、Android-only、Web-only 和文档/OpenSpec-only
+四类 run，且双 CodeQL 必须在每个 run 上实际分析。
+
+## 首次 CodeQL 告警与 RED→GREEN
+
+在 `d6a6b77c20f72923a271ecd81fd48b2085c2a4c0` 上手动完成分支双语言分析后，
+API 返回 7 个打开的 high 告警，而不是零告警：
+
+| 告警 | 规则 | 数量 | 根因 | 处置 |
+|---|---|---:|---|---|
+| `#4`–`#7` | `java/android/implicit-pendingintents` | 4 | 通知和媒体动作的 PendingIntent 虽有目标类型，但旧 helper 先构造隐式 Intent 且 Android 12+ 使用 mutable flag | 统一在 helper 中构造显式 class 目标并在 API 23+ 使用 `FLAG_IMMUTABLE`；删除未使用的非泛型 mutable overload |
+| `#3` | `java/regex-injection` | 1 | TXT 目录规则允许用户输入并直接编译、匹配 512 KiB 文本 | 保留正则功能语义，增加 4,096 字符编译上限和共享字符访问步数预算；超限规则跳过或回退无规则拆分 |
+| `#1`–`#2` | `js/xss-through-dom` | 2 | 上传文件名和大小经 jQuery `.html()` 写入 DOM | 全部动态值与进度改用 `.text()`，不再解释为 HTML |
+
+先在旧实现上运行 `CodeQlHighRiskContractTest`，3/3 均按预期 RED；
+`RegexSafetyTest` 在 `RegexSafety` 尚不存在时按预期编译 RED。实现后 PendingIntent、DOM 和
+正则契约测试转为 GREEN。新增“全部默认 TXT 目录规则扫描 512 KiB 首块”兼容测试后，
+初始 10,000,000 步上限在 `双标题(后向)` 规则上真实失败；最终预算按输入长度使用每字符
+128 次访问、单 matcher 绝对上限 100,000,000 步。该测试随后通过，显式 10,000 步的
+`(a+)+$` 灾难性回溯测试仍抛出 `RegexTimeoutException`。最终 7/7 个聚焦测试和完整
+136 个 JVM 测试均通过。
+
+正则告警描述的是允许用户编辑目录规则这一产品功能，不能用 `Pattern.quote` 破坏规则语义。
+当前补偿控制在编译、输入访问和调用方回退三层实际限制资源；若最终 CodeQL 仍因不识别
+自定义 `CharSequence` 步数预算而保留 `#3`，只有在最终 head 复验上述控制后，才可按
+“未识别补偿控制”的 false positive 精确关闭并记录。其他 6 个告警必须由最终分析自动关闭，
+不得人工接受。
 
 ## 远端待完成门禁
 
-以上本地结果满足任务 6.1–6.6 的实现和本地验证条件。任务 6.7–6.11 仍保持未完成：必须先创建 Draft Pull Request，在精确 PR head 上运行 Android、Web、文档/OpenSpec 三类范围探针和完整 CodeQL，审查 SARIF/可用告警并确认高危/严重项处置后才可转 Ready、合并和验证 `master`；只有稳定检查名被真实观察后才允许最小修改现有 ruleset 和自动删分支设置。正式发布继续冻结。
+以上本地结果和首轮远端探针满足任务 6.1–6.6，并形成 6.7–6.8 的部分证据。任务
+6.7–6.11 仍保持未完成：必须先把安全修复推送到 Draft PR，在最终精确 head 上重新运行
+完整和三类范围探针，审查分析/SARIF 与告警并确认 high/critical 为零后才可转 Ready、合并
+和验证 `master`；只有稳定检查名在最终 head 真实观察后才允许最小修改现有 ruleset 和
+自动删分支设置。正式发布继续冻结。

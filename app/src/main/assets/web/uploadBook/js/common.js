@@ -116,10 +116,10 @@ function fileQueuedPC(file, type)
 
 		var i = $('#drag [data-status=init]').eq(0).index('#drag [data-js=item]');
 
-		$('#drag [data-js=item]').eq(i).children().eq(0).find('span').html(i+1);
-		$('#drag [data-js=item]').eq(i).children().eq(1).find('span').html(name);
-		$('#drag [data-js=item]').eq(i).children().eq(2).find('span').html(size);
-		$('#drag [data-js=item]').eq(i).children().eq(3).find('span i').addClass('red').html('0%');
+		$('#drag [data-js=item]').eq(i).children().eq(0).find('span').text(i+1);
+		$('#drag [data-js=item]').eq(i).children().eq(1).find('span').text(name);
+		$('#drag [data-js=item]').eq(i).children().eq(2).find('span').text(size);
+		$('#drag [data-js=item]').eq(i).children().eq(3).find('span i').addClass('red').text('0%');
 		$('#drag [data-js=item]').eq(i).attr('data-status', 'ed');
 
 		fileMap[file.name] = $('#drag [data-js=item]').eq(i).children().eq(3).find('span i');
@@ -130,14 +130,14 @@ function fileQueuedPC(file, type)
 //上传时返回的状态
 function uploadProgress(file, bytesLoaded, bytesTotal)
 {
-	fileMap[file.name].html(parseInt((bytesLoaded/bytesTotal)*100)+"%");
+	fileMap[file.name].text(parseInt((bytesLoaded/bytesTotal)*100)+"%");
 }
 
 
 //上传成功
 function uploadSuccess(file, serverData, res)
 {
-	fileMap[file.name].removeClass('red').addClass('op_right').html('');
+	fileMap[file.name].removeClass('red').addClass('op_right').text('');
 }
 
 /**

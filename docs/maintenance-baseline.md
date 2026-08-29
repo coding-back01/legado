@@ -20,7 +20,8 @@ ANDROID_SDK_ROOT=/Users/back/Library/Android/sdk \
 - `app/build/reports/lint-results-appDebug.html`
 - `app/build/reports/lint-results-appDebug.txt`
 
-PR 5 建立持续门禁后，在此补充完整报告 artifact 的稳定名称和获取方式。
+PR 5 的维护 workflow 在每次适用运行中上传 `android-lint-<提交 SHA>` artifact，
+保留 30 天；可从对应 `Test Build` run 的 Artifacts 区下载完整 XML、HTML 和文本报告。
 
 ## 阻断错误基线
 
