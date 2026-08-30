@@ -79,15 +79,15 @@
 - [x] 6.6 为质量和安全工作流设置适当并发、缓存和 artifact 保留策略，确认 PR 验证只产生 Debug/报告，不读取或发布正式签名材料。
 - [x] 6.7 在 PR 5 上分别用 Android-only、Web-only、文档/OpenSpec-only 改动或等价测试实际观察全部聚合 context 稳定存在且成功，记录精确检查名；同时手动对 PR head 运行完整 CodeQL 分支分析。
 - [x] 6.8 在合并 PR 5 前读取其 CodeQL 检查结果、分析/SARIF 摘要和可用告警：高危/严重项修复、替换或禁用受影响功能后才可合并；中危逐项记录判断；低危登记维护清单。扫描成功不得代替告警审查。
-- [ ] 6.9 创建并合并 `codex/maintenance-gates` PR 5；合并后再次确认相同聚合检查在 `master` 成功，并重新读取 Dependabot、CodeQL 和 Secret Scanning 告警，任何新增高危/严重项阻止后续阶段。
-- [ ] 6.10 仅在 6.9 完成后，读取现有 `master` ruleset 的精确 ID、名称、target、enforcement、conditions、rules 和 bypass actors 并保存完整前置快照；按该 ID 最小加入已验证的精确聚合 context 与高危/严重 code-scanning 阈值，不得削弱或覆盖已有规则，随后读回并逐字段核对。
-- [ ] 6.11 单独快照并启用仓库“合并后自动删除 head branch”设置；读回验证后，确认 ruleset 与仓库设置不存在引用漂移、缺失 context 或意外放宽。
+- [x] 6.9 创建并合并 `codex/maintenance-gates` PR 5；合并后再次确认相同聚合检查在 `master` 成功，并重新读取 Dependabot、CodeQL 和 Secret Scanning 告警，任何新增高危/严重项阻止后续阶段。
+- [x] 6.10 仅在 6.9 完成后，读取现有 `master` ruleset 的精确 ID、名称、target、enforcement、conditions、rules 和 bypass actors 并保存完整前置快照；按该 ID 最小加入已验证的精确聚合 context 与高危/严重 code-scanning 阈值，不得削弱或覆盖已有规则，随后读回并逐字段核对。
+- [x] 6.11 单独快照并启用仓库“合并后自动删除 head branch”设置；读回验证后，确认 ruleset 与仓库设置不存在引用漂移、缺失 context 或意外放宽。
 
 ## 7. PR 5b：模拟器发布自动化与预检
 
-- [ ] 7.1 在 `codex/release-emulator-smoke` 分支增加离线、唯一 sentinel、足够跨页的本地 TXT fixture 和只用于 Debug 测试数据的导入—正文—翻页—书架断言，不依赖公网或用户文件。
-- [ ] 7.2 修正现有设备测试中错误的 provider authority/path，并将依赖公网、固定远端数量或会污染数据的测试从发布 smoke 集合隔离；不得默认运行整个真机 instrumentation 套件。
-- [ ] 7.3 优先使用现有 AndroidX Test/Espresso 实现稳定断言；只有系统级路径确实无法覆盖时才增加 UIAutomator test-only 依赖并记录必要性。
+- [x] 7.1 在 `codex/release-emulator-smoke` 分支增加离线、唯一 sentinel、足够跨页的本地 TXT fixture 和只用于 Debug 测试数据的导入—正文—翻页—书架断言，不依赖公网或用户文件。
+- [x] 7.2 修正现有设备测试中错误的 provider authority/path，并将依赖公网、固定远端数量或会污染数据的测试从发布 smoke 集合隔离；不得默认运行整个真机 instrumentation 套件。
+- [x] 7.3 优先使用现有 AndroidX Test/Espresso 实现稳定断言；只有系统级路径确实无法覆盖时才增加 UIAutomator test-only 依赖并记录必要性。
 - [ ] 7.4 运行单元测试、lint、Debug 构建、可用模拟器聚焦测试、OpenSpec 严格校验和 `git diff --check`；创建并合并 PR 5b，记录其精确 head ref/SHA，合并后确认 `master` 全部聚合门禁绿色。未合并的测试代码或依赖不得进入发布证据。
 - [ ] 7.5 从已合并的 `master` 尽力创建或修复干净 API 21 AVD，安装 `appDebug` 并运行启动、导入预览取消和离线 TXT 完整路径；记录通过、实际失败或系统镜像不可用，不伪造结果。
 - [ ] 7.6 从同一 `master` 尽力在干净 API 36 AVD 执行同一套路径以及本轮涉及的输入法、导航、语言、RTL和动态资源页面检查；实际回归会阻止发布。
