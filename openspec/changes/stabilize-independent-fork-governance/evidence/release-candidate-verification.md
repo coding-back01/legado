@@ -275,3 +275,37 @@ workflow `head_sha`、`refs/tags/3.26.083101`、Release `target_commitish`、远
 `build/release-device-evidence/3.26.083101/`，目录权限为 `700`，文件权限均为 `600`；原始
 ReaderProvider JSON 从未写入文件。完成采集后应用已 force-stop。由此任务 8.5–8.10 在新
 候选上完成；`3.26.083101` 仍是草稿，正式发布继续冻结到 8.11 最终远端读回通过。
+
+## 8.11–8.13 公开、更新器回验与失败处置状态
+
+2026-08-31 01:29:47 +0800 在发布前最后一次从 GitHub 读回并确认：远端 `master`、Release
+workflow `head_sha`、`refs/tags/3.26.083101`、Release `target_commitish` 仍全部等于
+`RELEASE_SHA`；锁定提交的聚合 `维护门禁` 为 success；Dependabot 与 Code Scanning 的
+high/critical 打开告警均为 0，Secret Scanning 打开告警为 0；候选仍为单资产草稿，公开
+Latest 仍是 `3.26.082216`；失败草稿 `3.26.083021` 仍为 `draft=true`。
+
+随后只将 Release ID `379347961` 从草稿公开并设为 Latest，没有替换或增加资产。公开说明
+记录了独立维护与独立签名、唯一普通包名、精确提交、指定真机有限验证、历史 `releaseA`
+停止更新但保留资产和设备数据、跨签名不能覆盖，以及应用本身不提供内容且没有上游官方
+背书。发布后立即读回得到 `draft=false`、`prerelease=false`、`published_at` 非空、Latest
+Release ID 与 tag 均为 `379347961` / `3.26.083101`，唯一资产的 ID、大小和摘要均未变化；
+tag 和 Release target 仍精确指向 `RELEASE_SHA`。失败草稿继续保持不可见。
+
+公开后在新的本地目录从公开 Release 重新下载普通 APK，GitHub API 与下载字节仍均为
+14,517,611 字节，SHA-256 仍为
+`cd1869d2511b0ce375fc343a9e29f6f38f17f48c52bc67f18c776fda5e1a3c07`。`unzip -t`、
+`aapt dump badging` 与 `apksigner verify --verbose --print-certs` 再次确认 ZIP 完整、包名
+`io.legado.app.release`、versionName `3.26.083101`、minSdk 21、targetSdk 36、v1/v2/v3 签名
+和正式证书身份。
+
+同一次当前 fork Latest API JSON 先通过 `jq` 确认完整 tag、非草稿/非预发布、唯一普通
+uploaded APK、精确 MIME 和目标提交，再通过 `LEGADO_LATEST_RELEASE_JSON` 交给已合并的
+`StableReleaseParserTest`。更新器真实解析烟测及其全部契约共 9/9 通过、0 skip、0 failure、
+0 error；解析器得到完整版本和唯一
+`legado_app_3.26.083101_release.apk`，不会选择历史或 `releaseA` 资产。回验结束时 workflow、
+tag、Release target 与远端 `master` 仍全部等于 `RELEASE_SHA`。
+
+截至本次回验完成，没有发现 P0、未处置高危/严重安全告警、签名不一致或数据不变量失败，
+因此 8.13 的应急分支未触发。若后续确认此类问题，仍按已版本化规范立即恢复冻结、在原
+Release 加警示并通过新的验证版本修复；不得替换现有资产、删除 Release、失败草稿、CI 或
+设备审计记录。任务 8.11–8.13 至此完成，发布闭环已建立，后续仅进入总变更核验与归档。
