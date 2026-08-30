@@ -104,6 +104,21 @@ class ReleaseWorkflowContractTest {
     }
 
     @Test
+    fun `草稿前显式创建锁定 tag 并拒绝覆盖`() {
+        assertTrue(
+            workflow.contains(
+                "git ls-remote --exit-code --tags origin \"refs/tags/${'$'}{VERSION}\""
+            )
+        )
+        assertTrue(workflow.contains("git tag \"${'$'}VERSION\" \"${'$'}EXPECTED_SHA\""))
+        assertTrue(workflow.contains("git push origin \"refs/tags/${'$'}{VERSION}\""))
+        assertTrue(
+            workflow.indexOf("创建候选 tag") <
+                    workflow.indexOf("创建草稿 Release")
+        )
+    }
+
+    @Test
     fun `未来分发链不含 releaseA 且保留历史兼容识别`() {
         assertFalse(workflow.contains("releaseA"))
         assertFalse(buildGradle.contains(".releaseA"))
