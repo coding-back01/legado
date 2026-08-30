@@ -20,6 +20,12 @@
 `维护门禁` 均为 success；Android/Web 因纯 OpenSpec 文档范围合法 skip。原生 CodeQL
 ruleset 检查也为 success。PR 读回为 `OPEN`、`MERGEABLE`、`CLEAN`。
 
+归档 PR 的最终 head 为 `16aed1b044336d22863ad61805c686d94cebeb86`；GitHub Actions
+run [`33341515917`](https://github.com/coding-back01/legado/actions/runs/33341515917)
+在该 head 上完成双 CodeQL、OpenSpec/仓库检查和聚合 `维护门禁`，全部为 success。
+PR 于 2026-08-31 07:26 +0800 合并，merge commit 为
+`31affc67f72051ede1f4ec1bc8ee9c0f7ca69c9f`；归档 head 分支随后按仓库设置自动删除。
+
 ## 已合并治理 PR 精确身份
 
 2026-08-31 在 #77 合并前通过 GitHub Pull Request API 重新读取以下 31 个已合并治理 PR。
@@ -90,3 +96,46 @@ head SHA 一致，“已不存在”表示仓库自动删除设置已经完成�
 的 `master` 同步、OpenSpec/空白检查、Latest、安全、PR/issue、ruleset、分支和工作区复核；
 最后按本白名单执行 9.7。由于 9.6–9.7 必然发生在归档 PR 合并后，它们的勾选与最终报告
 将通过不含生产行为的纯证据收口 PR 进入 `master`。
+
+## 任务 9.6：归档合并后的总复核
+
+2026-08-31 07:41 +0800，本地 `master`、`origin/master` 和 PR #77 merge commit 均为
+`31affc67f72051ede1f4ec1bc8ee9c0f7ca69c9f`，工作区干净。归档合并后的 `master`
+GitHub Actions run
+[`33341839234`](https://github.com/coding-back01/legado/actions/runs/33341839234)
+在同一 SHA 上完成：CodeQL Android、CodeQL Web、OpenSpec/仓库检查和聚合 `维护门禁`
+均为 success；Android/Web 质量子任务因纯文档范围按契约合法 skip。
+
+本地 `openspec validate --all --strict` 为 6/6，通过；`git diff --check` 无输出；
+`openspec list --json` 返回零个活跃变更；`git status --short` 无输出。远端复核结果如下：
+
+- Latest 仍为 `3.26.083101`，Release ID `379347961`，公开、非预发布；唯一资产为
+  `legado_app_3.26.083101_release.apk`，asset ID `536854094`、14,517,611 字节、
+  SHA-256 `cd1869d2511b0ce375fc343a9e29f6f38f17f48c52bc67f18c776fda5e1a3c07`。
+- tag 与 Release target 仍为发布提交
+  `cef2fbb2dbdb6771686b04c68447a6f5caea964e`；当前 `master` 包含该提交且没有改动发布资产。
+- Code Scanning 与 Secret Scanning 打开告警均为 0；Dependabot 打开告警为 2 条 medium、
+  0 条 high/critical，均为同一 Element Plus 漏洞且 GitHub 仍未提供修复版本。
+- 私有漏洞报告、Dependabot Security Updates、Secret Scanning 和 push protection 均保持启用。
+- ruleset `20653588` 保持 active、无 bypass，必需检查仍为 `维护门禁`，CodeQL
+  `security_alerts_threshold` 仍为 `high_or_higher`。
+- 打开 issue 为 0；打开 PR 仅 #42、#44、#45、#73，均为新策略生成且按规范保留的普通
+  Dependabot PR。
+
+## 任务 9.7：精确删除与最终读回
+
+删除前从本文件解析出 29 条唯一白名单，并逐条重新验证：远端 ref 存在、tip 与记录 SHA
+一致、tip 是 `origin/master` 的祖先、没有打开 PR、没有同名 tag、没有 Release 以该分支
+为 target。29/29 全部满足，0 条漂移或受阻。
+
+删除使用每条 `refs/heads/<精确分支>:<记录 SHA>` 的独立
+`--force-with-lease`，并由一次 `git push --atomic` 原子提交全部 29 个精确删除 refspec；
+未使用 glob。GitHub 返回 29 条 deleted，随后 `git ls-remote --heads origin` 只读回 6 条：
+
+- `master`：`31affc67f72051ede1f4ec1bc8ee9c0f7ca69c9f`；
+- 4 条应保留的 Dependabot 分支，分别对应 #42、#44、#45、#73；
+- 未合并且明确不在白名单中的 `codex/release-verification-evidence`：
+  `182b67140b4eb4d1dbdace589a6c15f67447e61e`。
+
+白名单分支删除不会删除其已合并提交、Pull Request、Actions run、artifact、Release 或本
+OpenSpec 归档。最终状态没有新增或漂移对象被纳入授权范围。
