@@ -139,3 +139,21 @@ GitHub Actions run
 
 白名单分支删除不会删除其已合并提交、Pull Request、Actions run、artifact、Release 或本
 OpenSpec 归档。最终状态没有新增或漂移对象被纳入授权范围。
+
+## 最终收口 PR 暴露的 CodeQL 缓存缺陷
+
+最终收口 PR #78 的首个 head `5903451ec739cff78886dc2eb0d7d1bfe689c116` 触发 run
+[`33342651053`](https://github.com/coding-back01/legado/actions/runs/33342651053)。OpenSpec/
+仓库检查与 Web CodeQL 成功，但 Android CodeQL 失败，聚合 `维护门禁` 随即按合同失败，
+因此该 head 未合并。
+
+失败日志显示 Gradle 构建本身成功，但 75 个任务中有 45 个来自 build cache；
+`compileAppDebugKotlin`、`compileAppDebugJavaWithJavac` 等编译任务均为 `FROM-CACHE`，
+CodeQL 提取器没有实际处理任何 Java/Kotlin 源码，最终以 exit 32 fail-closed。该问题不是应用
+源码回归，也不能通过把失败描述为平台抖动或反复重跑来关闭。
+
+修复先在 `.github/scripts/test_maintenance_workflow.py` 增加合同，要求 Android CodeQL 构建
+段包含 `--no-build-cache` 且不包含 `--build-cache`；旧 workflow 上 13 个测试中的新增测试按
+预期 RED。随后只把 `.github/workflows/test.yml` 的 CodeQL Android 构建参数改为
+`--no-build-cache`，13/13 测试转为 GREEN；OpenSpec 严格校验仍为 6/6，`git diff --check`
+无输出。该修复只保证安全分析实际编译并提取源码，不修改应用生产行为、签名或发布资产。

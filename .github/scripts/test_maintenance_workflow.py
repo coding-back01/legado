@@ -150,6 +150,13 @@ class MaintenanceWorkflowContractTest(unittest.TestCase):
         self.assertNotIn("packages: read", self.workflow)
         self.assertNotIn("continue-on-error", self.workflow)
 
+    def test_android_codeql_compiles_sources_without_gradle_build_cache(self) -> None:
+        codeql_section = self.workflow.split("\n  codeql:", 1)[1].split(
+            "\n  gate:", 1
+        )[0]
+        self.assertIn("--no-build-cache", codeql_section)
+        self.assertNotIn("--build-cache", codeql_section)
+
     def test_stable_aggregate_gate_distinguishes_skip_and_failure(self) -> None:
         for token in (
             "name: 维护门禁",

@@ -297,7 +297,7 @@ jobs:
         if: matrix.language == 'java-kotlin'
         run: >-
           ./gradlew :app:assembleAppDebug
-          --build-cache
+          --no-build-cache
           --no-daemon
           --warning-mode all
 
