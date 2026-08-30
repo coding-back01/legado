@@ -95,7 +95,7 @@
 
 ## 8. 普通版候选、指定真机与正式发布
 
-- [ ] 8.1 汇总 PR 1–5b、warning 三态、稳定聚合 CI、CodeQL、全部安全告警和模拟器结果，确认只剩允许的非阻断债务；从远端 `master` 锁定精确 `RELEASE_SHA`，确认该 SHA 的全部必需检查绿色且高危/严重告警为零。候选验证期间暂停合并；`master` 漂移则取消本轮候选的公开资格、保留草稿审计记录并重新锁定。
+- [x] 8.1 汇总 PR 1–5b、warning 三态、稳定聚合 CI、CodeQL、全部安全告警和模拟器结果，确认只剩允许的非阻断债务；从远端 `master` 锁定精确 `RELEASE_SHA`，确认该 SHA 的全部必需检查绿色且高危/严重告警为零。候选验证期间暂停合并；`master` 漂移则取消本轮候选的公开资格、保留草稿审计记录并重新锁定。
 - [ ] 8.2 由仓库所有者以 `expected_sha=RELEASE_SHA` 手动触发单普通版 Release workflow 生成草稿；读取 workflow run 并确认 `head_sha` 精确等于 `RELEASE_SHA`，否则立即停止。
 - [ ] 8.3 确认草稿只产生 `legado_app_<version>_release.apk`，不产生 `releaseA` 或其他正式资产；通过 GitHub API 核对资产 `size` 和 `digest`，下载完整 APK 后运行 SHA-256、`unzip -t`、`aapt dump badging` 和 `apksigner verify --verbose --print-certs`，确认包名、版本、最低/目标 API 和正式证书身份。
 - [ ] 8.4 解析 tag commit 和 Release `target_commitish`，确认二者与 workflow `head_sha`、`RELEASE_SHA` 四者一致；任一目标仍是漂移分支名或 SHA 不一致时不得进入真机验证或公开。
