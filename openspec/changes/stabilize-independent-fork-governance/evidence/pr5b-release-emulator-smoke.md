@@ -147,7 +147,30 @@ lint 相对 PR 5 合并时的 104 warning 新增 4 项，全部属于未修改
 PR 5b 没有修改生产源码、最低 API 21、Room schema、书源/订阅源规则、导入 URI、备份
 格式、普通正式版包名、签名材料或依赖版本，也没有生成正式 APK 或访问发布 Secrets。
 
-以上证据完成任务 7.1–7.3，并覆盖 7.4 的本地验证部分。7.4 仍必须等待本 PR 创建、全部
-远端聚合检查绿色、使用 merge commit 合并，并确认合并后 `master` 全部聚合门禁绿色；
-在此之前，当前 API 30 运行不能作为任务 7.5–7.7 的合并后发布预检证据，正式发布继续
-冻结。
+## PR 与合并后 `master` 闭环
+
+PR 5b 为 [#74](https://github.com/coding-back01/legado/pull/74)，精确 head ref 为
+`codex/release-emulator-smoke`，head SHA 为
+`a5c593f8496b047caebe3ad8df572b74bf1e0f68`。Draft head 的自动 run
+[`33298091471`](https://github.com/coding-back01/legado/actions/runs/33298091471) 中，范围
+识别、Android、Web、OpenSpec/仓库检查、双 CodeQL 和最终 `维护门禁` 全部成功；该 head
+的 open CodeQL 告警为 0。随后才将 PR 转为 Ready，并用 merge commit 合并。
+
+PR 于 2026-08-30 15:05:44 +0800 合并，merge SHA 为
+`92034f3f77efb4c38ca292cfaae838c4890d0267`。仓库的自动删分支设置随后精确删除上述远端
+head ref。合并提交触发的 `master` run
+[`33298403333`](https://github.com/coding-back01/legado/actions/runs/33298403333) 全部成功：
+
+- `Android 质量检查`：success，包含 lint、141 个 JVM 测试和 Debug APK；
+- `Web 质量检查`：success；
+- `OpenSpec 与仓库检查`：success；
+- `CodeQL（Android）` 与 `CodeQL（Web）`：success；
+- 最终聚合 `维护门禁`：success。
+
+该 run 完成后，`master` 的 open CodeQL 和 Secret Scanning 告警均为 0；Dependabot 仍为
+两个已记录的 Element Plus medium，分别对应 `modules/web/package.json` 和
+`modules/web/pnpm-lock.yaml` 的同一无上游修复漏洞，没有 high 或 critical。因此任务
+7.1–7.4 已闭环。
+
+本文件中合并前 API 30 运行只证明 PR 测试实现。任务 7.5–7.7 仍须从上述已合并且门禁
+绿色的 `master` 重新执行 API 21/API 36 发布预检并保存独立证据；正式发布继续冻结。
