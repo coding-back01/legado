@@ -111,9 +111,9 @@
 
 ## 9. 总变更验证、归档与最终清理
 
-- [ ] 9.1 逐项对照五份 delta spec、design 和 tasks，确认所有完成项都有代码、命令、CI、远端或设备证据，所有失败/未运行/延期状态均如实记录。
-- [ ] 9.2 运行 `:app:testAppDebugUnitTest`、`:app:lintAppDebug`、`:app:assembleAppDebug`、网页端冻结安装/类型检查/ESLint/构建、`openspec validate --all --strict` 和 `git diff --check`，记录实际结果及最终 warning 数量。
-- [ ] 9.3 执行 OpenSpec 实现核验，确认普通正式版已公开、更新器回验成功、高危/严重安全问题为零、中危有判断、旧 PR/分支和 ruleset 状态符合规范；条件缺失时不得归档。
+- [x] 9.1 逐项对照五份 delta spec、design 和 tasks，确认所有完成项都有代码、命令、CI、远端或设备证据，所有失败/未运行/延期状态均如实记录。
+- [x] 9.2 运行 `:app:testAppDebugUnitTest`、`:app:lintAppDebug`、`:app:assembleAppDebug`、网页端冻结安装/类型检查/ESLint/构建、`openspec validate --all --strict` 和 `git diff --check`，记录实际结果及最终 warning 数量。
+- [x] 9.3 执行 OpenSpec 实现核验，确认普通正式版已公开、更新器回验成功、高危/严重安全问题为零、中危有判断、旧 PR/分支和 ruleset 状态符合规范；条件缺失时不得归档。
 - [ ] 9.4 通过 `codex/archive-fork-governance` 最终 PR归档 `stabilize-independent-fork-governance` 并同步主规范；归档 PR只包含规范、证据和必要文档收口，不再混入生产行为修改，并在归档分支运行 `openspec validate --all --strict` 与 `git diff --check`。
 - [ ] 9.5 合并归档 PR前确认其严格校验与全部聚合检查绿色；记录本总变更每个已合并 PR 的精确 head ref、head SHA 和 merge 状态，生成待删分支白名单，禁止使用 `codex/*` 或其他 glob 推导目标。
 - [ ] 9.6 合并归档 PR后同步本地 `master`，再次运行 `openspec validate --all --strict` 和 `git diff --check`，并核对 GitHub Latest、必需检查、安全告警、打开 PR/issue、远端分支、`git status --short` 与 `openspec list`。
