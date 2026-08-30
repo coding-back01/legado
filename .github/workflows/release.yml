@@ -213,6 +213,27 @@ jobs:
           fi
           sha256sum "$EXPECTED_APK"
 
+      - name: 创建候选 tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --force origin "refs/heads/master:refs/remotes/origin/master"
+          MASTER_SHA=$(git rev-parse refs/remotes/origin/master)
+          if [[ "$MASTER_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "创建候选 tag 前远端 master 已漂移"
+            exit 1
+          fi
+          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "版本 $VERSION 已存在，拒绝覆盖既有 Release"
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/${VERSION}" > /dev/null 2>&1; then
+            echo "tag $VERSION 已存在，拒绝覆盖"
+            exit 1
+          fi
+          git tag "$VERSION" "$EXPECTED_SHA"
+          git push origin "refs/tags/${VERSION}"
+
       - name: 创建草稿 Release
         env:
           RELEASE_NOTES: |
