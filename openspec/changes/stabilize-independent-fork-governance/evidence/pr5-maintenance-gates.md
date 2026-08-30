@@ -1,6 +1,6 @@
 # PR 5 持续维护门禁证据
 
-本文记录 `codex/maintenance-gates` 的 RED/GREEN、本地质量检查、Draft Pull Request 范围探针和 CodeQL 告警处置。最终 head 的三类范围探针、告警关闭、合并后 `master`、ruleset 和自动删分支设置仍按任务 6.7–6.11 串行闭环；扫描或 workflow 成功不代替告警审查。
+本文记录 `codex/maintenance-gates` 的 RED/GREEN、本地质量检查、Draft Pull Request 范围探针、CodeQL 告警处置，以及合并后的 `master`、ruleset 和自动删分支设置闭环。扫描或 workflow 成功不代替告警审查。
 
 ## 验证对象
 
@@ -180,9 +180,72 @@ API 返回 7 个打开的 high 告警，而不是零告警：
 上限、超限回退和测试名称。关闭后该分支 CodeQL 状态为 open 0、dismissed 1、fixed 7，
 没有对规则或其他位置进行批量忽略。
 
-## 远端待完成门禁
+## 合并后 `master` 与安全告警复核
 
-以上证据满足任务 6.1–6.8。任务 6.9–6.11 仍保持未完成：证据提交后的最终 PR head
-必须再次通过自动 `维护门禁` 且 CodeQL open high/critical 保持为零，随后才可转 Ready、
-使用 merge commit 合并并验证 `master`；只有合并后的稳定检查名真实成功后，才允许按现有
-ruleset 精确 ID 做最小门禁更新和单独启用自动删分支。正式发布继续冻结。
+PR #72 的最终 head 为 `973d402cfbceade68bf2525d598ea76c12d1975d`，以 merge commit
+`580f1913882e8c24f7a3b9a56dbe9d99791edd61` 合并；远端
+`codex/maintenance-gates` 分支按既定要求保留。合并后的 `master` 自动运行
+[`33242290748`](https://github.com/coding-back01/legado/actions/runs/33242290748)，其
+`识别变更范围`、Android、Web、OpenSpec/仓库检查、双 CodeQL 和最终 `维护门禁` 七个
+job 全部为 `success`。
+
+在该 run 完成后立即按 API 重新读取安全告警：`master` 的 CodeQL open 为 0，Secret
+Scanning open 为 0；Dependabot open 仍为两个既有的 Element Plus medium，分别对应
+`modules/web/package.json` 和 `modules/web/pnpm-lock.yaml` 的同一
+`GHSA-5m5x-9j46-h678`，上游仍未提供修复版本。没有新增 high 或 critical，满足任务 6.9。
+
+## `master` ruleset 完整快照与最小更新
+
+2026-08-30 修改前读取到唯一 `master` ruleset 的完整受控字段如下；原始 API 响应同时
+保存在权限为 `700` 的临时本地快照目录中，供本次操作即时回滚使用：
+
+```json
+{
+  "id": 20653588,
+  "name": "保护 master 分支",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": ["~DEFAULT_BRANCH"]
+    }
+  },
+  "bypass_actors": [],
+  "rules": [
+    {"type": "deletion"},
+    {"type": "non_fast_forward"},
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": false,
+        "required_reviewers": [],
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": true,
+        "require_extra_approval_for_unattributed_changes": true,
+        "allowed_merge_methods": ["merge", "squash", "rebase"]
+      }
+    }
+  ]
+}
+```
+
+按精确 ID `20653588` 更新时完整回送上述受控字段，只在 `rules` 末尾追加：
+
+- `required_status_checks`：唯一 context 为已实际验证的 `维护门禁`，不额外引入分支必须
+  与基线同步的语义，`do_not_enforce_on_create=false`；
+- `code_scanning`：工具为 `CodeQL`，`security_alerts_threshold=high_or_higher`，普通
+  code-quality 告警阈值保持 `none`，因此只阻断 high 和 critical 安全告警。
+
+更新后 API 逐字段读回结果为：ID、名称、target、enforcement、conditions、bypass actors
+以及原三条 rules 全部与前置快照相同，新增规则数精确为 2；不存在规则覆盖、顺序漂移或
+意外放宽。
+
+## 自动删除已合并分支设置
+
+仓库设置独立快照显示 `default_branch=master`、`delete_branch_on_merge=false`。按已批准
+任务启用后读回为 `delete_branch_on_merge=true`；随后再次读取 ruleset，ID、名称、target、
+enforcement、conditions、bypass actors 和完整 rules 均与 6.10 的更新后快照一致。
+因此 6.10–6.11 已闭环；正式发布仍冻结，下一阶段为 PR 5b 的模拟器发布测试自动化。

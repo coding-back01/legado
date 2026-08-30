@@ -58,7 +58,7 @@ PR 5 的维护 workflow 在每次适用运行中上传 `android-lint-<提交 SHA
 | `InefficientWeight` | 中 | 1 | 0 | 1 | 0 | 0 | 0 | PR 4f（#59）在固定宽度父容器中用 `0dp + weight` 保持开关占用同一剩余宽度，避免重复测量 |
 | `IntentWithNullActionLaunch` | 高 | 1 | 0 | 1 | 0 | 0 | 0 | PR 3 为 QQ 跳转设置显式 `ACTION_VIEW` 并提升为 fatal；契约测试与 lint 已验证 |
 | `KeyboardInaccessibleWidget` | 中 | 1 | 0 | 1 | 0 | 0 | 0 | PR 4e（#58）保留日期字段键盘焦点与点击入口，并明确禁止软键盘直接编辑 |
-| `NewerVersionAvailable` | 低 | 21 | 21 | 0 | 0 | 21 | 0 | PR 4r 按坐标完成审查；工具链、运行库和兼容固定依赖不得混入 warning 治理 |
+| `NewerVersionAvailable` | 低 | 21 | 25 | 0 | 0 | 25 | 0 | PR 4r 审查参考运行 21 项；PR 5b 重跑时远端元数据新增 4 项检测结果，仍按坐标延期，工具链、运行库和兼容固定依赖不得混入发布烟测治理 |
 | `Overdraw` | 中 | 41 | 41 | 0 | 0 | 41 | 0 | PR 4f（#59）完成逐位置审查；根背景移除需要日夜模式与透明页面截图基线，本轮精确延期 |
 | `PluralsCandidate` | 低 | 5 | 0 | 5 | 0 | 0 | 0 | PR 4d（#57）删除 5 个经全仓动态引用审计确认无使用的资源；聚焦契约与 lint 已验证 |
 | `RtlHardcoded` | 中 | 7 | 0 | 7 | 0 | 0 | 0 | PR 4a（#54）将物理方向间距与 gravity 改为逻辑方向；布局契约与 lint 已验证 |
@@ -71,7 +71,13 @@ PR 5 的维护 workflow 在每次适用运行中上传 `android-lint-<提交 SHA
 | `UseKtx` | 低 | 133 | 0 | 126 | 7 | 0 | 0 | PR 3 与 PR 4g 至 4o 已完成 116 项安全转换；PR 4l（#65）另精确抑制 7 个可空兼容 occurrence；PR 4p（#69）完成 10 个 Canvas 状态转换，当前已完成全 ID 对账 |
 | `UselessParent` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认需移动漫画菜单边距、背景和测量职责，缺少稳定页面截图，本轮精确延期 |
 | `VectorPath` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4r 确认压缩或栅格化会改变自适应图标，缺少像素基线，精确延期 |
-| **合计** |  | **881** | **104** | **765** | **12** | **104** | **0** | PR 3 与 PR 4a 至 PR 4r 已完成全部三态审查：765 项修复、12 项精确局部抑制、104 项精确延期 |
+| **合计** |  | **881** | **108** | **765** | **12** | **108** | **0** | PR 3 与 PR 4a 至 PR 4r 完成参考项三态审查；PR 5b 对远端元数据漂移新增的 4 项也完成精确延期，当前没有未审查项 |
+
+PR 5b 于 2026-08-30 重跑 lint 时，`NewerVersionAvailable` 从 21 项漂移为 25 项：
+`gradle/libs.versions.toml:3` 的同一 Kotlin 版本由 6 个增为 9 个插件坐标提示，另在
+`gradle/libs.versions.toml:210` 新识别 `de.undercouch.download` 插件更新。当前分支未修改
+版本目录，这 4 项来自检查时的远端版本元数据变化；它们沿用既有低风险依赖延期条件。
+因此最终状态总数为参考运行 881 项加 4 项后续漂移，不把新增提示伪装成原始基线内容。
 
 ## 精确局部抑制
 
@@ -92,7 +98,7 @@ PR 5 的维护 workflow 在每次适用运行中上传 `android-lint-<提交 SHA
 | `AndroidGradlePluginVersion` | `gradle/wrapper/gradle-wrapper.properties:4` 的 Gradle 8.13；`gradle/libs.versions.toml:5` 的 AGP 8.13.2 对应 application/library/test 3 个 occurrence | 4 | 升级 Gradle 或 AGP 会改变 Java/Gradle/插件兼容矩阵与 Android 构建输出，不属于 warning 治理中的机械修复 | 建立独立工具链 OpenSpec 变更，核对 JDK 17、所有模块、API 21/36、签名前构建与完整 CI 后升级 | PR 4r `warning-pr4r-final-audit.md` |
 | `DiscouragedApi` | `app/src/main/AndroidManifest.xml:205,210,215,220,225,230,235,240,245` 的 9 个 `screenOrientation="behind"`；`app/src/main/java/io/legado/app/lib/prefs/IconListPreference.kt:45,174` 的 2 个 `getIdentifier` | 11 | 删除方向继承会改变 Android 16 以下九个页面的既有旋转行为；动态图标名称来自 XML array 并经 Bundle 传入对话框，改成资源 ID 会改变 styleable 与恢复合同 | 在 API 21/36、手机/平板、多窗口和旋转下覆盖九个页面；为旧设置恢复、全部 launcher alias 与对话框重建建立测试后拆分处理 | PR 4r `warning-pr4r-final-audit.md` |
 | `GradleDependency` | `gradle/libs.versions.toml:6,8,9(2),11(3),22,23,34,80,91,97,149` | 14 | 涉及 AppCompat、ConstraintLayout、Core、Fragment、Material、Media、Collection、Annotation 与 AndroidX Test；批量升级可能改变 API 21 行为、资源主题、Fragment 生命周期和设备测试接口 | 由独立依赖 PR 逐坐标升级，完成单元测试、lint、Debug 构建及受影响页面或设备测试；运行库与测试库分批归因 | PR 4r `warning-pr4r-final-audit.md` |
-| `NewerVersionAvailable` | `gradle/libs.versions.toml:3(6),15(6),16,17,18,19(2),25,36,56,137` | 21 | 包含 Kotlin 六插件、Glide 六模块及 Gson、JSONPath、JsoupXpath、Coroutines、OkHttp、ZXing、Rhino、Glide Compose；其中有工具链、主版本、beta 和最低 Android 兼容风险，Rhino 还带明确低版本 Android 固定说明 | 分别建立工具链、图片栈和运行依赖升级变更；逐坐标核对发行说明与最低 API，并完成解析、网络、图片、二维码、JavaScript 和设备回归 | PR 4r `warning-pr4r-final-audit.md` |
+| `NewerVersionAvailable` | `gradle/libs.versions.toml:3(9),15(6),16,17,18,19(2),25,36,56,137,210` | 25 | 包含 Kotlin 九插件、Glide 六模块及 Gson、JSONPath、JsoupXpath、Coroutines、OkHttp、ZXing、Rhino、Glide Compose 和 Download 插件；其中有工具链、主版本、beta 和最低 Android 兼容风险，Rhino 还带明确低版本 Android 固定说明；其中 4 项为 PR 5b 重跑时远端元数据新增的检测结果 | 分别建立工具链、图片栈、构建插件和运行依赖升级变更；逐坐标核对发行说明与最低 API，并完成解析、网络、图片、二维码、JavaScript、构建插件和设备回归 | PR 4r `warning-pr4r-final-audit.md`；PR 5b `pr5b-release-emulator-smoke.md` |
 | `IconLocation` | `app/src/main/res/drawable/icon_read_book.png`、`image_cover_default.jpg`、`image_legado.png`、`image_loading_error.png`、`image_rss.jpg`、`image_rss_article.jpg` | 6 | 六个文件均有生产引用；移入 `drawable-nodpi` 或密度目录会改变封面、RSS、通知、快捷方式、欢迎页和错误图的缩放与内存占用 | 为各密度的书架/RSS/欢迎页、通知与快捷方式建立截图和像素尺寸基线，再按用途选择 `nodpi` 或提供完整密度资源 | PR 4r `warning-pr4r-final-audit.md` |
 | `IconDuplicates` | `app/src/main/res/drawable/image_legado.png` 与 `app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` | 1 | 两文件 SHA-256 同为 `514f0a45caea8ebb96d9f3a5afce92efb669dad89b210b81602c33fc55a681d5`，但前者是 RSS 页面 drawable，后者是 xxxhdpi 应用图标；互相复用会改变资源类型和密度缩放 | 建立 RSS 空图、应用图标、launcher alias 在 API 21/36 和多密度下的截图与打包断言，再决定是否生成语义独立的资源 | PR 4r `warning-pr4r-final-audit.md` |
 | `UnusedAttribute` | `app/src/main/res/layout/item_rss.xml:9` 的 `android:foreground` | 1 | 属性只在 API 21/22 被忽略，在 API 23+ 为 RSS 卡片提供点击 ripple；直接删除会让现代设备丢失交互反馈，复制整个 `layout-v23` 又会制造布局漂移风险 | 为 API 21/23/36 的 RSS 点击、长按和 ripple 建立 UI 层级与截图断言，再选择版本化布局或等价兼容前景实现 | PR 4r `warning-pr4r-final-audit.md` |

@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -17,18 +18,21 @@ import org.junit.runner.RunWith
 class ExampleInstrumentedTest {
     @Test
     fun testContentProvider() {
-        // Context of the app under test.
         val appContext = ApplicationProvider.getApplicationContext<Context>()
-        Log.d(
-            "test",
-            appContext.contentResolver.query(
-                Uri.parse("content://io.legado.app.api.ReaderProvider/sources/query"),
-                null,
-                null,
-                null,
-                null
-            )
-            !!.getString(0)
+        val uri = Uri.parse(
+            "content://${appContext.packageName}.readerProvider/bookSources/query"
         )
+        appContext.contentResolver.query(
+            uri,
+            arrayOf("result"),
+            null,
+            null,
+            null
+        ).use { cursor ->
+            assertTrue("ReaderProvider 未返回结果行: $uri", cursor?.moveToFirst() == true)
+            val result = cursor!!.getString(cursor.getColumnIndexOrThrow("result"))
+            assertTrue("ReaderProvider 返回了空结果: $uri", result.isNotBlank())
+            Log.d("ReaderProviderTest", "bookSources query succeeded")
+        }
     }
 }
