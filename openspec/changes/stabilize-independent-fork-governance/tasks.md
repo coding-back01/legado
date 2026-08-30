@@ -96,9 +96,9 @@
 ## 8. 普通版候选、指定真机与正式发布
 
 - [x] 8.1 汇总 PR 1–5b、warning 三态、稳定聚合 CI、CodeQL、全部安全告警和模拟器结果，确认只剩允许的非阻断债务；从远端 `master` 锁定精确 `RELEASE_SHA`，确认该 SHA 的全部必需检查绿色且高危/严重告警为零。候选验证期间暂停合并；`master` 漂移则取消本轮候选的公开资格、保留草稿审计记录并重新锁定。
-- [ ] 8.2 由仓库所有者以 `expected_sha=RELEASE_SHA` 手动触发单普通版 Release workflow 生成草稿；读取 workflow run 并确认 `head_sha` 精确等于 `RELEASE_SHA`，否则立即停止。
-- [ ] 8.3 确认草稿只产生 `legado_app_<version>_release.apk`，不产生 `releaseA` 或其他正式资产；通过 GitHub API 核对资产 `size` 和 `digest`，下载完整 APK 后运行 SHA-256、`unzip -t`、`aapt dump badging` 和 `apksigner verify --verbose --print-certs`，确认包名、版本、最低/目标 API 和正式证书身份。
-- [ ] 8.4 解析 tag commit 和 Release `target_commitish`，确认二者与 workflow `head_sha`、`RELEASE_SHA` 四者一致；任一目标仍是漂移分支名或 SHA 不一致时不得进入真机验证或公开。
+- [x] 8.2 由仓库所有者以 `expected_sha=RELEASE_SHA` 手动触发单普通版 Release workflow 生成草稿；读取 workflow run 并确认 `head_sha` 精确等于 `RELEASE_SHA`，否则立即停止。
+- [x] 8.3 确认草稿只产生 `legado_app_<version>_release.apk`，不产生 `releaseA` 或其他正式资产；通过 GitHub API 核对资产 `size` 和 `digest`，下载完整 APK 后运行 SHA-256、`unzip -t`、`aapt dump badging` 和 `apksigner verify --verbose --print-certs`，确认包名、版本、最低/目标 API 和正式证书身份。
+- [x] 8.4 解析 tag commit 和 Release `target_commitish`，确认二者与 workflow `head_sha`、`RELEASE_SHA` 四者一致；任一目标仍是漂移分支名或 SHA 不一致时不得进入真机验证或公开。
 - [ ] 8.5 等待用户连接并指定设备及 Android 版本；实时运行 `adb devices -l`、包查询和签名/版本读取，不使用历史设备记录推断当前状态。
 - [ ] 8.6 安装前只读记录 `io.legado.app.release` 的包路径、版本、证书摘要和首次安装时间；通过 `ReaderProvider` 查询书架和书源，将原始响应直接流入计数器且不回显、不落盘 JSON、书名、URL 或路径。当前 RSS URI 映射不能提供独立可靠的 RSS 数量，不将其作为硬不变量；正式包不可自动读取的 SharedPreferences 也不作为硬门禁。
 - [ ] 8.7 仅对同签名候选执行 `adb install -r`，安装后复核包名、版本、签名、首次安装时间和 8.6 的数量不变量；不得使用降级、卸载或清数据参数。

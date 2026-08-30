@@ -102,6 +102,49 @@ PR 5b 期间远端版本元数据新增的 4 个低风险提示后，最终三�
   动态图标和受控 RTL 检查未发现实际回归。原始证据仍只位于 Git 忽略且权限受限的
   `build/release-emulator-evidence/`，版本化文件只保存摘要和哈希。
 
+## 8.2–8.4 新草稿候选、APK 与提交身份核验
+
+2026-08-30 21:03:07 +0800 在最终只读门禁确认 `master`、合并后门禁、安全告警、Latest、
+失败草稿和下一个版本名均未漂移后，以
+`expected_sha=cef2fbb2dbdb6771686b04c68447a6f5caea964e` 和 `--ref master` 手动触发
+Release workflow。run
+[`33313117814`](https://github.com/coding-back01/legado/actions/runs/33313117814) 于
+21:10:56 +0800 成功结束，授权核对、唯一普通 APK 构建、草稿创建与 SHA 核验三个 job
+全部成功；run `head_sha` 精确等于 `RELEASE_SHA`。
+
+新草稿 Release ID 为 `379285557`，tag name 为 `3.26.083021`，保持 `draft=true`、
+`published_at=null` 和 `prerelease=false`。它只含一个资产：
+
+| 字段 | 核验值 |
+|---|---|
+| asset ID | `536629304` |
+| 名称 | `legado_app_3.26.083021_release.apk` |
+| 状态 / MIME | `uploaded` / `application/vnd.android.package-archive` |
+| GitHub API 大小 | `14,517,617` 字节 |
+| 本地下载大小 | `14,517,617` 字节 |
+| GitHub API SHA-256 | `7c1fc5e2bce8e92259bf57160efca58563637d6408cfad519194604aed4d850f` |
+| 本地 SHA-256 | `7c1fc5e2bce8e92259bf57160efca58563637d6408cfad519194604aed4d850f` |
+
+下载进程正常退出后，`unzip -t` 报告没有压缩数据错误。Android SDK build-tools 35.0.0
+的 `aapt dump badging` 读取到包名 `io.legado.app.release`、versionCode `16658`、
+versionName `3.26.083021`、compileSdk 36、minSdk 21 和 targetSdk 36。
+`apksigner verify --verbose --print-certs` 报告 v1、v2、v3 签名均通过，唯一签名者证书
+SHA-256 为 `14b0c0828372820a20687221a0f8a8b02603f409cc096f7101ba38f182205283`，与当前
+公开 Latest 普通 APK 的正式证书摘要完全一致。
+
+四层提交身份于 21:21:30 +0800 再次独立读取并全部一致：
+
+| 层级 | SHA |
+|---|---|
+| `RELEASE_SHA` | `cef2fbb2dbdb6771686b04c68447a6f5caea964e` |
+| workflow `head_sha` | `cef2fbb2dbdb6771686b04c68447a6f5caea964e` |
+| `refs/tags/3.26.083021` commit | `cef2fbb2dbdb6771686b04c68447a6f5caea964e` |
+| Release `target_commitish` | `cef2fbb2dbdb6771686b04c68447a6f5caea964e` |
+
+此时远端 `master` 仍等于同一 SHA，公开 Latest 仍为 `3.26.082216`；旧失败草稿
+`3.26.083020` 及其资产保持原样。新草稿只取得进入指定真机验证的资格，尚未公开或设为
+Latest；正式发布继续冻结。
+
 综上，当前只剩规范允许的非阻断债务；新锁定 SHA 的必需检查绿色，高危/严重安全告警为
-零，任务 8.1 在新提交上重新完成。尚未针对新 `RELEASE_SHA` 触发 Release，指定真机门禁
-也尚未开始；正式发布继续冻结。
+零，任务 8.1–8.4 已在新提交与新草稿上完成。指定真机门禁尚未开始；草稿保持不可见，
+正式发布继续冻结。
