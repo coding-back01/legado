@@ -146,5 +146,132 @@ SHA-256 为 `14b0c0828372820a20687221a0f8a8b02603f409cc096f7101ba38f182205283`�
 Latest；正式发布继续冻结。
 
 综上，当前只剩规范允许的非阻断债务；新锁定 SHA 的必需检查绿色，高危/严重安全告警为
-零，任务 8.1–8.4 已在新提交与新草稿上完成。指定真机门禁尚未开始；草稿保持不可见，
-正式发布继续冻结。
+零，任务 8.1–8.4 已在新提交与新草稿上完成。新草稿只取得进入指定真机验证的资格，
+尚未取得公开资格。
+
+## `3.26.083021` 真机尝试失败与候选废弃
+
+2026-08-30 夜间实时读取到用户指定设备为 Hisense HLTE556N、Android 11 / API 30；
+版本化证据不记录设备序列号。安装前普通版为 `3.26.082216` / versionCode `16572`，
+首次安装时间为 `2026-08-21 17:36:54`，APK SHA-256 为
+`397dafa82918ec4bb8c588eca90285660fcb5b3f2ed07452e73099dbaa5a8412`，证书 SHA-256 为
+`14b0c0828372820a20687221a0f8a8b02603f409cc096f7101ba38f182205283`。`ReaderProvider`
+原始响应直接流入内存计数器且未回显、未落盘，书架为 1、书源为 230。
+
+仅执行 `adb install -r` 后命令返回 `Success`；没有使用降级、卸载或清数据参数。安装后
+普通版为 `3.26.083021` / versionCode `16658`，首次安装时间不变，安装 APK SHA-256 与
+草稿资产一致，证书与安装前一致，书架仍为 1、书源仍为 230。随后收敛到显式
+`MainActivity` 的有效观察窗口连续 8 秒保持主界面，任务栈根和顶部均为主界面；书架标记
+存在，没有隐私协议，目标 PID 的 3 秒日志窗口没有 `FATAL EXCEPTION` 或
+`AndroidRuntime`。
+
+离线假书源路径通过
+`legado://import/bookSource?src=<URL 编码 JSON>` 打开仅含唯一假源的预览，只点击取消后
+返回主界面；书源总数前后均为 230，唯一假源 URL 前后均不存在，没有确认导入、隐私协议
+或崩溃。有效路径的脱敏证据哈希如下：
+
+- 收敛后 UI hierarchy：`06b8da3f...`
+- 收敛后截图：`01673194...`
+- 假书源预览 UI hierarchy：`99c81220...`
+- 假书源预览截图：`9eb355db...`
+- 取消后截图：`d403ee47...`
+
+但是首次桌面启动及早期主界面启动尝试受到设备既有独立任务栈影响，自动恢复到已有
+`ReadBookActivity`。自动化没有点击或翻页并立即停止应用，但源码审计确认
+`ReadBookViewModel.initData(...).onFinally { ReadBook.saveRead() }` 最终会更新并持久化
+`durChapterTime`、章节索引和章节位置。安装前只采集了书架数量，没有采集逐书阅读进度的
+脱敏聚合摘要，因此不能自动证明这次误入没有改变用户阅读状态；不得用后续主界面和数量
+不变量替代该缺失证据。
+
+因此草稿 `3.26.083021` / Release ID `379285557` 被永久标记为“设备验证失败，禁止
+公开”，继续保持 `draft=true`，保留 tag、资产、workflow 和本地原始证据作为审计记录，
+不删除、不替换、不设为 Latest。任务 8.5–8.10 在该候选上不完成，正式发布继续冻结；
+下一候选必须在安装前后使用同一仅存于权限受限本地目录的随机密钥，对按稳定伪标识排序的
+`durChapterIndex`、`durChapterPos`、`durChapterTime` 生成聚合 HMAC，并在任何启动动作前
+精确清理仅属于普通版的残留任务栈。
+
+## 8.5–8.10 `3.26.083101` 指定真机验证
+
+### 新候选与静态身份
+
+2026-08-31 01:05:58 +0800 在再次确认远端 `master`、维护门禁、安全告警、Latest 与
+失败草稿均未漂移后，以同一 `RELEASE_SHA` 手动触发 Release workflow
+[`33324289372`](https://github.com/coding-back01/legado/actions/runs/33324289372)。run 于
+01:12:30 +0800 成功结束，`head_sha` 精确等于 `RELEASE_SHA`，授权、唯一普通 APK 构建、
+草稿创建与 tag/Release target 核验三个 job 全部成功。
+
+新草稿 Release ID 为 `379347961`，tag name 为 `3.26.083101`，保持 `draft=true`、
+`published_at=null` 和 `prerelease=false`。草稿只含资产 ID `536854094`：
+`legado_app_3.26.083101_release.apk`，状态为 `uploaded`，MIME 为
+`application/vnd.android.package-archive`，远端与本地大小均为 14,517,611 字节，远端与
+本地 SHA-256 均为
+`cd1869d2511b0ce375fc343a9e29f6f38f17f48c52bc67f18c776fda5e1a3c07`。
+
+独立下载后 `unzip -t` 没有压缩数据错误；`aapt dump badging` 读取到包名
+`io.legado.app.release`、versionCode `16658`、versionName `3.26.083101`、compileSdk 36、
+minSdk 21 和 targetSdk 36。`apksigner` 确认 v1、v2、v3 签名均通过，唯一签名者证书
+SHA-256 为 `14b0c0828372820a20687221a0f8a8b02603f409cc096f7101ba38f182205283`。
+workflow `head_sha`、`refs/tags/3.26.083101`、Release `target_commitish`、远端
+`master` 与 `RELEASE_SHA` 五者均为
+`cef2fbb2dbdb6771686b04c68447a6f5caea964e`。
+
+### 安装前实时基线
+
+执行时通过 `adb devices -l` 重新确认唯一连接设备为 Hisense HLTE556N，Android 11 / API
+30；设备序列号不进入版本化证据。旧失败候选留下的实际 activity stack 已为空，系统仅保留
+`sz=0` 的 RecentTaskInfo 缓存。为使该设备允许 shell 访问 `ReaderProvider`，先以
+`NEW_TASK | MULTIPLE_TASK | CLEAR_TASK` 原始 flag 显式启动 `MainActivity`；3 秒后根/顶部均
+为主界面，实际 task 中不存在 `ReadBookActivity`。这一启动发生在安装前摘要采集之前，
+保证新候选安装前后的比较使用对称主界面状态。
+
+安装前普通版为 `3.26.083021` / versionCode `16658`，首次安装时间仍为
+`2026-08-21 17:36:54`。安装 APK SHA-256 为
+`7c1fc5e2bce8e92259bf57160efca58563637d6408cfad519194604aed4d850f`，证书 SHA-256 与新
+候选一致。包路径已只读记录在本地权限受限证据中，不写入版本化文档。
+
+`ReaderProvider` 的书籍和书源原始响应直接通过管道进入本地计数器，未回显、未落盘；书架
+为 1、书源为 230。随机 HMAC 密钥只保存在本地权限 `600` 文件中；按书籍 URL 的稳定伪标识
+排序后，将 `durChapterIndex`、`durChapterPos`、`durChapterTime`、`durChapterTitle` 和
+`lastCheckCount` 共同纳入阅读状态聚合，安装前摘要为
+`0c9859596ad5ed72f2b0257daa84c290d12cb6e8607078d483b90ef6f248a67c`。该摘要无法在缺少
+本地随机密钥时用于推断书名、URL、路径或单本书进度。
+
+### 原位升级与主界面观察
+
+确认安装前 APK 与候选证书相同后，只执行 `adb install -r`；命令返回 `Success`，没有使用
+降级、卸载、清数据或其他安装参数。安装后普通版为 `3.26.083101` / versionCode `16658`，
+首次安装时间不变；从设备拉取的安装 APK SHA-256 与新草稿完全一致，证书也与安装前和候选
+一致。
+
+包替换后再次确认没有实际 Legado stack，随后使用同一原始 flag 显式启动
+`MainActivity`。连续 8 秒后 resumed activity、任务栈根与顶部均为主界面，实际 task 中没有
+`ReadBookActivity`；UI hierarchy 存在 `rv_bookshelf`，没有隐私协议。目标 PID 日志没有
+`FATAL EXCEPTION` 或 `AndroidRuntime`。此时书架仍为 1、书源仍为 230，阅读状态聚合摘要
+与安装前完全一致。
+
+### 离线假书源预览取消
+
+使用唯一名称 `Codex Release Smoke 3.26.083101` 和只指向本机 loopback 丢弃端口的 URL
+构造内联 JSON，经 `legado://import/bookSource?src=<URL 编码 JSON>` 打开预览，不依赖公网。
+首次通用 VIEW 调用只打开系统 `ResolverActivity`，没有进入应用、没有点击任何候选项，也
+没有改变书源；自动化只发送系统返回键关闭选择器。随后按清单中精确导出的
+`OnLineImportActivity` 重新打开同一 URI，预览显示唯一假源和 `tv_cancel`。
+
+自动化只根据 `tv_cancel` 的 UI bounds 点击取消，没有点击 `tv_ok`、确认导入或任何书籍。
+取消后返回 `MainActivity`，没有出现隐私协议、阅读页或崩溃。书源总数前后均为 230，唯一
+假源 URL 前后命中数均为 0；书架仍为 1，阅读状态聚合摘要仍与安装前一致。版本化脱敏证据
+哈希如下：
+
+- 主界面 UI hierarchy：`a86bdeb042554f512f95a3ec318fa166ffc7b30ec957fa936fa95a7d460a3909`
+- 主界面截图：`53f2adf8d502b3489dc0c7f1ddc4d98be21ef8ba3ce4181f254259d437495b5a`
+- 主界面目标 PID 日志：`b4831eea11f07855e6eb4f523631a6def7819026f7a20d50a8837fa2b90b47a9`
+- 假书源预览 UI hierarchy：`577cadf84cad41ad4fbf0c9d06692b1c16572c54a3ca21a0a6821e47d5e1ff13`
+- 假书源预览截图：`c7563f7b99384adc7e704acb77eddcdfacfb7a65130b0908563f7c6f2ec91e6d`
+- 取消后 UI hierarchy：`a86bdeb042554f512f95a3ec318fa166ffc7b30ec957fa936fa95a7d460a3909`
+- 取消后截图：`f85f4412d7ad5b417e6f6aa8e2b617977fb84e6f3de4acf9de03c270d13cdd4a`
+- 最终目标 PID 日志：`386e098c6b8d5311a8617a9ab120f45254c7b3b9a93413d9ddf67c4f88f87e06`
+
+全部原始 APK、随机密钥、计数摘要、日志、截图和 UI hierarchy 只保存在 Git 忽略目录
+`build/release-device-evidence/3.26.083101/`，目录权限为 `700`，文件权限均为 `600`；原始
+ReaderProvider JSON 从未写入文件。完成采集后应用已 force-stop。由此任务 8.5–8.10 在新
+候选上完成；`3.26.083101` 仍是草稿，正式发布继续冻结到 8.11 最终远端读回通过。

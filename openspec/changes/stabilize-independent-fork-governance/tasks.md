@@ -99,12 +99,12 @@
 - [x] 8.2 由仓库所有者以 `expected_sha=RELEASE_SHA` 手动触发单普通版 Release workflow 生成草稿；读取 workflow run 并确认 `head_sha` 精确等于 `RELEASE_SHA`，否则立即停止。
 - [x] 8.3 确认草稿只产生 `legado_app_<version>_release.apk`，不产生 `releaseA` 或其他正式资产；通过 GitHub API 核对资产 `size` 和 `digest`，下载完整 APK 后运行 SHA-256、`unzip -t`、`aapt dump badging` 和 `apksigner verify --verbose --print-certs`，确认包名、版本、最低/目标 API 和正式证书身份。
 - [x] 8.4 解析 tag commit 和 Release `target_commitish`，确认二者与 workflow `head_sha`、`RELEASE_SHA` 四者一致；任一目标仍是漂移分支名或 SHA 不一致时不得进入真机验证或公开。
-- [ ] 8.5 等待用户连接并指定设备及 Android 版本；实时运行 `adb devices -l`、包查询和签名/版本读取，不使用历史设备记录推断当前状态。
-- [ ] 8.6 安装前只读记录 `io.legado.app.release` 的包路径、版本、证书摘要和首次安装时间；通过 `ReaderProvider` 查询书架和书源，将原始响应直接流入计数器且不回显、不落盘 JSON、书名、URL 或路径。当前 RSS URI 映射不能提供独立可靠的 RSS 数量，不将其作为硬不变量；正式包不可自动读取的 SharedPreferences 也不作为硬门禁。
-- [ ] 8.7 仅对同签名候选执行 `adb install -r`，安装后复核包名、版本、签名、首次安装时间和 8.6 的数量不变量；不得使用降级、卸载或清数据参数。
-- [ ] 8.8 启动普通版并采集 top activity、仅目标 PID 且限定时间窗的 logcat、收敛页面后的截图和 UI hierarchy；若出现隐私协议或其他不可代替授权，停止并报告，不替用户确认。
-- [ ] 8.9 验证书架壳和外部可观察状态，使用内联、离线、唯一命名假书源打开导入预览后只点击取消，并确认前后书源数量一致；不得确认导入、删除内容、恢复备份、打开已有书或翻页。
-- [ ] 8.10 将真机原始日志、截图和 UI hierarchy 只保存在 Git 忽略且权限受限的本地目录；版本化发布证据只写脱敏数量、状态、摘要和哈希。任何硬不变量无法自动验证时保持发布冻结，不要求用户手动点测来补证据。
+- [x] 8.5 等待用户连接并指定设备及 Android 版本；实时运行 `adb devices -l`、包查询和签名/版本读取，不使用历史设备记录推断当前状态。
+- [x] 8.6 安装前只读记录 `io.legado.app.release` 的包路径、版本、证书摘要和首次安装时间；通过 `ReaderProvider` 查询书架和书源，将原始响应直接流入计数器且不回显、不落盘 JSON、书名、URL 或路径。当前 RSS URI 映射不能提供独立可靠的 RSS 数量，不将其作为硬不变量；正式包不可自动读取的 SharedPreferences 也不作为硬门禁。
+- [x] 8.7 仅对同签名候选执行 `adb install -r`，安装后复核包名、版本、签名、首次安装时间和 8.6 的数量不变量；不得使用降级、卸载或清数据参数。
+- [x] 8.8 启动普通版并采集 top activity、仅目标 PID 且限定时间窗的 logcat、收敛页面后的截图和 UI hierarchy；若出现隐私协议或其他不可代替授权，停止并报告，不替用户确认。
+- [x] 8.9 验证书架壳和外部可观察状态，使用内联、离线、唯一命名假书源打开导入预览后只点击取消，并确认前后书源数量一致；不得确认导入、删除内容、恢复备份、打开已有书或翻页。
+- [x] 8.10 将真机原始日志、截图和 UI hierarchy 只保存在 Git 忽略且权限受限的本地目录；版本化发布证据只写脱敏数量、状态、摘要和哈希。任何硬不变量无法自动验证时保持发布冻结，不要求用户手动点测来补证据。
 - [ ] 8.11 在再次确认 `master` 仍为 `RELEASE_SHA`、四层 SHA 仍一致且全部门禁有效后公开草稿并设为 Latest；Release 说明记录独立签名、普通包名、精确提交、历史 `releaseA` 停止更新、跨签名不能覆盖和应用不提供内容。
 - [ ] 8.12 从公开 Release 重新下载普通 APK并复核大小、摘要和签名；调用当前 fork Latest API和更新器 live smoke，确认完整版本与唯一普通资产可被正确识别，并再次核对 tag/Release target 未漂移。
 - [ ] 8.13 若发布后发现 P0、安全、签名或数据问题，立即恢复冻结、在原 Release 加警示并通过新验证版本修复；不得静默替换或删除审计记录。
