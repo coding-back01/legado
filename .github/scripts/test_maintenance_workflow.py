@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -13,6 +14,7 @@ import unittest
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_PATH = REPOSITORY_ROOT / ".github/workflows/test.yml"
 CLASSIFIER_PATH = REPOSITORY_ROOT / ".github/scripts/classify-maintenance-scope.sh"
+WEB_PACKAGE_PATH = REPOSITORY_ROOT / "modules/web/package.json"
 
 
 class MaintenanceScopeContractTest(unittest.TestCase):
@@ -79,6 +81,7 @@ class MaintenanceWorkflowContractTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+        cls.web_package = json.loads(WEB_PACKAGE_PATH.read_text(encoding="utf-8"))
 
     def test_all_pull_requests_and_master_pushes_trigger(self) -> None:
         self.assertIn("pull_request:", self.workflow)
@@ -118,6 +121,7 @@ class MaintenanceWorkflowContractTest(unittest.TestCase):
             "version: 9.15.9",
             "pnpm install --frozen-lockfile",
             "pnpm test:chapter-html",
+            "pnpm test:static-links",
             "pnpm type-check",
             "pnpm exec eslint .",
             "pnpm build",
@@ -126,6 +130,11 @@ class MaintenanceWorkflowContractTest(unittest.TestCase):
             self.assertIn(token, self.workflow)
         self.assertNotIn("git commit", self.workflow)
         self.assertNotIn("git push", self.workflow)
+        self.assertEqual(
+            "node --test tests/staticLinks.test.mjs && "
+            "node scripts/check-static-links.mjs",
+            self.web_package["scripts"]["test:static-links"],
+        )
 
     def test_repository_gate_pins_openspec_and_actionlint(self) -> None:
         for token in (
