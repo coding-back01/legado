@@ -180,6 +180,10 @@ jobs:
         working-directory: modules/web
         run: pnpm test:chapter-html
 
+      - name: 运行静态链接安全测试
+        working-directory: modules/web
+        run: pnpm test:static-links
+
       - name: 运行网页端类型检查
         working-directory: modules/web
         run: pnpm type-check

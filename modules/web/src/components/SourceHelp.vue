@@ -2,37 +2,37 @@
 import { Link } from '@element-plus/icons-vue'
 </script>
 <template>
-  <el-link :icon="Link" href="/help/#appHelp" target="_blank"
+  <el-link :icon="Link" href="/help/#appHelp" target="_blank" rel="noopener noreferrer"
     >APP帮助文档</el-link
   ><br />
-  <el-link :icon="Link" href="/help/#ruleHelp" target="_blank"
+  <el-link :icon="Link" href="/help/#ruleHelp" target="_blank" rel="noopener noreferrer"
     >书源制作教程</el-link
   ><br />
-  <el-link :icon="Link" href="/help/#jsHelp" target="_blank"
+  <el-link :icon="Link" href="/help/#jsHelp" target="_blank" rel="noopener noreferrer"
     >js变量和函数</el-link
   ><br />
-  <el-link :icon="Link" href="/help/#xpathHelp" target="_blank"
+  <el-link :icon="Link" href="/help/#xpathHelp" target="_blank" rel="noopener noreferrer"
     >xpath语法教程</el-link
   ><br />
-  <el-link :icon="Link" href="/help/#regexHelp" target="_blank"
+  <el-link :icon="Link" href="/help/#regexHelp" target="_blank" rel="noopener noreferrer"
     >正则表达式教程</el-link
   ><br />
-  <el-link :icon="Link" href="/help/#txtTocRuleHelp" target="_blank"
+  <el-link :icon="Link" href="/help/#txtTocRuleHelp" target="_blank" rel="noopener noreferrer"
     >txt目录正则说明</el-link
   ><br />
-  <el-link :icon="Link" href="/help/#debugHelp" target="_blank"
+  <el-link :icon="Link" href="/help/#debugHelp" target="_blank" rel="noopener noreferrer"
     >书源调试说明</el-link
   ><br />
-  <el-link :icon="Link" href="/help/#httpTTSHelp" target="_blank"
+  <el-link :icon="Link" href="/help/#httpTTSHelp" target="_blank" rel="noopener noreferrer"
     >在线朗读规则</el-link
   ><br />
-  <el-link :icon="Link" href="/help/#webDavBookHelp" target="_blank">
+  <el-link :icon="Link" href="/help/#webDavBookHelp" target="_blank" rel="noopener noreferrer">
     WebDav书籍简明使用教程</el-link
   ><br />
-  <el-link :icon="Link" href="/help/#webDavHelp" target="_blank">
+  <el-link :icon="Link" href="/help/#webDavHelp" target="_blank" rel="noopener noreferrer">
     WebDav备份教程</el-link
   ><br />
-  <el-link :icon="Link" href="https://regexr-cn.com/" target="_blank"
+  <el-link :icon="Link" href="https://regexr-cn.com/" target="_blank" rel="noopener noreferrer"
     >正则表达式在线验证工具</el-link
   ><br />
   <div style="margin-top: 20px">

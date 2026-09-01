@@ -26,6 +26,7 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "test:chapter-html": "tsc --strict --noEmitOnError --pretty false --rootDir . --target ES2022 --module NodeNext --moduleResolution NodeNext --types node --outDir node_modules/.tmp/chapter-html-test src/utils/chapterHtml.ts tests/chapterHtml.test.ts && node node_modules/.tmp/chapter-html-test/tests/chapterHtml.test.js",
+    "test:static-links": "node --test tests/staticLinks.test.mjs && node scripts/check-static-links.mjs",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write src/"
   },
