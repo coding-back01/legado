@@ -37,9 +37,10 @@ jobs:
       head_sha: ${{ steps.classify.outputs.head_sha }}
     steps:
       - name: 检出代码
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: 分类并锁定验证提交范围
         id: classify
@@ -93,10 +94,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: 配置 JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
@@ -107,7 +110,9 @@ jobs:
           : > app/src/main/assets/18PlusList.txt
 
       - name: 配置 Gradle 缓存
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       - name: 运行 Android lint
         run: >-
@@ -118,7 +123,7 @@ jobs:
 
       - name: 上传 Android lint 报告
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: android-lint-${{ github.sha }}
           path: |
@@ -127,6 +132,7 @@ jobs:
             app/build/reports/lint-results-appDebug.txt
           if-no-files-found: warn
           retention-days: 30
+          archive: true
 
       - name: 运行 Android 单元测试
         run: >-
@@ -143,12 +149,13 @@ jobs:
           --warning-mode all
 
       - name: 上传 Debug APK
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: legado-app-debug-${{ github.sha }}
           path: app/build/outputs/apk/app/debug/*.apk
           if-no-files-found: error
           retention-days: 7
+          archive: true
 
   web:
     name: Web 质量检查
@@ -157,20 +164,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: 配置 pnpm 9.15.9
-        uses: pnpm/action-setup@v5
+        uses: pnpm/action-setup@v6
         with:
           version: 9.15.9
           run_install: false
+          cache: false
 
       - name: 配置 Node.js 22 与 pnpm 缓存
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
           cache-dependency-path: modules/web/pnpm-lock.yaml
+          package-manager-cache: false
 
       - name: 冻结安装网页端依赖
         working-directory: modules/web
@@ -215,14 +226,16 @@ jobs:
       ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
     steps:
       - name: 检出代码
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: 配置 Node.js 22
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: 22
+          package-manager-cache: false
 
       - name: 安装固定版本 OpenSpec
         run: npm install --global @fission-ai/openspec@1.8.0
@@ -272,18 +285,22 @@ jobs:
             build-mode: none
     steps:
       - name: 检出代码
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: 配置 JDK 17
         if: matrix.language == 'java-kotlin'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
 
       - name: 配置 Gradle 缓存
         if: matrix.language == 'java-kotlin'
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       - name: 初始化 CodeQL
         uses: github/codeql-action/init@v4
@@ -310,9 +327,71 @@ jobs:
         with:
           category: /language:${{ matrix.language }}
 
+  artifact-upload:
+    name: Artifact v7 上传
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: 生成确定性完整性夹具
+        shell: bash
+        env:
+          FIXTURE_DIR: ${{ runner.temp }}/action-upgrade-fixture
+        run: |
+          set -euo pipefail
+          mkdir -p "$FIXTURE_DIR"
+          printf '%s\n' 'legado-actions-artifact-v1' > "$FIXTURE_DIR/payload.txt"
+          (
+            cd "$FIXTURE_DIR"
+            sha256sum payload.txt > payload.sha256
+          )
+
+      - name: 上传完整性夹具
+        uses: actions/upload-artifact@v7
+        with:
+          name: action-upgrade-fixture-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/action-upgrade-fixture/
+          if-no-files-found: error
+          retention-days: 1
+          archive: true
+
+  artifact-download:
+    name: Artifact v8 下载核验
+    needs: artifact-upload
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: 下载完整性夹具
+        uses: actions/download-artifact@v8
+        with:
+          name: action-upgrade-fixture-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/downloaded-action-upgrade-fixture
+          skip-decompress: false
+          digest-mismatch: error
+
+      - name: 核对文件集合与 SHA-256
+        shell: bash
+        env:
+          DOWNLOAD_DIR: ${{ runner.temp }}/downloaded-action-upgrade-fixture
+        run: |
+          set -euo pipefail
+          mapfile -t entries < <(
+            find "$DOWNLOAD_DIR" -mindepth 1 -maxdepth 1 -printf '%f\n' | sort
+          )
+          expected=(payload.sha256 payload.txt)
+          if [[ "${entries[*]}" != "${expected[*]}" ]]; then
+            printf '下载文件集合不符合预期：%s\n' "${entries[*]}"
+            exit 1
+          fi
+          (
+            cd "$DOWNLOAD_DIR"
+            sha256sum --check --strict payload.sha256
+          )
+
   gate:
     name: 维护门禁
-    needs: [scope, android, web, repository, codeql]
+    needs: [scope, android, web, repository, codeql, artifact-download]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -326,6 +405,7 @@ jobs:
           WEB_RESULT: ${{ needs.web.result }}
           REPOSITORY_RESULT: ${{ needs.repository.result }}
           CODEQL_RESULT: ${{ needs.codeql.result }}
+          ARTIFACT_RESULT: ${{ needs.artifact-download.result }}
         run: |
           set -euo pipefail
           fail=false
@@ -356,6 +436,7 @@ jobs:
           require_success "范围识别" "$SCOPE_RESULT"
           require_success "OpenSpec 与仓库检查" "$REPOSITORY_RESULT"
           require_success "CodeQL" "$CODEQL_RESULT"
+          require_success "Artifact 下载核验" "$ARTIFACT_RESULT"
           require_scoped_result "Android 质量检查" "$ANDROID_REQUIRED" "$ANDROID_RESULT"
           require_scoped_result "Web 质量检查" "$WEB_REQUIRED" "$WEB_RESULT"
 
