@@ -73,7 +73,7 @@
 
 ## 6. 替代 Pull Request 与远端闭环
 
-- [ ] 6.1 只暂存本变更的精确路径，提交并推送独立 `codex/` 分支，创建明确说明“替代 #73、
+- [x] 6.1 只暂存本变更的精确路径，提交并推送独立 `codex/` 分支，创建明确说明“替代 #73、
   不触发正式 Release”的 Pull Request；不得使用 `git add -A`。
 - [ ] 6.2 等待范围识别、Android、Web、CodeQL Android/Web、OpenSpec/仓库、artifact 上传下载
   和稳定 `维护门禁` 全部实际绿色，核对 Gradle 首次缓存 miss 没有隐藏构建失败，且 CodeQL
