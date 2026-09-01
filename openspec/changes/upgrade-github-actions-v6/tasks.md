@@ -75,10 +75,10 @@
 
 - [x] 6.1 只暂存本变更的精确路径，提交并推送独立 `codex/` 分支，创建明确说明“替代 #73、
   不触发正式 Release”的 Pull Request；不得使用 `git add -A`。
-- [ ] 6.2 等待范围识别、Android、Web、CodeQL Android/Web、OpenSpec/仓库、artifact 上传下载
+- [x] 6.2 等待范围识别、Android、Web、CodeQL Android/Web、OpenSpec/仓库、artifact 上传下载
   和稳定 `维护门禁` 全部实际绿色，核对 Gradle 首次缓存 miss 没有隐藏构建失败，且 CodeQL
   Android 确实使用 `--no-build-cache` 编译源码。
-- [ ] 6.3 核对替代 Pull Request 没有触发 `Release Build`，没有读取正式签名 Secrets、推送
+- [x] 6.3 核对替代 Pull Request 没有触发 `Release Build`，没有读取正式签名 Secrets、推送
   tag、创建草稿 Release 或改变 stale 实际对象；任何失败均保持 #73 打开并停止合并。
 - [ ] 6.4 人工评审通过后合并替代 Pull Request，重新读取 `origin/master` SHA、合并提交检查、
   三个工作流和 OpenSpec 状态；只有读回结果完整时才以替代 Pull Request 链接关闭 #73。
