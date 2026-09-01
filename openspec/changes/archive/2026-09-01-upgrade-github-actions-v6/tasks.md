@@ -80,7 +80,7 @@
   Android 确实使用 `--no-build-cache` 编译源码。
 - [x] 6.3 核对替代 Pull Request 没有触发 `Release Build`，没有读取正式签名 Secrets、推送
   tag、创建草稿 Release 或改变 stale 实际对象；任何失败均保持 #73 打开并停止合并。
-- [ ] 6.4 人工评审通过后合并替代 Pull Request，重新读取 `origin/master` SHA、合并提交检查、
+- [x] 6.4 人工评审通过后合并替代 Pull Request，重新读取 `origin/master` SHA、合并提交检查、
   三个工作流和 OpenSpec 状态；只有读回结果完整时才以替代 Pull Request 链接关闭 #73。
-- [ ] 6.5 按验证与归档流程同步主规范、归档 `upgrade-github-actions-v6`，在归档提交和合并后的
+- [x] 6.5 按验证与归档流程同步主规范、归档 `upgrade-github-actions-v6`，在归档提交和合并后的
   `master` 上再次严格校验，并只按精确 ref/SHA 清理已合并临时分支；不触发正式发布。

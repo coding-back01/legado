@@ -148,6 +148,21 @@ class MaintenanceWorkflowContractTest(unittest.TestCase):
         )
         self.assert_action_matrix(self.stale_workflow, {"actions/stale"})
 
+    def test_node24_actions_stay_on_github_hosted_runners(self) -> None:
+        for workflow in (
+            self.workflow,
+            self.release_workflow,
+            self.stale_workflow,
+        ):
+            self.assertNotIn("self-hosted", workflow)
+            runs_on = {
+                line.strip()
+                for line in workflow.splitlines()
+                if line.strip().startswith("runs-on:")
+            }
+            self.assertGreater(len(runs_on), 0)
+            self.assertEqual({"runs-on: ubuntu-latest"}, runs_on)
+
     def test_all_pull_requests_and_master_pushes_trigger(self) -> None:
         self.assertIn("pull_request:", self.workflow)
         self.assertIn("push:", self.workflow)
