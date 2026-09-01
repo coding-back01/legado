@@ -36,10 +36,11 @@ jobs:
           exit 1
 
       - name: 检出候选提交
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ inputs.expected_sha }}
+          persist-credentials: false
 
       - name: 核对候选提交
         shell: bash
@@ -90,10 +91,11 @@ jobs:
       ORG_GRADLE_PROJECT_RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
     steps:
       - name: 检出候选提交
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ inputs.expected_sha }}
+          persist-credentials: false
 
       - name: 再次核对候选提交
         shell: bash
@@ -116,7 +118,7 @@ jobs:
           fi
 
       - name: 配置 JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
@@ -152,7 +154,9 @@ jobs:
           sed -i "/^def version =/c\\def version = \"$VERSION\"" app/build.gradle
 
       - name: 配置 Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       - name: 构建 APK
         run: ./gradlew :app:assembleAppRelease --build-cache --no-daemon --warning-mode all
@@ -171,12 +175,13 @@ jobs:
           sha256sum "dist/legado_app_${VERSION}_release.apk"
 
       - name: 上传 APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-apk
           path: dist/legado_app_${{ env.VERSION }}_release.apk
           if-no-files-found: error
           retention-days: 30
+          archive: true
 
   draft-release:
     name: 创建并核对草稿 Release
@@ -190,16 +195,19 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: 检出候选提交
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ inputs.expected_sha }}
+          persist-credentials: true
 
       - name: 下载 APK
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-apk
           path: dist
+          skip-decompress: false
+          digest-mismatch: error
 
       - name: 核对唯一 APK
         shell: bash

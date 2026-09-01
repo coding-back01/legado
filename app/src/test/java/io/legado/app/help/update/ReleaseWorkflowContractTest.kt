@@ -8,6 +8,11 @@ import java.io.File
 class ReleaseWorkflowContractTest {
 
     private val workflow = repoFile(".github/workflows/release.yml").readText()
+    private val authorizeSection = workflow.substringAfter("\n  authorize:")
+        .substringBefore("\n  build:")
+    private val buildSection = workflow.substringAfter("\n  build:")
+        .substringBefore("\n  draft-release:")
+    private val draftReleaseSection = workflow.substringAfter("\n  draft-release:")
     private val buildGradle = repoFile("app/build.gradle").readText()
     private val appConst = repoFile(
         "app/src/main/java/io/legado/app/constant/AppConst.kt"
@@ -48,6 +53,54 @@ class ReleaseWorkflowContractTest {
         assertTrue(workflow.contains("legado_app_\${VERSION}_release.apk"))
         assertTrue(workflow.contains("name: release-apk"))
         assertFalse(workflow.contains("pattern: release-apk-*"))
+    }
+
+    @Test
+    fun `Action 大版本与 checkout 凭据边界精确`() {
+        assertTrue(authorizeSection.contains("uses: actions/checkout@v7"))
+        assertTrue(authorizeSection.contains("persist-credentials: false"))
+        assertTrue(buildSection.contains("uses: actions/checkout@v7"))
+        assertTrue(buildSection.contains("persist-credentials: false"))
+        assertTrue(draftReleaseSection.contains("uses: actions/checkout@v7"))
+        assertTrue(draftReleaseSection.contains("persist-credentials: true"))
+        assertTrue(workflow.split("uses: actions/checkout@v7").size - 1 == 3)
+        assertFalse(workflow.contains(Regex("actions/checkout@v(?!7\\b)")))
+    }
+
+    @Test
+    fun `JDK 和 Gradle 缓存边界精确`() {
+        assertTrue(buildSection.contains("uses: actions/setup-java@v6"))
+        assertTrue(buildSection.contains("distribution: temurin"))
+        assertTrue(buildSection.contains("java-version: 17"))
+        assertTrue(buildSection.contains("uses: gradle/actions/setup-gradle@v6"))
+        assertTrue(buildSection.contains("cache-provider: basic"))
+    }
+
+    @Test
+    fun `release-apk 使用压缩上传和严格解压下载`() {
+        assertTrue(buildSection.contains("uses: actions/upload-artifact@v7"))
+        assertTrue(buildSection.contains("name: release-apk"))
+        assertTrue(buildSection.contains("archive: true"))
+        assertTrue(buildSection.contains("retention-days: 30"))
+        assertTrue(draftReleaseSection.contains("uses: actions/download-artifact@v8"))
+        assertTrue(draftReleaseSection.contains("name: release-apk"))
+        assertTrue(draftReleaseSection.contains("path: dist"))
+        assertTrue(draftReleaseSection.contains("skip-decompress: false"))
+        assertTrue(draftReleaseSection.contains("digest-mismatch: error"))
+        assertTrue(workflow.split("name: release-apk").size - 1 == 2)
+    }
+
+    @Test
+    fun `下载核验先于 tag 和草稿 Release`() {
+        assertTrue(
+            workflow.indexOf("下载 APK") < workflow.indexOf("核对唯一 APK")
+        )
+        assertTrue(
+            workflow.indexOf("核对唯一 APK") < workflow.indexOf("创建候选 tag")
+        )
+        assertTrue(
+            workflow.indexOf("创建候选 tag") < workflow.indexOf("创建草稿 Release")
+        )
     }
 
     @Test
