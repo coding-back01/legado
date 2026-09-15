@@ -3,14 +3,14 @@
 ## 目的与边界
 
 本文档记录 `coding-back01/legado` 在一次性 fork 治理归档后的后续维护顺序。目标是优先降低
-实际安全与兼容风险，并在可验证、可回滚的前提下完成 Android lint 的 108 个 warning 和
+实际安全与兼容风险，并在可验证、可回滚的前提下完成 Android lint 累计 111 个 warning 和
 18 个 hint 清零。
 路线图固定工作边界、顺序、门禁和重新启动条件；Android lint 小节记录本次已授权 Apply，
 其他依赖升级、远端 Pull Request 处置或设备操作仍不因本文档而自动获准。
 
 历史事实基线为 2026-08-31 的 `master` 提交 `7aa63c27b`：Android lint 为
 `0 error / 108 warning / 18 hint`，网页端 ESLint 为 0 error。本次以单一 OpenSpec 变更
-`eliminate-android-lint-findings` 的一次连续 Apply 处理全部 126 个 occurrence；最终强制
+`eliminate-android-lint-findings` 的一次连续 Apply 处理起始 126 个 occurrence；PR #84 又纳入 API 37 runner 产生的 3 个 `OldTargetApi`，累计处理 129 个 occurrence。最终强制
 lint XML 为 0 issue，完整处置与验证事实以该变更的实施证据为准。
 
 ## 治理原则
@@ -25,14 +25,14 @@ lint XML 为 0 issue，完整处置与验证事实以该变更的实施证据为
 6. 用户设备只允许验证 `io.legado.app.debug`。执行前实时核对包与数据边界；若需要清理既有
    Debug 数据，必须停止并另行取得明确授权。普通正式版及其数据不进入本路线图的设备操作。
 
-## 108 个 warning 与 18 个 hint 的完整去向
+## 111 个 warning 与 18 个 hint 的完整去向
 
 | 工作域 | 数量 | 组成 | 处置边界 |
 |---|---:|---|---|
 | 行为与资源 | 65 | 62 个中风险项，加 `IconDuplicates`、`UnusedAttribute`、`UseCompoundDrawables` 3 个低风险项 | 同一变更内按行为、资源、Overdraw 与剩余布局串行处理 |
-| 工具链与依赖 | 43 | `AndroidGradlePluginVersion` 4、`GradleDependency` 14、`NewerVersionAvailable` 25 | 同一变更内逐坐标精确抑制，不升级版本 |
+| 工具链、依赖与平台 | 46 | `AndroidGradlePluginVersion` 4、`GradleDependency` 14、`NewerVersionAvailable` 25、`OldTargetApi` 3 | 同一变更内逐坐标或文件精确抑制，不为清除提示升级版本或平台 |
 | hint | 18 | `ReportShortcutUsage` 1、`TrimLambda` 17 | 同一变更内先锁定兼容行为，再实施真实修复 |
-| **合计** | **126** |  | 同一次 Apply 的最终 lint XML 必须为 0 issue |
+| **合计** | **129** |  | 同一次 Apply 的最终 lint XML 必须为 0 issue |
 
 版本类检查依赖远端元数据，后续可能在没有源码变化时出现新提示。因此“0 issue”是目标提交
 的可验证状态，不代表依赖已经升级或兼容风险消失。达到零后，XML 门禁会阻断任意新增 issue；

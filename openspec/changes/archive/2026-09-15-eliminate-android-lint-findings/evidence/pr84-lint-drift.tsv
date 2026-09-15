@@ -1,0 +1,4 @@
+severity	id	file	line	disposition	reason	restart_condition
+Warning	OldTargetApi	app/build.gradle	49	SUPPRESSED_WITH_REASON	当前正式发布与完整验证基线为 targetSdk 36，不为清除平台提示伪装完成 API 37 迁移	独立 API 37 迁移完成 API 21/23/36/37 构建、行为与设备矩阵
+Warning	OldTargetApi	modules/book/build.gradle	16	SUPPRESSED_WITH_REASON	书籍模块与应用使用同一已验证 targetSdk 36，平台升级需要跨模块独立评审	独立 API 37 迁移完成 API 21/23/36/37 构建、行为与设备矩阵
+Warning	OldTargetApi	modules/rhino/build.gradle	18	SUPPRESSED_WITH_REASON	Rhino 模块与应用使用同一已验证 targetSdk 36，平台升级需要跨模块独立评审	独立 API 37 迁移完成 API 21/23/36/37 构建、行为与设备矩阵

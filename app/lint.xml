@@ -8,6 +8,16 @@
         -->
         <ignore path="../gradle/wrapper/gradle-wrapper.properties" />
     </issue>
+    <issue id="OldTargetApi">
+        <!--
+          GitHub Actions runner 已提供 API 37，但当前应用与两个 Android 库仍按
+          已验证的 targetSdk 36 发布。targetSdk 37 必须作为独立平台迁移，完成
+          API 21/23/36/37 构建、行为与设备矩阵后再删除这三个精确路径。
+        -->
+        <ignore path="build.gradle" />
+        <ignore path="../modules/book/build.gradle" />
+        <ignore path="../modules/rhino/build.gradle" />
+    </issue>
     <issue id="IconDuplicates">
         <!--
           两个文件当前字节相同，但 image_legado 是 RSS 无封面时的 nodpi 页面 fallback，

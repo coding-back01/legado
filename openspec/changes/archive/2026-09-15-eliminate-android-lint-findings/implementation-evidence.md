@@ -313,3 +313,11 @@
 - `scripts/android_lint_report.py inventory` 输出 `总计: 0`，`assert-zero` 输出 `Android lint 零 issue 断言通过`。使用 XPath 独立计数得到 `<issue>` 总数 0、Error 0、Warning 0、Hint 0。
 - 最终 XML、HTML、文本报告 SHA-256 分别为 `3782329f5ec7fc80243d071df4885364697fe238cd16d0fd49637d3010e96025`、`41289a2cb5799fac8ef6b18b25fb4abbe2e318720f2388e145ec5b552f77ea2f`、`a69ecb171bea9d40de22744c85220b4a4ea12f5a25ce7976d67f2c88c9195334`。
 - 维护账本经字段级脚本复核：warning 开始 108、最终可见 0、`FIXED` 14、`SUPPRESSED_WITH_REASON` 94、`DEFERRED` 0、`PENDING_REVIEW` 0；hint 开始 18、最终可见 0、`FIXED` 18、抑制 0、`DEFERRED` 0、`PENDING_REVIEW` 0。两类 occurrence 均数量守恒。
+
+## PR #84 API 37 runner 漂移处置
+
+- PR #84 首轮维护门禁 run `34929947117` 在合并参考提交 `fde15dd126f631a8a51095ee5c62b06c3f2a3ffe` 上执行。Android lint 本身成功，随后的零 issue 断言按设计失败；artifact 中的 XML 只包含 3 个 `Warning/OldTargetApi`，分别指向 `app/build.gradle`、`modules/book/build.gradle`、`modules/rhino/build.gradle` 的 `targetSdk 36`。
+- GitHub runner 已比本地固定 SDK 多提供 API 37，因此这 3 个 occurrence 属于工具环境漂移，但仍按规范纳入同一变更，不当作“本地为零”的可忽略差异。逐 occurrence 记录保存在 `evidence/pr84-lint-drift.tsv`。
+- 当前正式发布、构建、模拟器与真机证据均锁定 `targetSdk 36`。直接提升到 37 会引入独立平台行为变更，超出本次 lint 治理范围；因此 `app/lint.xml` 只对三个现有 Gradle 文件路径抑制 `OldTargetApi`，并以独立 API 37 迁移完成 API 21/23/36/37 构建、行为与设备矩阵为删除条件。没有全局关闭该 lint ID，没有建立 baseline，也没有降低 `checkDependencies` 范围。
+- 治理账本因此由起始 108 个 warning 加本轮 3 个漂移 warning，累计为 111；完整去向为 14 个 `FIXED`、97 个 `SUPPRESSED_WITH_REASON`、0 个最终可见、0 个 `DEFERRED`、0 个 `PENDING_REVIEW`。
+- 本地补充安装 `platforms;android-37.0` 后，使用与 CI 一致的 JDK 17、SDK 和 `:app:lintAppDebug --rerun-tasks --no-daemon --warning-mode all --console=plain` 强制复验；103 个任务全部执行，3 分 17 秒后 `BUILD SUCCESSFUL`。清单与零 issue 断言均输出 `总计: 0`，XML、HTML、文本报告 SHA-256 分别为 `3782329f5ec7fc80243d071df4885364697fe238cd16d0fd49637d3010e96025`、`51c5081317d859b5b3176a97fffa862986deff26221d77634946a615e9434669`、`a69ecb171bea9d40de22744c85220b4a4ea12f5a25ce7976d67f2c88c9195334`。脚本单元测试 11/11、维护工作流契约 20/20、OpenSpec 严格校验 7/7 通过，`git diff --check` 无输出。
