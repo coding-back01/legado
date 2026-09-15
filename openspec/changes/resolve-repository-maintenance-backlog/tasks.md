@@ -17,13 +17,13 @@
 
 ## 3. Android Gradle 与 AGP 联合迁移
 
-- [ ] 3.1 使用官方 wrapper 任务把 Gradle 固定到 `9.7.1` 并连续生成两次，核对下载 URL、校验值、wrapper JAR 和启动脚本；修正 `gradlew.bat` 换行/尾随空格并通过 `git diff --check`。
-- [ ] 3.2 把 application、library、test 三个插件共用的 AGP 版本更新到 `9.4.0`，迁移到 AGP 9 受支持的原生 Kotlin 集成，同时保持 Kotlin `2.3.0`、KSP `2.3.4`、Parcelize、JDK 17 和显式 stdlib 版本不变。
-- [ ] 3.3 迁移 AGP 9 不再支持或已废弃的 Variant API、DSL 和任务访问方式，保持 APK 命名、product flavor、application ID、release/debug 签名边界、Room schema 输出和三个模块命名空间不变。
-- [ ] 3.4 分别执行根工程配置、`app`、`modules/book`、`modules/rhino` 的 Kotlin/Java 编译及 KSP/Room 代码生成，确认没有通过关闭插件、旧 DSL 兼容开关或升级范围外依赖绕过错误；若当前 Kotlin/KSP 与 AGP 9.4 存在硬冲突则停止 Apply 并记录证据。
-- [ ] 3.5 执行 `./gradlew :app:testAppDebugUnitTest`、`./gradlew :app:lintAppDebug` 和 `./gradlew :app:assembleAppDebug`，解析 lint XML 确认 issue 节点为零，并核对 Debug APK 身份及最低/目标 API 未变化。
-- [ ] 3.6 在既有无个人数据矩阵中完成适用的 API 21/23/36 构建或设备测试，验证启动、资源、Room、launcher/shortcut 和受影响兼容路径；原始设备证据不得进入 Git。
-- [ ] 3.7 把版本组合、构建脚本迁移、wrapper 核验及全部 Android 结果写入 `evidence/android-toolchain.md`，形成可独立审查的 Android 检查点。
+- [x] 3.1 使用官方 wrapper 任务把 Gradle 固定到 `9.7.1` 并连续生成两次，核对下载 URL、校验值、wrapper JAR 和启动脚本；修正 `gradlew.bat` 换行/尾随空格并通过 `git diff --check`。
+- [x] 3.2 把 application、library、test 三个插件共用的 AGP 版本更新到 `9.4.0`，迁移到 AGP 9 受支持的原生 Kotlin 集成，同时保持 Kotlin `2.3.0`、KSP `2.3.4`、Parcelize、JDK 17 和显式 stdlib 版本不变。
+- [x] 3.3 迁移 AGP 9 不再支持或已废弃的 Variant API、DSL 和任务访问方式，保持 APK 命名、product flavor、application ID、release/debug 签名边界、Room schema 输出和三个模块命名空间不变。
+- [x] 3.4 分别执行根工程配置、`app`、`modules/book`、`modules/rhino` 的 Kotlin/Java 编译及 KSP/Room 代码生成，确认没有通过关闭插件、旧 DSL 兼容开关或升级范围外依赖绕过错误；若当前 Kotlin/KSP 与 AGP 9.4 存在硬冲突则停止 Apply 并记录证据。
+- [x] 3.5 执行 `./gradlew :app:testAppDebugUnitTest`、`./gradlew :app:lintAppDebug` 和 `./gradlew :app:assembleAppDebug`，解析 lint XML 确认 issue 节点为零，并核对 Debug APK 身份及最低/目标 API 未变化。
+- [x] 3.6 在既有无个人数据矩阵中完成适用的 API 21/23/36 构建或设备测试，验证启动、资源、Room、launcher/shortcut 和受影响兼容路径；原始设备证据不得进入 Git。
+- [x] 3.7 把版本组合、构建脚本迁移、wrapper 核验及全部 Android 结果写入 `evidence/android-toolchain.md`，形成可独立审查的 Android 检查点。
 
 ## 4. Web 运行时依赖迁移
 
