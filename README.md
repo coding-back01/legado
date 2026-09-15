@@ -32,7 +32,7 @@
 - 私密安全报告：[Private vulnerability reporting](https://github.com/coding-back01/legado/security/advisories/new)
 - 完整贡献者：[当前 Git 历史贡献者](https://github.com/coding-back01/legado/graphs/contributors)
 
-新正式版目前处于稳定化冻结状态。恢复发布后只提供普通版 `io.legado.app.release`；历史共存版资产和设备数据继续保留，但不再生成新共存版。当前签名由本仓库独立保管，不能直接覆盖其他签名的同包名应用，迁移或安装前请先备份。
+稳定化修复已完成，正式发布与常规变更已恢复。新正式版只提供普通版 `io.legado.app.release`；历史共存版资产和设备数据继续保留，但不再生成新共存版。当前签名由本仓库独立保管，不能直接覆盖其他签名的同包名应用，迁移或安装前请先备份。
 
 这是低维护容量的个人稳定 fork：只接受正式版 bug 和私密安全报告，不提供响应时限，也默认不受理功能请求。兼容性声明只覆盖 Release 说明中明确记录、实际自动验证过的设备与 Android 版本，不对其他设备作推断。
 
