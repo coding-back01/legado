@@ -8,7 +8,7 @@ ksp = "2.3.4"
 # AGP application/library/test 三个插件必须与当前 Gradle、JDK 17 和构建脚本成组升级。
 # 独立升级变更完成三插件迁移及 API 21/23/36 构建矩阵时重新评估。
 #noinspection AndroidGradlePluginVersion
-agp = "8.13.2"
+agp = "9.4.0"
 # AppCompat 1.7.1 已纳入当前 API 21/23/36 主题、窗口与组件回归矩阵，版本升级需独立验证 UI 兼容性。
 # Dependabot 提出升级且独立依赖变更完成上述矩阵时重新评估。
 #noinspection GradleDependency
