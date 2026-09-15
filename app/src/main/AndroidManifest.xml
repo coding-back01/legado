@@ -199,50 +199,68 @@
             android:name=".ui.book.search.SearchActivity"
             android:launchMode="standard" />
         <!-- 关于界面 -->
+        <!-- 保留关于页在 Android 16 以下的前页方向继承；九页完成自适应布局后重新评估。 -->
         <activity
             android:name=".ui.about.AboutActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="behind" />
+            android:screenOrientation="behind"
+            tools:ignore="DiscouragedApi" />
         <!-- 书源管理 -->
+        <!-- 保留书源管理页在 Android 16 以下的前页方向继承；九页完成自适应布局后重新评估。 -->
         <activity
             android:name=".ui.book.source.manage.BookSourceActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="behind" />
+            android:screenOrientation="behind"
+            tools:ignore="DiscouragedApi" />
         <!-- 订阅源管理 -->
+        <!-- 保留订阅源管理页在 Android 16 以下的前页方向继承；九页完成自适应布局后重新评估。 -->
         <activity
             android:name=".ui.rss.source.manage.RssSourceActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="behind" />
+            android:screenOrientation="behind"
+            tools:ignore="DiscouragedApi" />
         <!-- txt目录规则管理 -->
+        <!-- 保留 txt 目录规则页在 Android 16 以下的前页方向继承；九页完成自适应布局后重新评估。 -->
         <activity
             android:name=".ui.book.toc.rule.TxtTocRuleActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="behind" />
+            android:screenOrientation="behind"
+            tools:ignore="DiscouragedApi" />
         <!-- 替换规则界面 -->
+        <!-- 保留替换规则页在 Android 16 以下的前页方向继承；九页完成自适应布局后重新评估。 -->
         <activity
             android:name=".ui.replace.ReplaceRuleActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="behind" />
+            android:screenOrientation="behind"
+            tools:ignore="DiscouragedApi" />
         <!-- 书籍管理 -->
+        <!-- 保留书籍管理页在 Android 16 以下的前页方向继承；九页完成自适应布局后重新评估。 -->
         <activity
             android:name=".ui.book.manage.BookshelfManageActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="behind" />
+            android:screenOrientation="behind"
+            tools:ignore="DiscouragedApi" />
         <!-- 书源调试 -->
+        <!-- 保留书源调试页在 Android 16 以下的前页方向继承；九页完成自适应布局后重新评估。 -->
         <activity
             android:name=".ui.book.source.debug.BookSourceDebugActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="behind" />
+            android:screenOrientation="behind"
+            tools:ignore="DiscouragedApi" />
         <!-- 目录 -->
+        <!-- 保留目录页在 Android 16 以下的前页方向继承；九页完成自适应布局后重新评估。 -->
         <activity
             android:name=".ui.book.toc.TocActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="behind" />
+            android:screenOrientation="behind"
+            tools:ignore="DiscouragedApi" />
         <!-- 正文搜索 -->
+        <!-- 保留正文搜索页在 Android 16 以下的前页方向继承；九页完成自适应布局后重新评估。 -->
         <activity
             android:name=".ui.book.searchContent.SearchContentActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="behind" />
+            android:screenOrientation="behind"
+            tools:ignore="DiscouragedApi" />
         <!-- RSS条目 -->
         <activity
             android:name=".ui.rss.article.RssSortActivity"

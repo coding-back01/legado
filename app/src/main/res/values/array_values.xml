@@ -11,6 +11,16 @@
         <item>launcher6</item>
     </string-array>
 
+    <array name="launcher_icon_resources">
+        <item>@mipmap/ic_launcher</item>
+        <item>@mipmap/launcher1</item>
+        <item>@mipmap/launcher2</item>
+        <item>@mipmap/launcher3</item>
+        <item>@mipmap/launcher4</item>
+        <item>@mipmap/launcher5</item>
+        <item>@mipmap/launcher6</item>
+    </array>
+
     <string-array name="screen_time_out_value">
         <item>0</item>
         <item>60</item>

@@ -7,7 +7,7 @@
     android:orientation="horizontal"
     android:padding="5dp"
     android:background="?attr/selectableItemBackground"
-    tools:ignore="UseCompoundDrawables">
+    tools:ignore="Overdraw,UseCompoundDrawables">
 
     <ImageView
         android:id="@+id/image_view"

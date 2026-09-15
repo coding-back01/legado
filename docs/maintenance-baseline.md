@@ -4,7 +4,7 @@
 
 本文档记录 `coding-back01/legado` 个人稳定 fork 的 Android lint 与网页端 ESLint 治理基线。完整逐条 Android lint occurrence 以构建生成的 XML/HTML/文本报告和后续 CI artifact 为事实源；本文档只保存按 lint ID 的汇总、风险判断和精确例外。
 
-参考提交为 `460970675fedb91d8d10aa42447bab8cc13e8a40`，参考运行时间为 2026-08-23 11:02 +0800。
+历史参考提交为 `460970675fedb91d8d10aa42447bab8cc13e8a40`，参考运行时间为 2026-08-23 11:02 +0800。本次单一变更 `eliminate-android-lint-findings` 的 Apply 起始提交为 `826a49d2199b571fc8533b9ae0005fd8e0d70369`；起始强制报告为 108 个 warning、18 个 hint、0 个 error。PR #84 首轮合并参考 CI 的 runner 新增 API 37 后，又发现 3 个 `OldTargetApi` warning；它们与起始报告累计形成 111 个 warning 的完整治理范围，最终强制报告为 0 个 issue。
 
 ## Android lint 参考命令
 
@@ -14,7 +14,7 @@ ANDROID_SDK_ROOT=/Users/back/Library/Android/sdk \
 ./gradlew :app:lintAppDebug --rerun-tasks --console=plain
 ```
 
-参考运行退出码为 1，结果为 14 个 error、881 个 warning 和 18 个 hint。完整本地报告位于：
+历史参考运行退出码为 1，结果为 14 个 error、881 个 warning 和 18 个 hint。本次 Apply 使用 JDK 17、固定 SDK、`--rerun-tasks --no-daemon --warning-mode all` 强制重跑，最终退出码为 0。完整本地报告位于：
 
 - `app/build/reports/lint-results-appDebug.xml`
 - `app/build/reports/lint-results-appDebug.html`
@@ -34,50 +34,44 @@ PR 5 的维护 workflow 在每次适用运行中上传 `android-lint-<提交 SHA
 | `WrongConstant` | 4 | 0 | PR 3 修正位掩码、orientation typedef 与输入法 flag；聚焦测试与 lint 已验证 |
 | **合计** | **14** | **0** | PR 3 已清零；全量验证完成前仍不视为可合并 |
 
-## Warning 三态账本
+## Warning 处置账本
 
-状态说明：
+状态说明：`FIXED` 表示已通过聚焦验证安全修复；`SUPPRESSED_WITH_REASON` 表示经证据确认必须保留，并只在精确位置抑制。`DEFERRED` 和 `PENDING_REVIEW` 在最终账本中必须为 0。
 
-- `PENDING_REVIEW`：尚未完成风险审查，阻止总治理完成。
-- `FIXED`：已通过聚焦验证安全修复。
-- `SUPPRESSED_WITH_REASON`：经证明为误报或刻意兼容行为，只在精确位置局部抑制。
-- `DEFERRED`：本轮无法安全修复，已记录风险、原因和重新启动条件。
+| lint ID | 风险 | 历史原始 | 本次累计纳入 | 最终可见 | 本次 FIXED | 本次 SUPPRESSED_WITH_REASON | DEFERRED | PENDING_REVIEW | 证据与结论 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `AndroidGradlePluginVersion` | 低 | 4 | 4 | 0 | 0 | 4 | 0 | 0 | wrapper 单文件路径与 AGP 版本声明精确抑制；版本未升级 |
+| `AppBundleLocaleChanges` | 高 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 既有修复与 fatal 保持；本次起始报告未出现 |
+| `Autofill` | 中 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 既有日期字段契约保持；本次起始报告未出现 |
+| `ContentDescription` | 中 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 既有无障碍修复保持；本次起始报告未出现 |
+| `DefaultLocale` | 高 | 8 | 0 | 0 | 0 | 0 | 0 | 0 | 既有 `Locale.ROOT` 修复与 fatal 保持 |
+| `DiscouragedApi` | 中 | 11 | 11 | 0 | 2 | 9 | 0 | 0 | 两个资源名称反射改为类型化 ID；九个 `behind` 入口按 Manifest 节点保留 |
+| `GradleDependency` | 低 | 14 | 14 | 0 | 0 | 14 | 0 | 0 | AndroidX、Material 与测试库逐坐标抑制；版本未升级 |
+| `HardcodedText` | 中 | 14 | 0 | 0 | 0 | 0 | 0 | 0 | 既有字符串资源修复保持 |
+| `IconDuplicates` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 两个语义不同的二进制资源按精确路径保留 |
+| `IconLocation` | 中 | 6 | 6 | 0 | 6 | 0 | 0 | 0 | 六张生产位图迁入 `drawable-nodpi`，解码和 golden 已验证 |
+| `InefficientWeight` | 中 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 既有布局修复保持 |
+| `IntentWithNullActionLaunch` | 高 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 既有显式 Intent 与 fatal 保持 |
+| `KeyboardInaccessibleWidget` | 中 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 既有键盘与点击入口契约保持 |
+| `NewerVersionAvailable` | 低 | 21 | 25 | 0 | 0 | 25 | 0 | 0 | 25 个起始坐标均在版本声明处审计；Download 的远程提示后来消失但仍保留精确记录 |
+| `OldTargetApi` | 低 | 0 | 3 | 0 | 0 | 3 | 0 | 0 | PR #84 runner 新增 API 37 后出现；应用与两个库的 `targetSdk 36` 逐文件保留，未伪装完成 API 37 迁移 |
+| `Overdraw` | 中 | 41 | 41 | 0 | 4 | 37 | 0 | 0 | 四个等价背景删除；37 个语义背景逐布局保留 |
+| `PluralsCandidate` | 低 | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 既有死资源修复保持 |
+| `RtlHardcoded` | 中 | 7 | 0 | 0 | 0 | 0 | 0 | 0 | 既有逻辑方向修复保持 |
+| `RtlSymmetry` | 中 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 既有逻辑间距修复保持 |
+| `SetTextI18n` | 中 | 8 | 0 | 0 | 0 | 0 | 0 | 0 | 既有四处修复与四处精确兼容抑制保持 |
+| `TextFields` | 中 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 既有日期选择字段精确抑制保持 |
+| `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | API 23+ RSS ripple 按根节点保留，API 21/23/36 交互已验证 |
+| `UnusedResources` | 中 | 594 | 2 | 0 | 2 | 0 | 0 | 0 | 删除死布局与全 locale 的 `del_all`，同步退役旧契约断言 |
+| `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 文件路径控件因 View Binding、20dp 箭头和整行点击合同按根节点保留 |
+| `UseKtx` | 低 | 133 | 0 | 0 | 0 | 0 | 0 | 0 | 既有 126 个修复与 7 个可空兼容抑制保持 |
+| `UselessParent` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 漫画菜单外层背景覆盖进度行边距，按精确容器保留 |
+| `VectorPath` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | launcher3 路径无法在 0.01% 阈值内继续降精度，按精确 `<path>` 保留 |
+| **合计** |  | **881** | **111** | **0** | **14** | **97** | **0** | **0** | 111 = 14 + 97，起始与 PR CI 新增 occurrence 累计数量守恒 |
 
-| lint ID | 风险 | 原始数量 | 当前数量 | FIXED | SUPPRESSED | DEFERRED | PENDING | 初始判断 |
-|---|---|---:|---:|---:|---:|---:|---:|---|
-| `AndroidGradlePluginVersion` | 低 | 4 | 4 | 0 | 0 | 4 | 0 | PR 4r 完成 Gradle/AGP 精确审查；升级会改变构建工具链，转入独立兼容性变更 |
-| `AppBundleLocaleChanges` | 高 | 1 | 0 | 1 | 0 | 0 | 0 | PR 3 关闭语言资源拆分并提升为 fatal；聚焦契约与 lint 已验证 |
-| `Autofill` | 中 | 1 | 0 | 1 | 0 | 0 | 0 | PR 4e（#58）将只由日期选择器赋值的字段明确排除自动填充；聚焦契约与 lint 已验证 |
-| `ContentDescription` | 中 | 2 | 0 | 2 | 0 | 0 | 0 | PR 4e（#58）为锁定章节图标补齐全 locale 语义，并将装饰性主题图标预览移出无障碍树 |
-| `DefaultLocale` | 高 | 8 | 0 | 8 | 0 | 0 | 0 | PR 3 对内部标识统一使用 `Locale.ROOT` 并提升为 fatal；土耳其语行为测试与 lint 已验证 |
-| `DiscouragedApi` | 中 | 11 | 11 | 0 | 0 | 11 | 0 | PR 4r 审查 9 个方向继承和 2 个动态图标名称合同；缺少跨 API、旋转与设置恢复证据，精确延期 |
-| `GradleDependency` | 低 | 14 | 14 | 0 | 0 | 14 | 0 | PR 4r 按坐标完成审查；运行库与测试库升级均转入独立依赖变更 |
-| `HardcodedText` | 中 | 14 | 0 | 14 | 0 | 0 | 0 | PR 4c（#56）将运行时文本、提示和无障碍说明替换为现有或全 locale 资源 |
-| `IconDuplicates` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4r 确认相同字节承担不同资源类型和密度语义，精确延期 |
-| `IconLocation` | 中 | 6 | 6 | 0 | 0 | 6 | 0 | PR 4r 确认均为生产资源；移动目录会改变密度缩放，精确延期 |
-| `InefficientWeight` | 中 | 1 | 0 | 1 | 0 | 0 | 0 | PR 4f（#59）在固定宽度父容器中用 `0dp + weight` 保持开关占用同一剩余宽度，避免重复测量 |
-| `IntentWithNullActionLaunch` | 高 | 1 | 0 | 1 | 0 | 0 | 0 | PR 3 为 QQ 跳转设置显式 `ACTION_VIEW` 并提升为 fatal；契约测试与 lint 已验证 |
-| `KeyboardInaccessibleWidget` | 中 | 1 | 0 | 1 | 0 | 0 | 0 | PR 4e（#58）保留日期字段键盘焦点与点击入口，并明确禁止软键盘直接编辑 |
-| `NewerVersionAvailable` | 低 | 21 | 25 | 0 | 0 | 25 | 0 | PR 4r 审查参考运行 21 项；PR 5b 重跑时远端元数据新增 4 项检测结果，仍按坐标延期，工具链、运行库和兼容固定依赖不得混入发布烟测治理 |
-| `Overdraw` | 中 | 41 | 41 | 0 | 0 | 41 | 0 | PR 4f（#59）完成逐位置审查；根背景移除需要日夜模式与透明页面截图基线，本轮精确延期 |
-| `PluralsCandidate` | 低 | 5 | 0 | 5 | 0 | 0 | 0 | PR 4d（#57）删除 5 个经全仓动态引用审计确认无使用的资源；聚焦契约与 lint 已验证 |
-| `RtlHardcoded` | 中 | 7 | 0 | 7 | 0 | 0 | 0 | PR 4a（#54）将物理方向间距与 gravity 改为逻辑方向；布局契约与 lint 已验证 |
-| `RtlSymmetry` | 中 | 2 | 0 | 2 | 0 | 0 | 0 | PR 4a（#54）为单侧逻辑内边距补齐显式零起始值；布局契约与 lint 已验证 |
-| `SetTextI18n` | 中 | 8 | 0 | 4 | 4 | 0 | 0 | PR 4b（#55）本地化显示数字与跳转提示；4 个 ASCII 数字输入保留精确兼容抑制 |
-| `TextFields` | 中 | 1 | 0 | 0 | 1 | 0 | 0 | PR 4e（#58）保留日期选择器专用字段的 `inputType="none"`，并在精确视图记录兼容理由 |
-| `UnusedAttribute` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4r 确认前景 ripple 在 API 23+ 有效，直接删除会改变交互，精确延期 |
-| `UnusedResources` | 中 | 594 | 2 | 592 | 0 | 2 | 0 | PR 3 显式加入 Startup 后减少 1 项；PR 4d（#57）删除 5 个已审计复数候选；PR 4q（#70）对剩余 588 项完成动态引用和死资源闭包审计，删除 586 项并因既有翻译与 RTL 契约精确延期 2 项，当前已完成全 ID 对账 |
-| `UseCompoundDrawables` | 低 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认会改变两个文件选择器的 View Binding、图标尺寸与点击区域，本轮精确延期 |
-| `UseKtx` | 低 | 133 | 0 | 126 | 7 | 0 | 0 | PR 3 与 PR 4g 至 4o 已完成 116 项安全转换；PR 4l（#65）另精确抑制 7 个可空兼容 occurrence；PR 4p（#69）完成 10 个 Canvas 状态转换，当前已完成全 ID 对账 |
-| `UselessParent` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4f（#59）审查确认需移动漫画菜单边距、背景和测量职责，缺少稳定页面截图，本轮精确延期 |
-| `VectorPath` | 中 | 1 | 1 | 0 | 0 | 1 | 0 | PR 4r 确认压缩或栅格化会改变自适应图标，缺少像素基线，精确延期 |
-| **合计** |  | **881** | **108** | **765** | **12** | **108** | **0** | PR 3 与 PR 4a 至 PR 4r 完成参考项三态审查；PR 5b 对远端元数据漂移新增的 4 项也完成精确延期，当前没有未审查项 |
+PR 5b 于 2026-08-30 重跑 lint 时，`NewerVersionAvailable` 从 21 项漂移为 25 项：同一 Kotlin 版本由 6 个增为 9 个插件坐标提示，并新识别 Download 插件更新。本次 Apply 将起始报告中的 25 个坐标全部记录为 `SUPPRESSED_WITH_REASON`；即使 Download 提示在后续远程查询中消失，也没有把它伪装成源码修复或从起始数量中删除。
 
-PR 5b 于 2026-08-30 重跑 lint 时，`NewerVersionAvailable` 从 21 项漂移为 25 项：
-`gradle/libs.versions.toml:3` 的同一 Kotlin 版本由 6 个增为 9 个插件坐标提示，另在
-`gradle/libs.versions.toml:210` 新识别 `de.undercouch.download` 插件更新。当前分支未修改
-版本目录，这 4 项来自检查时的远端版本元数据变化；它们沿用既有低风险依赖延期条件。
-因此最终状态总数为参考运行 881 项加 4 项后续漂移，不把新增提示伪装成原始基线内容。
+PR #84 首轮工作流在合并参考提交 `fde15dd126f631a8a51095ee5c62b06c3f2a3ffe` 上执行，lint 因 runner 比本地固定 SDK 多安装了 API 37，对 `app`、`modules/book`、`modules/rhino` 的 `targetSdk 36` 各报 1 个 `OldTargetApi`。这 3 项已按精确 Gradle 文件路径纳入账本；在 API 37 平台迁移完成构建、行为和设备矩阵前，不为消除提示直接提升 `targetSdk`。
 
 ## 精确局部抑制
 
@@ -91,32 +85,33 @@ PR 5b 于 2026-08-30 重跑 lint 时，`NewerVersionAvailable` 从 21 项漂移�
 | `UseKtx` | `BookCover.upDefaultCover` 的自定义默认封面构造 | 1 | 解码结果为可空 `Bitmap`；直接改用 KTX 无法保留原空 `BitmapDrawable` 返回语义 | KTX 提供等价可空重载，或建立默认封面解码失败行为测试后明确批准改变兜底 | PR 4l（#65）聚焦契约、完整单元测试与 lint |
 | `UseKtx` | `WelcomeActivity.upBackgroundImage` 的深色与普通欢迎图分支 | 4 | 两个实际构造的解码结果为可空 `Bitmap`，且空值时仍会设置背景并提前返回；安全调用会改变回退到父类背景的控制流；lint 对每个构造重复登记一次 | KTX 提供等价可空重载，或建立两种主题下解码失败的 Activity 行为测试后明确批准改变回退控制流 | PR 4l（#65）聚焦契约、完整单元测试与 lint；2 个实际构造、4 个 occurrence |
 
-## 精确延期项
+## 本次治理的精确抑制
 
-| lint ID | 精确范围 | 数量 | 行为风险与延期原因 | 重新启动条件 | 证据 |
-|---|---|---:|---|---|---|
-| `AndroidGradlePluginVersion` | `gradle/wrapper/gradle-wrapper.properties:4` 的 Gradle 8.13；`gradle/libs.versions.toml:5` 的 AGP 8.13.2 对应 application/library/test 3 个 occurrence | 4 | 升级 Gradle 或 AGP 会改变 Java/Gradle/插件兼容矩阵与 Android 构建输出，不属于 warning 治理中的机械修复 | 建立独立工具链 OpenSpec 变更，核对 JDK 17、所有模块、API 21/36、签名前构建与完整 CI 后升级 | PR 4r `warning-pr4r-final-audit.md` |
-| `DiscouragedApi` | `app/src/main/AndroidManifest.xml:205,210,215,220,225,230,235,240,245` 的 9 个 `screenOrientation="behind"`；`app/src/main/java/io/legado/app/lib/prefs/IconListPreference.kt:45,174` 的 2 个 `getIdentifier` | 11 | 删除方向继承会改变 Android 16 以下九个页面的既有旋转行为；动态图标名称来自 XML array 并经 Bundle 传入对话框，改成资源 ID 会改变 styleable 与恢复合同 | 在 API 21/36、手机/平板、多窗口和旋转下覆盖九个页面；为旧设置恢复、全部 launcher alias 与对话框重建建立测试后拆分处理 | PR 4r `warning-pr4r-final-audit.md` |
-| `GradleDependency` | `gradle/libs.versions.toml:6,8,9(2),11(3),22,23,34,80,91,97,149` | 14 | 涉及 AppCompat、ConstraintLayout、Core、Fragment、Material、Media、Collection、Annotation 与 AndroidX Test；批量升级可能改变 API 21 行为、资源主题、Fragment 生命周期和设备测试接口 | 由独立依赖 PR 逐坐标升级，完成单元测试、lint、Debug 构建及受影响页面或设备测试；运行库与测试库分批归因 | PR 4r `warning-pr4r-final-audit.md` |
-| `NewerVersionAvailable` | `gradle/libs.versions.toml:3(9),15(6),16,17,18,19(2),25,36,56,137,210` | 25 | 包含 Kotlin 九插件、Glide 六模块及 Gson、JSONPath、JsoupXpath、Coroutines、OkHttp、ZXing、Rhino、Glide Compose 和 Download 插件；其中有工具链、主版本、beta 和最低 Android 兼容风险，Rhino 还带明确低版本 Android 固定说明；其中 4 项为 PR 5b 重跑时远端元数据新增的检测结果 | 分别建立工具链、图片栈、构建插件和运行依赖升级变更；逐坐标核对发行说明与最低 API，并完成解析、网络、图片、二维码、JavaScript、构建插件和设备回归 | PR 4r `warning-pr4r-final-audit.md`；PR 5b `pr5b-release-emulator-smoke.md` |
-| `IconLocation` | `app/src/main/res/drawable/icon_read_book.png`、`image_cover_default.jpg`、`image_legado.png`、`image_loading_error.png`、`image_rss.jpg`、`image_rss_article.jpg` | 6 | 六个文件均有生产引用；移入 `drawable-nodpi` 或密度目录会改变封面、RSS、通知、快捷方式、欢迎页和错误图的缩放与内存占用 | 为各密度的书架/RSS/欢迎页、通知与快捷方式建立截图和像素尺寸基线，再按用途选择 `nodpi` 或提供完整密度资源 | PR 4r `warning-pr4r-final-audit.md` |
-| `IconDuplicates` | `app/src/main/res/drawable/image_legado.png` 与 `app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` | 1 | 两文件 SHA-256 同为 `514f0a45caea8ebb96d9f3a5afce92efb669dad89b210b81602c33fc55a681d5`，但前者是 RSS 页面 drawable，后者是 xxxhdpi 应用图标；互相复用会改变资源类型和密度缩放 | 建立 RSS 空图、应用图标、launcher alias 在 API 21/36 和多密度下的截图与打包断言，再决定是否生成语义独立的资源 | PR 4r `warning-pr4r-final-audit.md` |
-| `UnusedAttribute` | `app/src/main/res/layout/item_rss.xml:9` 的 `android:foreground` | 1 | 属性只在 API 21/22 被忽略，在 API 23+ 为 RSS 卡片提供点击 ripple；直接删除会让现代设备丢失交互反馈，复制整个 `layout-v23` 又会制造布局漂移风险 | 为 API 21/23/36 的 RSS 点击、长按和 ripple 建立 UI 层级与截图断言，再选择版本化布局或等价兼容前景实现 | PR 4r `warning-pr4r-final-audit.md` |
-| `VectorPath` | `app/src/main/res/drawable/ic_launcher3.xml:7` 的 6,019 字符 path | 1 | 降低精度、删细节或栅格化会改变 launcher3 的自适应/单色图标外观和密度行为，当前没有可接受误差的像素基线 | 保存原图来源并为 API 26+ 自适应图标、单色图标和多密度输出建立像素差异阈值后独立优化 | PR 4r `warning-pr4r-final-audit.md` |
-| `UnusedResources` | `app/src/main/res/layout/dialog_progressbar_view.xml:2`；8 个支持 locale 的 `strings.xml` 中 `del_all` 对应 1 个 base occurrence | 2 | 删除后既有 `RtlLayoutContractTest` 和 `BlockingTranslationResourceTest` 分别失败，会撤销已完成的 RTL 与六键全 locale 契约 | 通过新的 OpenSpec 评审明确退役进度布局或 `del_all`，并在证明不存在运行时入口后同步替换相应跨批契约测试 | PR 4q（#70）`warning-pr4q-unused-resources.md` 的全量 RED、聚焦 GREEN 与 lint 对账 |
-| `Overdraw` | 41 个根布局背景位置，逐文件与行号见 PR 4f 证据 | 41 | 根背景可能承担日夜主题、不透明对话框或透明页面兜底；批量删除会改变实际渲染，当前没有逐页面截图基线 | 为清单中每个页面建立日夜模式截图或像素差异基线，并覆盖透明窗口与弹窗背景后逐批重启 | PR 4f（#59）`warning-pr4f-layout-performance.md` |
-| `UselessParent` | `app/src/main/res/layout/view_manga_menu.xml:85` | 1 | 扁平化需要把子容器 margin 改为父容器 padding，并改变背景和测量职责；缺少稳定漫画菜单夹具与截图 | 建立漫画页面固定夹具、菜单 UI 层级和日夜模式截图，证明 SeekBar、前后章按钮位置与点击区域不变 | PR 4f（#59）`warning-pr4f-layout-performance.md` |
-| `UseCompoundDrawables` | `app/src/main/res/layout/item_path_picker.xml:2` | 1 | 合并为单 TextView 会改变两个文件选择器的 View Binding 字段、动态 Drawable 尺寸、文本着色和整行点击区域 | 为文件管理与文件选择对话框建立路径面包屑导航测试、图标/文字截图和点击区域断言后独立重构 | PR 4f（#59）`warning-pr4f-layout-performance.md` |
+| lint ID | 精确范围 | 起始 occurrence | SUPPRESSED_WITH_REASON | 保留理由与重新启动条件 | 证据 |
+|---|---|---:|---:|---|---|
+| `AndroidGradlePluginVersion` | wrapper 的唯一 `distributionUrl` 文件路径；版本目录 `agp` 声明覆盖三个 AGP 插件 | 4 | 4 | 工具链需成组升级；独立升级通过 JDK 17、三插件和 API 21/23/36 矩阵后删除 | 实施证据“Gradle 与 AGP”“版本提示批次” |
+| `DiscouragedApi` | Manifest 九个 `screenOrientation="behind"` activity 节点 | 11 | 9 | 保持 Android 16 以下及厂商方向处理；九页完成自适应布局后重评。另两个资源反射 occurrence 已修复 | 实施证据“Launcher 图标类型化资源”“九个 behind 页面” |
+| `GradleDependency` | `appcompat`、`constraintlayout`、`core`、`fragment`、`material`、`media`、`collection` 与四个 AndroidX Test/Annotation 声明 | 14 | 14 | 运行库、UI 与测试栈需逐坐标独立升级；各声明旁记录对应回归条件 | 实施证据“版本提示批次最终对账” |
+| `NewerVersionAvailable` | Kotlin、Glide、Gson、JsonPath、JsoupXpath、Coroutines、OkHttp、ZXing Lite、Rhino、Glide Compose、Download 的版本声明 | 25 | 25 | 工具链、解析、网络、图片和最低 Android 兼容域不能混升；各声明旁记录独立重评条件 | 实施证据“版本提示批次最终对账” |
+| `OldTargetApi` | `app/build.gradle`、`modules/book/build.gradle`、`modules/rhino/build.gradle` 的三个 `targetSdk 36` 声明 | 3 | 3 | 已发布与验证基线仍为 API 36；独立 API 37 迁移完成 API 21/23/36/37 构建、行为与设备矩阵后删除 | 实施证据“PR #84 API 37 runner 漂移处置” |
+| `IconDuplicates` | `drawable-nodpi/image_legado.png` 与 `mipmap-xxxhdpi/ic_launcher.png` | 1 | 1 | 字节相同但 RSS fallback 与旧 launcher 密度语义不同；任一资源体系退役后重评 | 实施证据“重复图标的精确路径抑制” |
+| `UnusedAttribute` | `item_rss.xml` 根节点的 foreground | 1 | 1 | 保留 API 23+ 整项 ripple；最低版本升至 23 或拆分版本布局后重评 | 实施证据“RSS 根项交互与 foreground” |
+| `Overdraw` | `evidence/overdraw-disposition.tsv` 中 37 个 `SUPPRESSED_WITH_REASON` 根布局 | 41 | 37 | 背景承担 ripple、透明遮罩、主题兜底或内容语义；对应语义退役后逐布局重评。另四处已删除 | 实施证据“Overdraw 精确分类”至“最终对账” |
+| `UselessParent` | `view_manga_menu.xml` 的进度行父层 | 1 | 1 | 外层背景覆盖进度行边距；改用单一 Surface 且 golden 等价后重评 | 实施证据“漫画菜单无用父布局处置” |
+| `UseCompoundDrawables` | `item_path_picker.xml` 根节点 | 1 | 1 | 保留 View Binding、20dp 动态箭头、RTL 与整行点击合同；箭头资源化后重评 | 实施证据“文件路径 compound drawable 处置” |
+| `VectorPath` | `ic_launcher3.xml` 的唯一长 `<path>` | 1 | 1 | 继续降精度会改变书法轮廓；源图重制或新优化器通过 0.01% 阈值后重评 | 实施证据“launcher3 长矢量路径处置” |
 
-## Hint 清单
+`trimAsciiControlAndSpace()` 自身另有一个精确 `@Suppress("TrimLambda")`，用于保留 U+0000—U+0020 旧式裁剪语义；起始 17 个调用点均已改为命名扩展，因此在下方 hint 数量守恒中计为 17 个 `FIXED`，不重复计入起始 suppression。
 
-Hint 不进入 warning 三态，但保留数量用于审计：
+## Hint 处置账本
 
-| lint ID | 数量 | 说明 |
-|---|---:|---|
-| `ReportShortcutUsage` | 1 | 非阻断使用建议 |
-| `TrimLambda` | 17 | 非阻断机械建议 |
-| **合计** | **18** | 不得描述为 warning 已处理 |
+| lint ID | 本次开始 | 最终可见 | FIXED | SUPPRESSED_WITH_REASON | DEFERRED | PENDING_REVIEW | 证据与结论 |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `ReportShortcutUsage` | 1 | 0 | 1 | 0 | 0 | 0 | 三个稳定 shortcut ID 只在真实入口消费后上报，普通启动和 Intent 重放不误报 |
+| `TrimLambda` | 17 | 0 | 17 | 0 | 0 | 0 | 17 个调用点改用保留 U+0000—U+0020 语义的命名扩展，聚焦边界测试通过 |
+| **合计** | **18** | **0** | **18** | **0** | **0** | **0** | 18 = 18 + 0；hint 与 warning 分开守恒 |
+
+最终强制 lint XML SHA-256 为 `3782329f5ec7fc80243d071df4885364697fe238cd16d0fd49637d3010e96025`，标准库清单工具输出 `总计: 0`。完整起始清单、处置映射、golden、测试失败重试和真机数据边界见 `openspec/changes/archive/2026-09-15-eliminate-android-lint-findings/implementation-evidence.md`。
 
 ## 网页端 ESLint 基线
 

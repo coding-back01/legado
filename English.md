@@ -32,7 +32,7 @@
 - Private security reports: [private vulnerability reporting](https://github.com/coding-back01/legado/security/advisories/new)
 - Contributors: [contributors in the current Git history](https://github.com/coding-back01/legado/graphs/contributors)
 
-New public releases are temporarily frozen while the fork is stabilized. When releases resume, only the ordinary `io.legado.app.release` package will be produced. Historical coexisting-package assets and existing device data remain available, but no new coexisting build will be generated. This repository uses an independent signing key, so an APK cannot update a same-package build signed by somebody else. Back up data before installation or migration.
+The stabilization fixes are complete, and regular releases and changes have resumed. New public releases provide only the ordinary `io.legado.app.release` package. Historical coexisting-package assets and existing device data remain available, but no new coexisting build will be generated. This repository uses an independent signing key, so an APK cannot update a same-package build signed by somebody else. Back up data before installation or migration.
 
 This is a low-capacity personal stable fork. It accepts release-build bugs and private security reports, makes no response-time commitment, and does not normally accept feature requests. Compatibility claims cover only devices and Android versions explicitly recorded as automatically verified in a Release; they are not generalized to other devices.
 

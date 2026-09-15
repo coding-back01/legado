@@ -18,6 +18,7 @@ RELEASE_WORKFLOW_PATH = REPOSITORY_ROOT / ".github/workflows/release.yml"
 STALE_WORKFLOW_PATH = REPOSITORY_ROOT / ".github/workflows/stale.yml"
 CLASSIFIER_PATH = REPOSITORY_ROOT / ".github/scripts/classify-maintenance-scope.sh"
 WEB_PACKAGE_PATH = REPOSITORY_ROOT / "modules/web/package.json"
+APP_BUILD_PATH = REPOSITORY_ROOT / "app/build.gradle"
 
 TARGET_ACTION_MAJORS = {
     "actions/checkout": 7,
@@ -98,6 +99,7 @@ class MaintenanceWorkflowContractTest(unittest.TestCase):
         cls.release_workflow = RELEASE_WORKFLOW_PATH.read_text(encoding="utf-8")
         cls.stale_workflow = STALE_WORKFLOW_PATH.read_text(encoding="utf-8")
         cls.web_package = json.loads(WEB_PACKAGE_PATH.read_text(encoding="utf-8"))
+        cls.app_build = APP_BUILD_PATH.read_text(encoding="utf-8")
 
     def assert_action_matrix(
         self,
@@ -193,6 +195,41 @@ class MaintenanceWorkflowContractTest(unittest.TestCase):
             "RELEASE_KEY_PASSWORD",
         ):
             self.assertNotIn(secret, self.workflow)
+
+    def test_android_lint_zero_issue_assertion_follows_lint(self) -> None:
+        lint_command = "./gradlew :app:lintAppDebug"
+        assertion = (
+            "python3 scripts/android_lint_report.py assert-zero "
+            "app/build/reports/lint-results-appDebug.xml"
+        )
+        upload = "name: 上传 Android lint 报告"
+
+        self.assertIn(assertion, self.workflow)
+        self.assertLess(self.workflow.index(lint_command), self.workflow.index(assertion))
+        self.assertLess(self.workflow.index(assertion), self.workflow.index(upload))
+
+        lint_upload_steps = [
+            step
+            for step in self.action_steps(self.workflow, "actions/upload-artifact")
+            if "name: android-lint-${{ github.sha }}" in step
+        ]
+        self.assertEqual(1, len(lint_upload_steps))
+        lint_upload = lint_upload_steps[0]
+        for token in (
+            "if: always()",
+            "app/build/reports/lint-results-appDebug.xml",
+            "app/build/reports/lint-results-appDebug.html",
+            "app/build/reports/lint-results-appDebug.txt",
+        ):
+            self.assertIn(token, lint_upload)
+
+        for token in (
+            "checkDependencies = true",
+            "fatal 'IntentWithNullActionLaunch'",
+            "fatal 'DefaultLocale'",
+            "fatal 'AppBundleLocaleChanges'",
+        ):
+            self.assertIn(token, self.app_build)
 
     def test_web_gate_is_frozen_and_read_only(self) -> None:
         for token in (

@@ -10,7 +10,7 @@
         android:summary="@string/change_icon_summary"
         android:title="@string/change_icon"
         app:iconSpaceReserved="false"
-        app:icons="@array/icons" />
+        app:icons="@array/launcher_icon_resources" />
 
     <io.legado.app.lib.prefs.Preference
         android:key="welcomeStyle"

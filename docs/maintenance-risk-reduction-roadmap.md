@@ -3,19 +3,21 @@
 ## 目的与边界
 
 本文档记录 `coding-back01/legado` 在一次性 fork 治理归档后的后续维护顺序。目标是优先降低
-实际安全与兼容风险，并在可验证、可回滚的前提下处理当前 Android lint 的 108 个 warning。
-路线图只固定工作边界、顺序、门禁和重新启动条件，不代表任何实现、依赖升级、远端 Pull
-Request 处置或设备操作已经获准执行。
+实际安全与兼容风险，并在可验证、可回滚的前提下完成 Android lint 累计 111 个 warning 和
+18 个 hint 清零。
+路线图固定工作边界、顺序、门禁和重新启动条件；Android lint 小节记录本次已授权 Apply，
+其他依赖升级、远端 Pull Request 处置或设备操作仍不因本文档而自动获准。
 
-当前事实基线为 2026-08-31 的 `master` 提交 `7aa63c27b`：Android lint 为
-`0 error / 108 warning / 18 hint`，网页端 ESLint 为 0 error。108 个 warning 已完成三态
-审查，没有 `PENDING_REVIEW`；本路线图负责把这些已延期项目按风险重新启动，而不是把它们
-重新描述为漏审事项。
+历史事实基线为 2026-08-31 的 `master` 提交 `7aa63c27b`：Android lint 为
+`0 error / 108 warning / 18 hint`，网页端 ESLint 为 0 error。本次以单一 OpenSpec 变更
+`eliminate-android-lint-findings` 的一次连续 Apply 处理起始 126 个 occurrence；PR #84 又纳入 API 37 runner 产生的 3 个 `OldTargetApi`，累计处理 129 个 occurrence。最终强制
+lint XML 为 0 issue，完整处置与验证事实以该变更的实施证据为准。
 
 ## 治理原则
 
 1. 实际风险优先，不以关闭告警、删除草稿或缩短分支列表作为安全完成证据。
-2. 各兼容域使用独立 OpenSpec 变更，并严格串行实施；后续变更只在轮到时基于最新事实创建。
+2. Android lint 全部兼容域收口在 `eliminate-android-lint-findings` 一个 OpenSpec 变更的一次
+   Apply 中，仍按证据依赖严格串行；不得为单个 warning/hint 另建变更或跳过中间止损点。
 3. 能够证明行为等价的项目优先修复；确认属于刻意兼容行为的项目只允许精确局部抑制，并记录
    位置、理由、验证证据和重新启动条件。
 4. 不使用全局 lint baseline、全局关闭检查或批量格式化来制造 warning 为零的表象。
@@ -23,17 +25,18 @@ Request 处置或设备操作已经获准执行。
 6. 用户设备只允许验证 `io.legado.app.debug`。执行前实时核对包与数据边界；若需要清理既有
    Debug 数据，必须停止并另行取得明确授权。普通正式版及其数据不进入本路线图的设备操作。
 
-## 108 个 warning 的完整去向
+## 111 个 warning 与 18 个 hint 的完整去向
 
 | 工作域 | 数量 | 组成 | 处置边界 |
 |---|---:|---|---|
-| 行为与资源 | 65 | 62 个中风险项，加 `IconDuplicates`、`UnusedAttribute`、`UseCompoundDrawables` 3 个低风险项 | 一个专门变更，按风险与证据依赖拆成串行小批次 |
-| 工具链与依赖 | 43 | `AndroidGradlePluginVersion` 4、`GradleDependency` 14、`NewerVersionAvailable` 25 | 按四个兼容域建立独立变更，逐坐标升级或精确抑制 |
-| **合计** | **108** |  | 目标是在一个经过完整验证的提交上使 lint 可见 warning 为 0 |
+| 行为与资源 | 65 | 62 个中风险项，加 `IconDuplicates`、`UnusedAttribute`、`UseCompoundDrawables` 3 个低风险项 | 同一变更内按行为、资源、Overdraw 与剩余布局串行处理 |
+| 工具链、依赖与平台 | 46 | `AndroidGradlePluginVersion` 4、`GradleDependency` 14、`NewerVersionAvailable` 25、`OldTargetApi` 3 | 同一变更内逐坐标或文件精确抑制，不为清除提示升级版本或平台 |
+| hint | 18 | `ReportShortcutUsage` 1、`TrimLambda` 17 | 同一变更内先锁定兼容行为，再实施真实修复 |
+| **合计** | **129** |  | 同一次 Apply 的最终 lint XML 必须为 0 issue |
 
-版本类检查依赖远端元数据，后续可能在没有源码变化时出现新提示。因此“0 warning”是目标提交
-的可验证状态，不是永久承诺。达到零后，新增非版本 warning 必须阻断合并；版本元数据漂移
-必须进入账本并完成审查，但不得仅因外部发布新版本就让未改代码的 `master` 无条件失效。
+版本类检查依赖远端元数据，后续可能在没有源码变化时出现新提示。因此“0 issue”是目标提交
+的可验证状态，不代表依赖已经升级或兼容风险消失。达到零后，XML 门禁会阻断任意新增 issue；
+版本元数据漂移必须先进入账本并完成逐坐标审查，不得通过全局关闭检查恢复绿色。
 
 ## 串行工作流
 
@@ -50,42 +53,36 @@ Request 处置或设备操作已经获准执行。
 同步维护工作流的精确契约测试后重新运行完整聚合门禁。替代变更准备并通过评审前不关闭 #73；
 不得通过删除或放宽契约测试使现有机器人 Pull Request 变绿。
 
-### 3. 65 个行为与资源 warning
+### 3. Android lint 单一变更的一次 Apply
 
-建立一个专门 OpenSpec 变更，内部按以下顺序使用独立小 Pull Request：
+`eliminate-android-lint-findings` 内部按以下顺序串行执行，不拆成多个 OpenSpec 或并行兼容域：
 
-1. `DiscouragedApi`；
-2. 资源密度与语义，包括 `IconLocation`、`IconDuplicates`；
-3. `UnusedResources` 与 `UnusedAttribute`；
-4. `Overdraw`；
-5. `UselessParent`、`VectorPath`、`UseCompoundDrawables`。
+1. 工作树、JDK 17、固定 SDK、API 21/23/36 AVD、授权 Debug 真机和强制 lint 基线预检；
+2. XML 对账、只读 golden 与显式更新基础设施；
+3. 旧式 trim、动态快捷方式、launcher 图标和方向继承；
+4. 位图密度、重复图标、死资源和 RSS ripple；
+5. `Overdraw`、漫画菜单、文件路径控件和 launcher3 矢量路径；
+6. Gradle、AGP、AndroidX、运行库与 Glide 的逐坐标版本提示；
+7. XML 零 issue CI 门禁、维护账本和最终验证。
 
-确定性 API 21/API 36 模拟器页面允许保存少量版本化 golden。真机截图、UI hierarchy 和可能
-包含用户信息的原始证据只保存在权限受限且 Git 忽略的目录，版本化记录只保存脱敏摘要和哈希。
-真机未连接时可以推进不依赖设备的测试基础设施，但不得完成需要真机证据的批次。
+每批必须先有聚焦测试或治理前基线，再实施、重跑验证并守恒对账 occurrence。任一批次出现
+测试失败、视觉差异、兼容回归或证据不足时立即停止，修复并复验当前批次后才能继续；不得把
+失败留到末尾统一解释，也不得以 baseline、全局 ID 关闭或降低 `checkDependencies` 制造清零。
 
-### 4. 43 个工具链与依赖 warning
+确定性模拟器证据可保存最小版本化 golden。真机只允许操作 `io.legado.app.debug` 与
+`io.legado.app.debug.test`；正式版包和个人数据不得读取、启动、清理、覆盖或卸载。原始截图、
+UI hierarchy 与设备日志只保存在 Git 忽略的构建目录，版本化文档只记录脱敏摘要和哈希。
 
-按兼容域依次创建四个 OpenSpec 变更：
+版本提示的精确抑制不表示依赖已升级。Gradle、AGP、Kotlin、AndroidX、运行库与 Glide 的实际
+升级仍由 Dependabot 或独立升级评审触发，并须按各声明旁的重启条件重新验证。
 
-1. Android 工具链与构建插件；
-2. AndroidX 与 UI 依赖；
-3. 解析、网络与运行库；
-4. Glide 图片栈。
-
-每个变更内部逐坐标处理。安全升级能够通过最低 API 21、JDK 17、单元测试、lint、Debug 构建、
-相关设备或页面回归以及完整 CI 时才可合并；无法安全升级的固定版本使用精确局部抑制和重启条件。
-Gradle 9.7.1 与 AGP 8.13.2 已确认不兼容，因此 #42 只在保存失败证据并准备好对应处置记录后
-关闭；不立即迁移 AGP 9，不采用未经官方支持矩阵证明的 Gradle 9.5，也不配置可能隐藏安全更新
-的永久 ignore。
-
-### 5. Web 生产依赖
+### 4. Web 生产依赖
 
 以 #44 为调查输入，按 Element Plus、VueUse、Hotkeys、Pinia、Vue Router 等兼容族拆分，
 同步提交 `package.json` 与 `pnpm-lock.yaml`，使用固定 pnpm 冻结安装并执行章节 HTML 安全测试、
 类型检查、只读 ESLint、构建和 Android Web 静态资源对账。替代变更准备并通过评审前不关闭 #44。
 
-### 6. Web 开发工具链
+### 5. Web 开发工具链
 
 以 #45 为调查输入，分别处理 TypeScript 与测试脚本、Vite 与 Vue 插件、ESLint 与 Vue 插件、
 unplugin 系列及 Node.js 类型。TypeScript 7 的 `TS5112` 必须作为真实 RED 处理，不得把 12 个
@@ -118,6 +115,7 @@ unplugin 系列及 Node.js 类型。TypeScript 7 的 `TS5112` 必须作为真实
 
 ## 评审与启动方式
 
-本路线图本身不授权实现。每个工作域轮到时必须重新读取当前代码、告警、依赖版本、打开 Pull
-Request、设备和 CI 状态，再创建对应 OpenSpec 变更。只有该变更的提案、设计、规范和任务经
-人工评审明确批准后，才能进入 Apply；后续工作域不得凭本路线图的总目标提前实施。
+Android lint 清零已由 `eliminate-android-lint-findings` 的提案、设计、规范和任务授权，并只在
+该变更的一次 Apply 中实施。其他尚未启动的 Web、Actions 或依赖升级工作域仍须重新读取当前
+代码、告警、版本、设备和 CI 状态，再建立各自经评审的变更；不得把本次 lint 精确抑制解释为
+对未来依赖升级、远端 Pull Request 或发布流程的预先授权。

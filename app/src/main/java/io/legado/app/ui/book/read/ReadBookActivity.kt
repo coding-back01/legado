@@ -23,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
 import io.legado.app.BuildConfig
 import io.legado.app.R
+import io.legado.app.api.ShortcutLaunch
 import io.legado.app.constant.AppConst
 import io.legado.app.constant.AppLog
 import io.legado.app.constant.BookType
@@ -296,7 +297,9 @@ class ReadBookActivity : BaseReadBookActivity(),
         super.onPostCreate(savedInstanceState)
         viewModel.initReadBookConfig(intent)
         Looper.myQueue().addIdleHandler {
-            viewModel.initData(intent)
+            viewModel.initData(intent) {
+                reportLastReadShortcut(intent)
+            }
             false
         }
         justInitData = true
@@ -304,7 +307,16 @@ class ReadBookActivity : BaseReadBookActivity(),
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        viewModel.initData(intent)
+        setIntent(intent)
+        viewModel.initData(intent) {
+            reportLastReadShortcut(intent)
+        }
+    }
+
+    private fun reportLastReadShortcut(intent: Intent) {
+        ShortcutLaunch.consume(intent, ShortcutLaunch.LAST_READ)?.let { shortcutId ->
+            ShortcutLaunch.report(this, shortcutId)
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

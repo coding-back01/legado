@@ -51,6 +51,7 @@ import io.legado.app.utils.isJson
 import io.legado.app.utils.isJsonArray
 import io.legado.app.utils.isJsonObject
 import io.legado.app.utils.isXml
+import io.legado.app.utils.trimAsciiControlAndSpace
 import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -199,9 +200,9 @@ class AnalyzeUrl(
             while (matcher.find()) {
                 val pages = matcher.group(1)!!.split(",")
                 ruleUrl = if (page < pages.size) { //pages[pages.size - 1]等同于pages.last()
-                    ruleUrl.replace(matcher.group(), pages[page - 1].trim { it <= ' ' })
+                    ruleUrl.replace(matcher.group(), pages[page - 1].trimAsciiControlAndSpace())
                 } else {
-                    ruleUrl.replace(matcher.group(), pages.last().trim { it <= ' ' })
+                    ruleUrl.replace(matcher.group(), pages.last().trimAsciiControlAndSpace())
                 }
             }
         }

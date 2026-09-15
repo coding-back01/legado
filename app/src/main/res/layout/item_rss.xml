@@ -8,7 +8,13 @@
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
     android:padding="16dp"
-    android:scrollbars="none">
+    android:scrollbars="none"
+    tools:ignore="UnusedAttribute">
+
+    <!--
+      API 23+ 依靠 foreground 保留整项 ripple，API 21/22 继续使用可聚焦背景；若最低版本
+      升至 23 或按版本拆分布局，再重新评估并删除此精确抑制。
+    -->
 
     <io.legado.app.ui.widget.image.FilletImageView
         android:id="@+id/iv_icon"

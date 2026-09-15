@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     android:background="@color/background"
     android:orientation="vertical"
-    tools:context=".ui.book.audio.AudioPlayActivity">
+    tools:context=".ui.book.audio.AudioPlayActivity"
+    tools:ignore="Overdraw">
 
     <ImageView
         android:id="@+id/iv_bg"

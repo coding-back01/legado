@@ -191,7 +191,6 @@
     <string name="bookshelf_px_1">按更新时间</string>
     <string name="bookshelf_px_2">按书名</string>
     <string name="bookshelf_px_3">手动排序</string>
-    <string name="del_all">删除所有</string>
     <string name="searchHistory">搜索历史</string>
     <string name="clear">清除</string>
     <string name="showLine">显示分隔线</string>

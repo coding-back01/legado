@@ -121,6 +121,9 @@ jobs:
           --no-daemon
           --warning-mode all
 
+      - name: 断言 Android lint 零 issue
+        run: python3 scripts/android_lint_report.py assert-zero app/build/reports/lint-results-appDebug.xml
+
       - name: 上传 Android lint 报告
         if: always()
         uses: actions/upload-artifact@v7

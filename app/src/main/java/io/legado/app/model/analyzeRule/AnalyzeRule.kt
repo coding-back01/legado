@@ -29,6 +29,7 @@ import io.legado.app.utils.isJson
 import io.legado.app.utils.printOnDebug
 import io.legado.app.utils.splitNotBlank
 import io.legado.app.utils.stackTraceStr
+import io.legado.app.utils.trimAsciiControlAndSpace
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -499,7 +500,7 @@ class AnalyzeRule(
         val jsMatcher = JS_PATTERN.matcher(ruleStr)
         while (jsMatcher.find()) {
             if (jsMatcher.start() > start) {
-                tmp = ruleStr.substring(start, jsMatcher.start()).trim { it <= ' ' }
+                tmp = ruleStr.substring(start, jsMatcher.start()).trimAsciiControlAndSpace()
                 if (tmp.isNotEmpty()) {
                     ruleList.add(SourceRule(tmp, mMode))
                 }
@@ -509,7 +510,7 @@ class AnalyzeRule(
         }
 
         if (ruleStr.length > start) {
-            tmp = ruleStr.substring(start).trim { it <= ' ' }
+            tmp = ruleStr.substring(start).trimAsciiControlAndSpace()
             if (tmp.isNotEmpty()) {
                 ruleList.add(SourceRule(tmp, mMode))
             }

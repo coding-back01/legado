@@ -192,7 +192,6 @@
     <string name="bookshelf_px_1">By update time</string>
     <string name="bookshelf_px_2">By book title</string>
     <string name="bookshelf_px_3">By sort manually</string>
-    <string name="del_all">すべて削除</string>
     <string name="searchHistory">Search history</string>
     <string name="clear">Clear</string>
     <string name="showLine">Display divider</string>

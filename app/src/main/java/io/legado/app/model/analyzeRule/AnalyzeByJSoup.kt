@@ -1,6 +1,7 @@
 package io.legado.app.model.analyzeRule
 
 import androidx.annotation.Keep
+import io.legado.app.utils.trimAsciiControlAndSpace
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Parser
@@ -240,7 +241,7 @@ class AnalyzeByJSoup(doc: Any) {
                 val tn = arrayListOf<String>()
                 val contentEs = element.textNodes()
                 for (item in contentEs) {
-                    val text = item.text().trim { it <= ' ' }
+                    val text = item.text().trimAsciiControlAndSpace()
                     if (text.isNotEmpty()) {
                         tn.add(text)
                     }
@@ -405,7 +406,7 @@ class AnalyzeByJSoup(doc: Any) {
 
         private fun findIndexSet(rule: String) {
 
-            val rus = rule.trim { it <= ' ' }
+            val rus = rule.trimAsciiControlAndSpace()
 
             var len = rus.length
             var curInt: Int? //当前数字
@@ -515,7 +516,7 @@ class AnalyzeByJSoup(doc: Any) {
         var isCss = false
         var elementsRule: String = if (ruleStr.startsWith("@CSS:", true)) {
             isCss = true
-            ruleStr.substring(5).trim { it <= ' ' }
+            ruleStr.substring(5).trimAsciiControlAndSpace()
         } else {
             ruleStr
         }
