@@ -1,27 +1,69 @@
 [versions]
 
+# Kotlin 2.3.0 同时约束 Android、JVM、kapt、serialization、allopen、noarg、sam、lombok、parcelize 九个构建插件。
+# Dependabot 提出升级且独立工具链变更通过全部模块编译、代码生成、单元测试与 API 21/23/36 构建矩阵时重新评估。
+#noinspection NewerVersionAvailable
 kotlin = "2.3.0"
 ksp = "2.3.4"
+# AGP application/library/test 三个插件必须与当前 Gradle、JDK 17 和构建脚本成组升级。
+# 独立升级变更完成三插件迁移及 API 21/23/36 构建矩阵时重新评估。
+#noinspection AndroidGradlePluginVersion
 agp = "8.13.2"
+# AppCompat 1.7.1 已纳入当前 API 21/23/36 主题、窗口与组件回归矩阵，版本升级需独立验证 UI 兼容性。
+# Dependabot 提出升级且独立依赖变更完成上述矩阵时重新评估。
+#noinspection GradleDependency
 appcompat = "1.7.1"
 colorpicker = "1.1.0"
+# ConstraintLayout 2.2.1 已用于当前布局与 golden 基线，升级可能改变约束求解和像素结果。
+# Dependabot 提出升级且独立依赖变更通过受影响布局 golden 时重新评估。
+#noinspection GradleDependency
 constraintlayout = "2.2.1"
+# Core 1.17.0 同时约束 androidx.core:core 与 core-ktx，已按最低 API 21 验证兼容 API 行为。
+# Dependabot 提出升级且独立依赖变更通过 API 21/23/36 构建与设备矩阵时重新评估。
+#noinspection GradleDependency
 core = "1.17.0"
 flexbox = "3.0.0"
+# Fragment 1.8.9 同时约束 fragment、fragment-ktx 与 fragment-testing，生命周期及测试行为需成组验证。
+# Dependabot 提出升级且独立依赖变更通过 Fragment 聚焦测试和 API 21/23/36 矩阵时重新评估。
+#noinspection GradleDependency
 fragment = "1.8.9"
 documentfile = "1.1.0"
 
 libarchive = "1.1.6"
+# Glide 5.0.5 同时约束核心、compiler、KSP、OkHttp、RecyclerView 与 AVIF 六个坐标，必须作为图片加载栈成组升级。
+# Dependabot 提出升级且独立图片栈变更通过 API 21/23/36、mdpi/xxxhdpi、日夜主题及相关 golden 时重新评估。
+#noinspection NewerVersionAvailable
 glide = "5.0.5"
+# Gson 2.13.2 参与持久化 JSON、备份和规则数据解析，版本升级需独立验证兼容格式不变。
+# Dependabot 提出升级且独立解析依赖变更通过备份、导入和规则回归测试时重新评估。
+#noinspection NewerVersionAvailable
 gson = "2.13.2"
+# JsonPath 2.10.0 参与书源规则解析，升级可能改变表达式和返回值语义。
+# Dependabot 提出升级且独立规则引擎变更通过既有书源兼容测试时重新评估。
+#noinspection NewerVersionAvailable
 jsonPath = "2.10.0"
+# JsoupXpath 2.5.3 与下方固定的 Jsoup 1.16.2 共同承担规则解析，不能脱离该兼容组合单独升级。
+# Dependabot 提出升级且独立规则引擎变更验证 issue #3811 相关路径与既有书源规则时重新评估。
+#noinspection NewerVersionAvailable
 jsoupxpath = "2.5.3"
+# Coroutines 1.10.2 同时约束 core 与 android，调度和生命周期行为需成组验证。
+# Dependabot 提出升级且独立并发依赖变更通过网络、数据库、阅读与生命周期回归测试时重新评估。
+#noinspection NewerVersionAvailable
 coroutines = "1.10.2"
 liveeventbus = "1.8.14"
 markwon = "4.6.2"
+# Material 1.13.0 已用于当前主题、控件和截图基线，升级可能改变组件样式及最低 API 行为。
+# Dependabot 提出升级且独立依赖变更通过日夜主题与 API 21/23/36 golden 时重新评估。
+#noinspection GradleDependency
 material = "1.13.0"
+# Media 1.7.1 已用于当前媒体会话和播放兼容路径，版本升级需单独验证最低 API 21 与系统媒体交互。
+# Dependabot 提出升级且独立依赖变更完成播放、通知和媒体会话回归时重新评估。
+#noinspection GradleDependency
 media = "1.7.1"
 nanoHttpd = "2.3.1"
+# OkHttp 5.3.2 承担网络、Cookie 与 URL 兼容路径，升级可能改变协议和连接行为。
+# Dependabot 提出升级且独立网络栈变更通过 Cookie、URL、代理及 API 21/23/36 联网回归时重新评估。
+#noinspection NewerVersionAvailable
 okhttp = "5.3.2"
 preference = "1.2.1"
 quickChineseTransfer = "0.2.16"
@@ -31,8 +73,14 @@ desugar = "2.1.5"
 
 #kotlinxSerialization = "1.8.0"
 swiperefreshlayout = "1.2.0"
+# Collection 1.5.0 已随当前 AndroidX 组合验证；升级需与依赖图及最低 API 21 一并检查。
+# Dependabot 提出升级且独立依赖变更通过完整单元测试、lint 和 API 矩阵时重新评估。
+#noinspection GradleDependency
 collection = "1.5.0"
 
+# ZXing Lite 3.3.0 承担二维码扫描入口，升级需独立验证相机权限、识别结果和最低 API 行为。
+# Dependabot 提出升级且独立扫码依赖变更通过 API 21/23/36 扫码回归时重新评估。
+#noinspection NewerVersionAvailable
 zxingLite = "3.3.0"
 
 #不要更新版本
@@ -51,8 +99,9 @@ jsoup = "1.16.2"
 #noinspection GradleDependency,NewerVersionAvailable
 commonsText = "1.13.1"
 
-# 新版本使用了 Android 8 以下无法编译的 VarHandle.compareAndExchange 方法
-#noinspection GradleDependency
+# Rhino 1.8.1 之后的版本使用 Android 8 以下无法编译的 VarHandle.compareAndExchange，且脚本语义属于书源兼容边界。
+# 独立 Rhino 兼容变更消除该 API 约束并通过 API 21/23/36 与既有 JavaScript 规则回归时重新评估。
+#noinspection GradleDependency,NewerVersionAvailable
 rhino = "1.8.1"
 
 #noinspection GradleDependency,NewerVersionAvailable
@@ -77,6 +126,9 @@ activity-activity = { module = "androidx.activity:activity", version.ref = "acti
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
 
+# Annotation 1.9.1 参与主代码编译与静态分析，版本升级需独立确认注解语义和 lint 结果。
+# Dependabot 提出升级且独立依赖变更通过全量编译与 lint 时重新评估。
+#noinspection GradleDependency
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version = "1.9.1" }
 #androidx-annotation-experimental = { group = "androidx.annotation", name = "annotation-experimental", version = "1.3.1" }
 
@@ -88,12 +140,18 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 core-core = { module = "androidx.core:core", version.ref = "core" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core" }
 
+# Espresso 3.6.1 与当前 Android test runner 及 API 21/23/36 设备夹具成组验证。
+# Dependabot 提出升级且独立测试依赖变更通过完整设备测试矩阵时重新评估。
+#noinspection GradleDependency
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version = "3.6.1" }
 
 fragment-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "fragment" }
 
+# AndroidX JUnit 1.2.1 与当前 runner、测试清单和 API 21/23/36 设备矩阵成组验证。
+# Dependabot 提出升级且独立测试依赖变更通过完整设备测试矩阵时重新评估。
+#noinspection GradleDependency
 androidx-junit = { module = "androidx.test.ext:junit", version = "1.2.1" }
 
 hutool-crypto = { module = "cn.hutool:hutool-crypto", version.ref = "hutool" }
@@ -134,6 +192,9 @@ glide-glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide
 glide-okhttp = { module = "com.github.bumptech.glide:okhttp3-integration", version.ref = "glide" }
 glide-recyclerview = { module = "com.github.bumptech.glide:recyclerview-integration", version.ref = "glide" }
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+# Glide Compose 保持 1.0.0-beta01，以与当前 Compose 集成和 Glide 5.0.5 图片栈兼容；beta 版本不能在本治理中顺手替换。
+# Dependabot 提出升级且独立图片栈变更通过 Compose 页面、API 21/23/36 与相关 golden 时重新评估。
+#noinspection NewerVersionAvailable
 glide-compose = { module = "com.github.bumptech.glide:compose", version = "1.0.0-beta01" }
 glide-ksp = { module = "com.github.bumptech.glide:ksp", version.ref = "glide" }
 glide-avif = { module = "com.github.bumptech.glide:avif-integration", version.ref = "glide" }
@@ -146,6 +207,9 @@ splitties-activities = { module = "com.louiscad.splitties:splitties-activities",
 splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemservices", version.ref = "splitties" }
 splitties-views = { module = "com.louiscad.splitties:splitties-views", version.ref = "splitties" }
 
+# AndroidX Test Runner 1.6.2 承载现有 golden 与交互测试，升级可能改变启动和测试进程行为。
+# Dependabot 提出升级且独立测试依赖变更通过 API 21/23/36 全部设备测试时重新评估。
+#noinspection GradleDependency
 androidx-runner = { module = "androidx.test:runner", version = "1.6.2" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "startup" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
@@ -207,4 +271,7 @@ room = { id = "androidx.room", version.ref = "room" }
 
 #protobuf = { id = "com.google.protobuf", version = "0.9.4" }
 
+# Download 5.6.0 的远程版本提示在 Apply 起始报告中出现、后续元数据查询中消失；插件升级仍需独立验证下载任务输出。
+# Dependabot 再次提出升级且独立构建插件变更通过相关任务、完整构建与 CI 时重新评估。
+#noinspection NewerVersionAvailable
 download = { id = "de.undercouch.download", version = "5.6.0" }

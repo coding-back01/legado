@@ -82,6 +82,8 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <!-- 外层 bottom_menu 负责绘制包含四周间距的完整菜单表面；把背景移到本行并扁平化会让边缘露出窗口底色。
+             当菜单改用单一 Surface 且位置、背景与点击区域 golden 等价时重新评估。 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -90,7 +92,8 @@
             android:layout_marginRight="20dp"
             android:layout_marginBottom="10dp"
             android:importantForAccessibility="no"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            tools:ignore="UselessParent">
 
             <TextView
                 android:id="@+id/tv_pre"

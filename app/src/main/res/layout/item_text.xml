@@ -12,4 +12,4 @@
     android:scrollbars="none"
     android:textColor="@color/primaryText"
     android:textSize="14sp"
-    tools:ignore="UnusedAttribute" />
+    tools:ignore="Overdraw,UnusedAttribute" />

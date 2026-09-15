@@ -10,7 +10,8 @@
     android:paddingLeft="16dp"
     android:paddingTop="6dp"
     android:paddingRight="16dp"
-    android:paddingBottom="6dp">
+    android:paddingBottom="6dp"
+    tools:ignore="Overdraw">
 
     <LinearLayout
         android:layout_width="match_parent"

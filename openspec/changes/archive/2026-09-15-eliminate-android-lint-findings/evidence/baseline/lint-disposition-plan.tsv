@@ -1,0 +1,16 @@
+id	severity	start_count	task_batch	planned_disposition
+ReportShortcutUsage	Hint	1	3.3-3.4	FIXED
+TrimLambda	Hint	17	3.1-3.2	SUPPRESSED_WITH_REASON
+AndroidGradlePluginVersion	Warning	4	7.1	SUPPRESSED_WITH_REASON
+DiscouragedApi	Warning	12	2.4,3.5-3.7	FIXED_OR_SUPPRESSED_WITH_REASON
+GradleDependency	Warning	14	7.2	SUPPRESSED_WITH_REASON
+IconDuplicates	Warning	1	4.4	SUPPRESSED_WITH_REASON
+IconLocation	Warning	6	4.1-4.3	FIXED_OR_SUPPRESSED_WITH_REASON
+NewerVersionAvailable	Warning	25	7.3-7.4	SUPPRESSED_WITH_REASON
+Overdraw	Warning	41	5.1-5.3	FIXED_OR_SUPPRESSED_WITH_REASON
+UnusedAttribute	Warning	1	4.6	SUPPRESSED_WITH_REASON
+UnusedResources	Warning	2	4.5	FIXED
+UseCompoundDrawables	Warning	1	6.2	FIXED_OR_SUPPRESSED_WITH_REASON
+UselessParent	Warning	1	6.1	FIXED_OR_SUPPRESSED_WITH_REASON
+VectorPath	Warning	1	6.3	FIXED_OR_SUPPRESSED_WITH_REASON
+UseKtx	Warning	1	2.5	FIXED

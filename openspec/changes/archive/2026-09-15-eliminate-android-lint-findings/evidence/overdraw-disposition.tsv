@@ -1,0 +1,42 @@
+baseline_occurrence	file	line	background	category	planned_disposition	reason	restart_condition
+75	app/src/main/res/layout/activity_audio_play.xml	7	@color/background	内容背景	SUPPRESSED_WITH_REASON	删除后 API 21 light golden 出现 96.48% 像素差异，根背景必须为半透明遮罩提供音频页内容底色	音频页遮罩改为直接绘制完整不透明背景时重新评估
+76	app/src/main/res/layout/activity_source_login.xml	7	@color/transparent50	透明遮罩	SUPPRESSED_WITH_REASON	登录浮层依赖半透明遮罩透出下层内容	页面改为不透明窗口或遮罩职责迁移时重新评估
+77	app/src/main/res/layout/activity_translucence.xml	6	@color/transparent50	透明遮罩	SUPPRESSED_WITH_REASON	透明 Activity 依赖半透明遮罩保持下层页面可见	透明页面窗口模型改变时重新评估
+78	app/src/main/res/layout/dialog_auto_read.xml	7	@color/background_menu	内容背景	SUPPRESSED_WITH_REASON	自动阅读菜单需要独立于窗口主题的菜单表面色	菜单改用统一 Surface 容器时重新评估
+79	app/src/main/res/layout/dialog_book_change_source.xml	7	@color/background	主题兜底	SUPPRESSED_WITH_REASON	Dialog 内容根节点需要在自定义窗口和日夜主题下提供完整不透明表面	Dialog Window 明确统一绘制同一背景时重新评估
+80	app/src/main/res/layout/dialog_chapter_change_source.xml	7	@color/background	主题兜底	SUPPRESSED_WITH_REASON	Dialog 内容根节点需要在自定义窗口和日夜主题下提供完整不透明表面	Dialog Window 明确统一绘制同一背景时重新评估
+81	app/src/main/res/layout/dialog_click_action_config.xml	8	@color/translucent	透明遮罩	SUPPRESSED_WITH_REASON	点击动作配置使用透明根层保留弹窗层级和圆角外透明区域	弹窗改为单一不透明 Surface 时重新评估
+82	app/src/main/res/layout/dialog_code_view.xml	6	@color/background	主题兜底	SUPPRESSED_WITH_REASON	代码查看 Dialog 的内容根节点承担完整表面底色	Dialog Window 明确统一绘制同一背景时重新评估
+83	app/src/main/res/layout/dialog_content_edit.xml	6	@color/background	主题兜底	SUPPRESSED_WITH_REASON	内容编辑 Dialog 的内容根节点承担完整表面底色	Dialog Window 明确统一绘制同一背景时重新评估
+84	app/src/main/res/layout/dialog_file_chooser.xml	7	@color/background	主题兜底	SUPPRESSED_WITH_REASON	文件选择 Dialog 的内容根节点承担完整表面底色	Dialog Window 明确统一绘制同一背景时重新评估
+85	app/src/main/res/layout/dialog_page_key.xml	7	@color/background	主题兜底	SUPPRESSED_WITH_REASON	翻页键 Dialog 的内容根节点承担完整表面底色	Dialog Window 明确统一绘制同一背景时重新评估
+86	app/src/main/res/layout/dialog_photo_view.xml	5	@color/background	主题兜底	SUPPRESSED_WITH_REASON	图片查看 Dialog 的内容根节点承担完整表面底色	Dialog Window 明确统一绘制同一背景时重新评估
+87	app/src/main/res/layout/dialog_read_aloud.xml	8	@color/background_menu	内容背景	SUPPRESSED_WITH_REASON	朗读菜单需要独立于窗口主题的菜单表面色	菜单改用统一 Surface 容器时重新评估
+88	app/src/main/res/layout/dialog_read_bg_text.xml	8	@color/background	主题兜底	SUPPRESSED_WITH_REASON	阅读背景文字 Dialog 的内容根节点承担完整表面底色	Dialog Window 明确统一绘制同一背景时重新评估
+89	app/src/main/res/layout/dialog_read_book_style.xml	8	@color/background	主题兜底	SUPPRESSED_WITH_REASON	阅读样式 Dialog 的内容根节点承担完整表面底色	Dialog Window 明确统一绘制同一背景时重新评估
+90	app/src/main/res/layout/dialog_search_scope.xml	7	@color/background	主题兜底	SUPPRESSED_WITH_REASON	搜索范围 Dialog 的内容根节点承担完整表面底色	Dialog Window 明确统一绘制同一背景时重新评估
+91	app/src/main/res/layout/dialog_text_view.xml	6	@color/background	主题兜底	SUPPRESSED_WITH_REASON	文本 Dialog 的内容根节点承担完整表面底色	Dialog Window 明确统一绘制同一背景时重新评估
+92	app/src/main/res/layout/dialog_wait.xml	5	@color/background	主题兜底	SUPPRESSED_WITH_REASON	等待 Dialog 的内容根节点承担完整表面底色	Dialog Window 明确统一绘制同一背景时重新评估
+93	app/src/main/res/layout/item_1line_text.xml	9	?attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供点击和按压反馈	整行不再可点击或反馈移交父容器时重新评估
+94	app/src/main/res/layout/item_app_log.xml	6	?android:attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供点击和按压反馈	整行不再可点击或反馈移交父容器时重新评估
+95	app/src/main/res/layout/item_book_group_manage.xml	6	@color/background	纯色重复背景	FIXED	列表父容器已绘制同一主题底色，先用 golden 证明删除根背景像素等价	列表父容器或分组管理页背景改变时重新评估
+96	app/src/main/res/layout/item_book_manga_edge.xml	6	@color/book_ant_10	内容背景	SUPPRESSED_WITH_REASON	漫画边缘占位必须使用固定深色以避免露出主题窗口底色	漫画阅读背景策略改变时重新评估
+97	app/src/main/res/layout/item_book_manga_page.xml	8	@color/book_ant_10	内容背景	SUPPRESSED_WITH_REASON	漫画页必须使用固定深色承接图片加载与页间空隙	漫画阅读背景策略改变时重新评估
+98	app/src/main/res/layout/item_book_source.xml	7	?android:attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供书源点击反馈	整行不再可点击或反馈移交父容器时重新评估
+99	app/src/main/res/layout/item_bookmark.xml	7	?android:attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供书签点击反馈	整行不再可点击或反馈移交父容器时重新评估
+100	app/src/main/res/layout/item_change_source.xml	7	?android:attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供换源点击反馈	整行不再可点击或反馈移交父容器时重新评估
+101	app/src/main/res/layout/item_chapter_list.xml	8	?android:attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供章节点击反馈	整行不再可点击或反馈移交父容器时重新评估
+102	app/src/main/res/layout/item_file.xml	9	?attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供文件点击反馈	整行不再可点击或反馈移交父容器时重新评估
+103	app/src/main/res/layout/item_font.xml	6	?android:attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供字体点击反馈	整行不再可点击或反馈移交父容器时重新评估
+104	app/src/main/res/layout/item_group_manage.xml	5	@color/background	纯色重复背景	FIXED	列表父容器已绘制同一主题底色，先用 golden 证明删除根背景像素等价	列表父容器或分组管理页背景改变时重新评估
+105	app/src/main/res/layout/item_group_select.xml	5	@color/background	纯色重复背景	FIXED	列表父容器已绘制同一主题底色，先用 golden 证明删除根背景像素等价	列表父容器或分组选择页背景改变时重新评估
+106	app/src/main/res/layout/item_import_book.xml	7	?attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供导入书籍点击反馈	整行不再可点击或反馈移交父容器时重新评估
+107	app/src/main/res/layout/item_read_record.xml	7	?attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供阅读记录点击反馈	整行不再可点击或反馈移交父容器时重新评估
+108	app/src/main/res/layout/item_rss_read_record.xml	6	?android:attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供 RSS 阅读记录点击反馈	整行不再可点击或反馈移交父容器时重新评估
+109	app/src/main/res/layout/item_rss_source.xml	6	?android:attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供 RSS 源点击反馈	整行不再可点击或反馈移交父容器时重新评估
+110	app/src/main/res/layout/item_search_list.xml	7	?android:attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供搜索结果点击反馈	整行不再可点击或反馈移交父容器时重新评估
+111	app/src/main/res/layout/item_server_select.xml	6	@color/background	纯色重复背景	FIXED	列表父容器已绘制同一主题底色，先用 golden 证明删除根背景像素等价	列表父容器或服务器选择页背景改变时重新评估
+112	app/src/main/res/layout/item_text.xml	7	?attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供文本项点击反馈	整行不再可点击或反馈移交父容器时重新评估
+113	app/src/main/res/layout/item_txt_toc_rule.xml	7	?android:attr/selectableItemBackground	选择器 ripple	SUPPRESSED_WITH_REASON	整行选择器提供目录规则点击反馈	整行不再可点击或反馈移交父容器时重新评估
+114	app/src/main/res/layout/popup_keyboard_tool.xml	8	@color/background_card	内容背景	SUPPRESSED_WITH_REASON	键盘工具浮层需要独立卡片表面色与主题窗口区分	浮层改用统一 Card 或 Surface 容器时重新评估
+115	app/src/main/res/layout/view_book_page.xml	8	@color/background	内容背景	SUPPRESSED_WITH_REASON	阅读页根节点负责覆盖窗口并承接阅读背景切换	阅读背景完全移交专用绘制层时重新评估

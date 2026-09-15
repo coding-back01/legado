@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
     android:paddingLeft="10dp"
-    android:paddingRight="10dp">
+    android:paddingRight="10dp"
+    tools:ignore="Overdraw">
 
     <TextView
         android:id="@+id/tv_book_name"

@@ -19,8 +19,11 @@ object ShortCuts {
     }
 
     private fun buildBookShelfShortCutInfo(context: Context): ShortcutInfoCompat {
-        val bookShelfIntent = buildIntent<MainActivity>(context)
-        return ShortcutInfoCompat.Builder(context, "bookshelf")
+        val bookShelfIntent = ShortcutLaunch.mark(
+            buildIntent<MainActivity>(context),
+            ShortcutLaunch.BOOKSHELF,
+        )
+        return ShortcutInfoCompat.Builder(context, ShortcutLaunch.BOOKSHELF)
             .setShortLabel(context.getString(R.string.bookshelf))
             .setLongLabel(context.getString(R.string.bookshelf))
             .setIcon(IconCompat.createWithResource(context, R.drawable.icon_read_book))
@@ -30,8 +33,11 @@ object ShortCuts {
 
     private fun buildReadBookShortCutInfo(context: Context): ShortcutInfoCompat {
         val bookShelfIntent = buildIntent<MainActivity>(context)
-        val readBookIntent = buildIntent<ReadBookActivity>(context)
-        return ShortcutInfoCompat.Builder(context, "lastRead")
+        val readBookIntent = ShortcutLaunch.mark(
+            buildIntent<ReadBookActivity>(context),
+            ShortcutLaunch.LAST_READ,
+        )
+        return ShortcutInfoCompat.Builder(context, ShortcutLaunch.LAST_READ)
             .setShortLabel(context.getString(R.string.last_read))
             .setLongLabel(context.getString(R.string.last_read))
             .setIcon(IconCompat.createWithResource(context, R.drawable.icon_read_book))
@@ -40,9 +46,12 @@ object ShortCuts {
     }
 
     private fun buildReadAloudShortCutInfo(context: Context): ShortcutInfoCompat {
-        val readAloudIntent = buildIntent<SharedReceiverActivity>(context)
+        val readAloudIntent = ShortcutLaunch.mark(
+            buildIntent<SharedReceiverActivity>(context),
+            ShortcutLaunch.READ_ALOUD,
+        )
         readAloudIntent.putExtra("action", "readAloud")
-        return ShortcutInfoCompat.Builder(context, "readAloud")
+        return ShortcutInfoCompat.Builder(context, ShortcutLaunch.READ_ALOUD)
             .setShortLabel(context.getString(R.string.read_aloud))
             .setLongLabel(context.getString(R.string.read_aloud))
             .setIcon(IconCompat.createWithResource(context, R.drawable.icon_read_book))

@@ -25,7 +25,7 @@ import io.legado.app.utils.viewbindingdelegate.viewBinding
 
 
 class IconListPreference(context: Context, attrs: AttributeSet) : ListPreference(context, attrs) {
-    private var iconNames: Array<CharSequence>
+    private var iconResourceIds: IntArray
     private val mEntryDrawables = arrayListOf<Drawable?>()
 
     init {
@@ -34,15 +34,24 @@ class IconListPreference(context: Context, attrs: AttributeSet) : ListPreference
 
         val a = context.theme.obtainStyledAttributes(attrs, R.styleable.IconListPreference, 0, 0)
 
-        iconNames = try {
-            a.getTextArray(R.styleable.IconListPreference_icons)
+        iconResourceIds = try {
+            val iconArrayResourceId = a.getResourceId(R.styleable.IconListPreference_icons, 0)
+            if (iconArrayResourceId == 0) {
+                intArrayOf()
+            } else {
+                context.resources.obtainTypedArray(iconArrayResourceId).let { icons ->
+                    try {
+                        IntArray(icons.length()) { index -> icons.getResourceId(index, 0) }
+                    } finally {
+                        icons.recycle()
+                    }
+                }
+            }
         } finally {
             a.recycle()
         }
 
-        for (iconName in iconNames) {
-            val resId = context.resources
-                .getIdentifier(iconName.toString(), "mipmap", context.packageName)
+        for (resId in iconResourceIds) {
             var d: Drawable? = null
             kotlin.runCatching {
                 d = context.getCompatDrawable(resId)
@@ -65,11 +74,12 @@ class IconListPreference(context: Context, attrs: AttributeSet) : ListPreference
             50
         )
         if (v is ImageView) {
-            val selectedIndex = findIndexOfValue(value)
-            if (selectedIndex >= 0) {
-                val drawable = mEntryDrawables[selectedIndex]
-                v.setImageDrawable(drawable)
-            }
+            val selectedIndex = LauncherIconSelection.resolveIconIndex(
+                entryValues,
+                value,
+                mEntryDrawables.size,
+            )
+            v.setImageDrawable(mEntryDrawables.getOrNull(selectedIndex))
         }
     }
 
@@ -80,7 +90,7 @@ class IconListPreference(context: Context, attrs: AttributeSet) : ListPreference
                 args.putString("value", value)
                 args.putCharSequenceArray("entries", entries)
                 args.putCharSequenceArray("entryValues", entryValues)
-                args.putCharSequenceArray("iconNames", iconNames)
+                args.putIntArray(ARG_ICON_RESOURCE_IDS, iconResourceIds)
                 arguments = args
                 onChanged = { value ->
                     this@IconListPreference.value = value
@@ -125,7 +135,7 @@ class IconListPreference(context: Context, attrs: AttributeSet) : ListPreference
         var dialogValue: String? = null
         var dialogEntries: Array<CharSequence>? = null
         var dialogEntryValues: Array<CharSequence>? = null
-        var dialogIconNames: Array<CharSequence>? = null
+        var dialogIconResourceIds: IntArray? = null
         private val binding by viewBinding(DialogRecyclerViewBinding::bind)
 
         override fun onStart() {
@@ -143,7 +153,7 @@ class IconListPreference(context: Context, attrs: AttributeSet) : ListPreference
                 dialogValue = it.getString("value")
                 dialogEntries = it.getCharSequenceArray("entries")
                 dialogEntryValues = it.getCharSequenceArray("entryValues")
-                dialogIconNames = it.getCharSequenceArray("iconNames")
+                dialogIconResourceIds = it.getIntArray(ARG_ICON_RESOURCE_IDS)
                 dialogEntryValues?.let { values ->
                     adapter.setItems(values.toList())
                 }
@@ -169,9 +179,7 @@ class IconListPreference(context: Context, attrs: AttributeSet) : ListPreference
                     dialogEntries?.let {
                         label.text = it[index]
                     }
-                    dialogIconNames?.let {
-                        val resId = context.resources
-                            .getIdentifier(it[index].toString(), "mipmap", context.packageName)
+                    dialogIconResourceIds?.getOrNull(index)?.let { resId ->
                         val d = try {
                             context.getCompatDrawable(resId)
                         } catch (e: Exception) {
@@ -181,7 +189,11 @@ class IconListPreference(context: Context, attrs: AttributeSet) : ListPreference
                             icon.setImageDrawable(d)
                         }
                     }
-                    label.isChecked = item.toString() == dialogValue
+                    label.isChecked = index == LauncherIconSelection.resolveIconIndex(
+                        dialogEntryValues,
+                        dialogValue,
+                        dialogIconResourceIds?.size ?: 0,
+                    )
                     root.setOnClickListener {
                         onChanged?.invoke(item.toString())
                         this@IconDialog.dismissAllowingStateLoss()
@@ -211,5 +223,9 @@ class IconListPreference(context: Context, attrs: AttributeSet) : ListPreference
                 return -1
             }
         }
+    }
+
+    private companion object {
+        const val ARG_ICON_RESOURCE_IDS = "iconResourceIds"
     }
 }

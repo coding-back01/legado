@@ -2,6 +2,7 @@
 
 package io.legado.app.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.MenuItem
@@ -18,6 +19,7 @@ import androidx.viewpager.widget.ViewPager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.legado.app.BuildConfig
 import io.legado.app.R
+import io.legado.app.api.ShortcutLaunch
 import io.legado.app.base.VMBaseActivity
 import io.legado.app.constant.AppConst.appInfo
 import io.legado.app.constant.EventBus
@@ -91,6 +93,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
         upBottomMenu()
         initView()
         upHomePage()
+        consumeBookshelfShortcut(intent)
         onBackPressedDispatcher.addCallback(this) {
             if (pagePosition != 0) {
                 binding.viewPagerMain.currentItem = 0
@@ -111,6 +114,19 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
                     moveTaskToBack(true)
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        consumeBookshelfShortcut(intent)
+    }
+
+    private fun consumeBookshelfShortcut(intent: Intent) {
+        ShortcutLaunch.consume(intent, ShortcutLaunch.BOOKSHELF)?.let { shortcutId ->
+            binding.viewPagerMain.setCurrentItem(0, false)
+            ShortcutLaunch.report(this, shortcutId)
         }
     }
 

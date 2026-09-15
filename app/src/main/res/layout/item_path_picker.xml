@@ -5,7 +5,11 @@
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    tools:ignore="UseCompoundDrawables">
+
+    <!-- 两个文件浏览器通过 View Binding 分别更新文字和 20dp 动态位图箭头，点击由整行根节点消费。
+         当箭头迁为可固定边界的资源并完成两入口 View Binding 与 RTL 迁移时重新评估。 -->
 
     <TextView
         android:id="@+id/text_view"

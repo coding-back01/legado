@@ -1,0 +1,135 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :modules:book:preBuild UP-TO-DATE
+> Task :modules:book:preDebugBuild UP-TO-DATE
+> Task :modules:book:checkDebugAarMetadata
+> Task :modules:book:mergeDebugJniLibFolders
+> Task :modules:book:mergeDebugNativeLibs NO-SOURCE
+> Task :modules:book:stripDebugDebugSymbols NO-SOURCE
+> Task :modules:book:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :modules:book:copyDebugJniLibsProjectAndLocalJars
+> Task :modules:book:generateDebugResources
+> Task :modules:book:packageDebugResources
+> Task :modules:book:processDebugNavigationResources
+> Task :modules:book:extractDeepLinksForAarDebug
+> Task :modules:book:generateDebugAssets UP-TO-DATE
+> Task :modules:book:mergeDebugAssets
+> Task :modules:book:prepareDebugArtProfile
+> Task :modules:book:javaPreCompileDebug
+> Task :modules:book:prepareLintJarForPublish
+> Task :modules:rhino:preBuild UP-TO-DATE
+> Task :modules:rhino:preDebugBuild UP-TO-DATE
+> Task :modules:book:writeDebugAarMetadata
+> Task :modules:book:parseDebugLocalResources
+> Task :modules:rhino:checkDebugAarMetadata
+> Task :modules:rhino:mergeDebugJniLibFolders
+> Task :modules:rhino:mergeDebugNativeLibs NO-SOURCE
+> Task :modules:rhino:stripDebugDebugSymbols NO-SOURCE
+> Task :modules:rhino:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :modules:rhino:copyDebugJniLibsProjectAndLocalJars
+> Task :modules:rhino:generateDebugResources
+> Task :modules:rhino:packageDebugResources
+> Task :modules:book:processDebugManifest
+> Task :modules:rhino:processDebugNavigationResources
+> Task :modules:book:generateDebugRFile
+> Task :modules:rhino:parseDebugLocalResources
+> Task :modules:book:compileDebugKotlin NO-SOURCE
+> Task :modules:book:extractDebugAnnotations
+> Task :modules:book:compileDebugJavaWithJavac
+> Task :modules:book:mergeDebugGeneratedProguardFiles
+> Task :modules:book:mergeDebugConsumerProguardFiles
+> Task :modules:book:processDebugJavaRes
+> Task :modules:rhino:extractDeepLinksForAarDebug
+> Task :modules:rhino:generateDebugAssets UP-TO-DATE
+> Task :modules:rhino:generateDebugRFile
+> Task :modules:rhino:mergeDebugAssets
+> Task :modules:book:mergeDebugJavaResource
+> Task :modules:book:syncDebugLibJars
+> Task :modules:book:bundleDebugLocalLintAar
+> Task :modules:rhino:javaPreCompileDebug
+> Task :modules:rhino:prepareDebugArtProfile
+> Task :modules:rhino:prepareLintJarForPublish
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preAppDebugBuild UP-TO-DATE
+> Task :modules:rhino:writeDebugAarMetadata
+> Task :modules:rhino:processDebugManifest
+> Task :app:dataBindingMergeDependencyArtifactsAppDebug
+> Task :app:generateAppDebugResources
+> Task :app:mergeAppDebugResources
+> Task :app:packageAppDebugResources
+> Task :app:processAppDebugNavigationResources
+> Task :app:generateAppDebugBuildConfig
+> Task :app:compileAppDebugNavigationResources
+> Task :app:checkAppDebugAarMetadata
+> Task :app:parseAppDebugLocalResources
+> Task :app:mapAppDebugSourceSetPaths
+> Task :app:dataBindingGenBaseClassesAppDebug
+> Task :app:createAppDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksAppDebug
+> Task :modules:book:extractDeepLinksDebug
+> Task :modules:rhino:extractDeepLinksDebug
+> Task :app:processAppDebugMainManifest
+> Task :app:processAppDebugManifest
+> Task :modules:book:compileDebugLibraryResources
+> Task :modules:rhino:compileDebugLibraryResources
+> Task :modules:book:bundleLibCompileToJarDebug
+> Task :app:preAppDebugAndroidTestBuild SKIPPED
+> Task :modules:book:writeDebugLintModelMetadata
+> Task :modules:rhino:writeDebugLintModelMetadata
+> Task :modules:book:bundleLibRuntimeToJarDebug
+> Task :app:javaPreCompileAppDebug
+> Task :app:extractProguardFiles
+> Task :modules:book:createFullJarDebug
+> Task :modules:book:extractProguardFiles
+> Task :modules:book:generateDebugLintModel
+> Task :modules:rhino:extractProguardFiles
+> Task :app:preAppDebugUnitTestBuild UP-TO-DATE
+> Task :modules:book:preDebugAndroidTestBuild UP-TO-DATE
+> Task :modules:book:generateDebugAndroidTestLintModel
+> Task :modules:book:preDebugUnitTestBuild UP-TO-DATE
+> Task :modules:book:generateDebugUnitTestLintModel
+> Task :app:processAppDebugManifestForPackage
+> Task :modules:rhino:preDebugAndroidTestBuild UP-TO-DATE
+> Task :modules:rhino:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:processAppDebugResources
+> Task :modules:book:lintAnalyzeDebugUnitTest
+> Task :modules:book:lintAnalyzeDebugAndroidTest
+> Task :modules:rhino:compileDebugKotlin
+> Task :modules:rhino:extractDebugAnnotations
+> Task :modules:rhino:compileDebugJavaWithJavac NO-SOURCE
+> Task :modules:rhino:mergeDebugGeneratedProguardFiles
+> Task :modules:rhino:mergeDebugConsumerProguardFiles
+> Task :modules:rhino:processDebugJavaRes
+> Task :modules:rhino:mergeDebugJavaResource
+> Task :modules:rhino:bundleLibCompileToJarDebug
+> Task :modules:rhino:bundleLibRuntimeToJarDebug
+> Task :modules:rhino:syncDebugLibJars
+> Task :modules:rhino:bundleDebugLocalLintAar
+> Task :modules:rhino:createFullJarDebug
+> Task :modules:rhino:generateDebugLintModel
+> Task :modules:rhino:generateDebugAndroidTestLintModel
+> Task :modules:rhino:generateDebugUnitTestLintModel
+> Task :modules:rhino:lintAnalyzeDebugUnitTest
+> Task :modules:rhino:lintAnalyzeDebugAndroidTest
+> Task :modules:book:lintAnalyzeDebug
+> Task :modules:rhino:lintAnalyzeDebug
+> Task :app:kspAppDebugKotlin
+> Task :app:compileAppDebugKotlin
+> Task :app:compileAppDebugJavaWithJavac
+> Task :app:copyRoomSchemas NO-SOURCE
+> Task :app:generateAppDebugLintReportModel
+> Task :app:bundleAppDebugClassesToCompileJar
+> Task :app:generateAppDebugAndroidTestLintModel
+> Task :app:generateAppDebugUnitTestLintModel
+> Task :app:lintAnalyzeAppDebugAndroidTest
+> Task :app:lintAnalyzeAppDebugUnitTest
+> Task :app:lintAnalyzeAppDebug
+
+> Task :app:lintReportAppDebug
+Wrote HTML report to file:///Users/back/legado/app/build/reports/lint-results-appDebug.html
+
+> Task :app:lintAppDebug
+
+BUILD SUCCESSFUL in 3m 14s
+103 actionable tasks: 103 executed

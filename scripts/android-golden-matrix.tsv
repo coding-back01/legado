@@ -1,0 +1,15 @@
+api	avd	profile	theme	density	window	device_kind
+21	Legado_API_21	api21-mdpi-light-phone	light	160	1080x1920	phone
+21	Legado_API_21	api21-mdpi-dark-phone	dark	160	1080x1920	phone
+21	Legado_API_21	api21-xxxhdpi-light-phone	light	640	1080x1920	phone
+21	Legado_API_21	api21-xxxhdpi-dark-phone	dark	640	1080x1920	phone
+23	Legado_API_23	api23-mdpi-light-phone	light	160	1080x1920	phone
+23	Legado_API_23	api23-mdpi-dark-phone	dark	160	1080x1920	phone
+23	Legado_API_23	api23-xxxhdpi-light-phone	light	640	1080x1920	phone
+23	Legado_API_23	api23-xxxhdpi-dark-phone	dark	640	1080x1920	phone
+36	Legado_API_36	api36-mdpi-light-phone	light	160	1080x1920	phone
+36	Legado_API_36	api36-mdpi-dark-phone	dark	160	1080x1920	phone
+36	Legado_API_36	api36-xxxhdpi-light-phone	light	640	1080x1920	phone
+36	Legado_API_36	api36-xxxhdpi-dark-phone	dark	640	1080x1920	phone
+36	Legado_API_36	api36-mdpi-light-tablet	light	160	1920x1200	tablet
+36	Legado_API_36	api36-xxxhdpi-dark-multiwindow	dark	640	1080x960	multiwindow

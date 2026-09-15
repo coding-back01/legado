@@ -29,6 +29,7 @@ import io.legado.app.utils.getFile
 import io.legado.app.utils.isContentScheme
 import io.legado.app.utils.onEachParallel
 import io.legado.app.utils.postEvent
+import io.legado.app.utils.trimAsciiControlAndSpace
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -486,7 +487,7 @@ object BookHelp {
     fun formatBookName(name: String): String {
         return name
             .replace(AppPattern.nameRegex, "")
-            .trim { it <= ' ' }
+            .trimAsciiControlAndSpace()
     }
 
     /**
@@ -495,7 +496,7 @@ object BookHelp {
     fun formatBookAuthor(author: String): String {
         return author
             .replace(AppPattern.authorRegex, "")
-            .trim { it <= ' ' }
+            .trimAsciiControlAndSpace()
     }
 
     private val jaccardSimilarity by lazy {

@@ -7,7 +7,7 @@
     android:orientation="horizontal"
     android:padding="6dp"
     android:background="?attr/selectableItemBackground"
-    tools:ignore="UseCompoundDrawables">
+    tools:ignore="Overdraw,UseCompoundDrawables">
 
     <TextView
         android:id="@+id/text_view"

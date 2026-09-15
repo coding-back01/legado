@@ -15,6 +15,7 @@ import io.legado.app.help.http.CookieManager.mergeCookiesToMap
 import io.legado.app.help.http.api.CookieManagerInterface
 import io.legado.app.utils.NetworkUtils
 import io.legado.app.utils.removeCookie
+import io.legado.app.utils.trimAsciiControlAndSpace
 
 @Keep
 object CookieStore : CookieManagerInterface {
@@ -95,10 +96,10 @@ object CookieStore : CookieManagerInterface {
             if (pairs.size <= 1) {
                 continue
             }
-            val key = pairs[0].trim { it <= ' ' }
+            val key = pairs[0].trimAsciiControlAndSpace()
             val value = pairs[1]
-            if (value.isNotBlank() || value.trim { it <= ' ' } == "null") {
-                cookieMap[key] = value.trim { it <= ' ' }
+            if (value.isNotBlank() || value.trimAsciiControlAndSpace() == "null") {
+                cookieMap[key] = value.trimAsciiControlAndSpace()
             }
         }
         return cookieMap

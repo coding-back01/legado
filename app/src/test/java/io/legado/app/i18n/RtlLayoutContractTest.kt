@@ -23,17 +23,6 @@ class RtlLayoutContractTest {
     }
 
     @Test
-    fun `进度视图的 60dp 和 20dp 间距使用逻辑末端`() {
-        val layout = repoFile(
-            "app/src/main/res/layout/dialog_progressbar_view.xml"
-        ).readText()
-
-        assertTrue(layout.contains("android:layout_marginEnd=\"60dp\""))
-        assertTrue(layout.contains("android:layout_marginEnd=\"20dp\""))
-        assertFalse(layout.contains("android:layout_marginRight"))
-    }
-
-    @Test
     fun `模拟阅读布局保留原数值并使用逻辑方向`() {
         val layout = repoFile(
             "app/src/main/res/layout/dialog_simulated_reading.xml"

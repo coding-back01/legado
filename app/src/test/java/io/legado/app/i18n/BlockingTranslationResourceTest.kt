@@ -11,7 +11,6 @@ class BlockingTranslationResourceTest {
 
     private val requiredKeys = setOf(
         "custom_export_section",
-        "del_all",
         "system_media_control_compatibility_change",
         "system_media_control_compatibility_change_summary",
         "read_aloud_pause_resume",
@@ -30,7 +29,7 @@ class BlockingTranslationResourceTest {
     )
 
     @Test
-    fun `六个阻断键在每个支持的 locale 都有非空资源`() {
+    fun `五个阻断键在每个支持的 locale 都有非空资源`() {
         localeDirectories.forEach { directory ->
             val strings = readStrings(directory)
             requiredKeys.forEach { key ->

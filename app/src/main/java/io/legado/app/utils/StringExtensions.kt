@@ -19,6 +19,9 @@ import java.util.regex.Pattern
 
 fun String?.safeTrim() = if (this.isNullOrBlank()) null else this.trim()
 
+@Suppress("TrimLambda")
+fun String.trimAsciiControlAndSpace(): String = trim { it <= ' ' }
+
 fun String?.isContentScheme(): Boolean = this?.startsWith("content://") == true
 
 fun String.toEditable(): Editable = Editable.Factory.getInstance().newEditable(this)

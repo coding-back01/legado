@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="AndroidGradlePluginVersion">
+        <!--
+          lint 31.13.2 的 wrapper 文本扫描器不读取紧邻 distributionUrl 的 noinspection，
+          因此仅按这个唯一版本声明文件精确忽略；版本兼容理由和重启条件仍保留在声明旁。
+          独立工具链升级完成 AGP 迁移与 API 21/23/36 完整构建矩阵时删除此项。
+        -->
+        <ignore path="../gradle/wrapper/gradle-wrapper.properties" />
+    </issue>
+    <issue id="IconDuplicates">
+        <!--
+          两个文件当前字节相同，但 image_legado 是 RSS 无封面时的 nodpi 页面 fallback，
+          ic_launcher 是 Android 7.1 及以下使用的 xxxhdpi launcher 图标；合并会改变资源
+          类型或密度语义。若 RSS fallback 或旧版 launcher 入口退役，重新评估并删除抑制。
+        -->
+        <ignore path="src/main/res/drawable-nodpi/image_legado.png" />
+        <ignore path="src/main/res/mipmap-xxxhdpi/ic_launcher.png" />
+    </issue>
+</lint>
