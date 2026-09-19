@@ -44,9 +44,9 @@
 - [x] 6.1 使用 `modules/web/scripts/sync.js` 的既有路径同步 `app/src/main/assets/web/vue/`，审查删除的旧哈希文件、新入口、脚本和样式，确认没有手工编辑生成产物或混入无关资产。
 - [x] 6.2 在相同 Node.js 22 与 pnpm 9.15.9 环境连续执行两次生产构建，确认第二次构建后版本化 Web 资产无新增、删除或内容漂移。
 - [x] 6.3 从干净依赖安装再次运行 `pnpm test:chapter-html`、`pnpm test:static-links`、`pnpm type-check`、`pnpm exec eslint .` 和 `pnpm build`，记录 Web 最终证据。
-- [ ] 6.4 再次运行 Android 单元测试、零 issue lint、Debug 构建及适用设备矩阵，确认 Web 资产变化和最终依赖图没有破坏 Android 打包或运行时入口。
-- [ ] 6.5 执行仓库契约测试、适用工作流语法/CodeQL 前置检查、`openspec validate --all --strict` 和 `git diff --check`，检查 `git diff --stat` 与完整差异，确认没有 Room schema、规则/备份/导入格式、正式签名或 Release 工作流副作用。
-- [ ] 6.6 将最终依赖图、资产确定性、Android/Web 结果和未运行项写入 `evidence/implementation-verification.md`，完成替代实现的人工审查。
+- [x] 6.4 再次运行 Android 单元测试、零 issue lint、Debug 构建及适用设备矩阵，确认 Web 资产变化和最终依赖图没有破坏 Android 打包或运行时入口。
+- [x] 6.5 执行仓库契约测试、适用工作流语法/CodeQL 前置检查、`openspec validate --all --strict` 和 `git diff --check`，检查 `git diff --stat` 与完整差异，确认没有 Room schema、规则/备份/导入格式、正式签名或 Release 工作流副作用。
+- [x] 6.6 将最终依赖图、资产确定性、Android/Web 结果和未运行项写入 `evidence/implementation-verification.md`，完成替代实现的人工审查。
 
 ## 7. 替代 Pull Request 与合并验证
 
