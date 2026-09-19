@@ -50,7 +50,7 @@
 
 ## 7. 替代 Pull Request 与合并验证
 
-- [ ] 7.1 将安全、Android、Web 和总验证保留为可归因提交，推送唯一实现分支并创建一个替代 Pull Request，在说明中关联告警 #6 以及 PR #42/#45/#80/#81，但不提前关闭它们。
+- [x] 7.1 将安全、Android、Web 和总验证保留为可归因提交，推送唯一实现分支并创建一个替代 Pull Request，在说明中关联告警 #6 以及 PR #42/#45/#80/#81，但不提前关闭它们。
 - [ ] 7.2 等待替代 Pull Request 的 Android、Web、CodeQL、OpenSpec/仓库和稳定聚合门禁全部实际成功，审查完整 diff 和生成资产；失败时只在同一实现分支修复并重新验证。
 - [ ] 7.3 全部门禁和人工审查通过后合并替代 Pull Request，记录精确 merge SHA；若不能合并或合并后出现回归，则停止外部清理并按独立 revert PR 处理。
 - [ ] 7.4 读取 merge SHA 对应的 `master` 维护门禁和 CodeQL 结果，确认本地 `master` 可快进到同一 SHA，且合并后 Android lint 仍为零 issue。

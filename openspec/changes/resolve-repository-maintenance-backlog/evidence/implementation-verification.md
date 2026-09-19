@@ -46,3 +46,9 @@
 - 尚未关闭 PR #42/#45/#80/#81、删除远端分支、移除附加工作树或清理本地历史分支；这是有意保留的合并后阶段，不属于本地实现缺口。
 
 本地替代实现已完成，可以进入单一替代 Pull Request；外部清理前仍必须满足 OpenSpec 第 7 节的合并与门禁条件。
+
+## 替代 Pull Request
+
+- 唯一实现分支：`codex/resolve-repository-maintenance-backlog`。
+- 替代 Pull Request：[PR #85](https://github.com/coding-back01/legado/pull/85)。
+- PR 说明已关联 Dependabot 告警 #6 以及 PR #42/#45/#80/#81，并明确它们只能在 PR #85 合并及合并后门禁成功后关闭。
