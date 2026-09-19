@@ -64,6 +64,10 @@ Apply 以当前 PR 文件差异为版本基线，不直接检出机器人分支�
 
 每个批次只修改该组依赖及为兼容所必需的源码/配置，并在进入下一批前执行安装、章节 HTML 测试、静态链接测试、类型检查、ESLint 和生产构建。TypeScript 7 的章节测试改用独立 `tsconfig` 或等价受支持调用，继续保留 `strict`、`noEmitOnError` 和真实 Node 测试执行。
 
+TypeScript 7.0.2 不再提供 Vue 3 当前工具链依赖的旧编译器 API，因此采用 TypeScript 官方允许的并行安装方式：将 TypeScript 7.0.2 以 `@typescript/native` 别名安装并让章节测试的 `tsc` 命令实际解析到 7.0.2，同时把 `typescript` 包名映射到 `@typescript/typescript6` 6.0.2，专供 `vue-tsc` 与 `typescript-eslint` 的现有插件 API。该兼容层不得把章节测试退回 TypeScript 6，也不得关闭 Vue 类型检查；待上游支持 TypeScript 7 编译器 API 后再单独移除。
+
+Vite 8 已使用 Rolldown/Oxc 取代原有构建路径。迁移时移除不再接受的 Sass `api` 选项，并把生产环境删除 `console` 与 `debugger` 的既有语义迁移到 `build.rolldownOptions.output.minify` 的 Oxc 压缩选项，不新增 `esbuild` 依赖或放弃原有生产压缩行为。
+
 `pnpm build` 会通过 `modules/web/scripts/sync.js` 写入 `app/src/main/assets/web/vue/`。最终生成资产与同一固定工具环境再次构建结果必须一致；旧哈希资产按同步脚本的确定性结果移除，新资产和入口文件全部提交。禁止手工编辑压缩产物来制造干净状态。
 
 ### 5. 安全告警按结果闭环，不把界面状态当作代码事实

@@ -27,23 +27,23 @@
 
 ## 4. Web 运行时依赖迁移
 
-- [ ] 4.1 将运行时基础组更新到 `@vueuse/core 14.4.0`、`@vueuse/shared 14.4.0`、`axios 1.20.0`、`element-plus 2.14.5`、`hotkeys-js 4.0.7`、`vue 3.5.42`，只修复该组引起的兼容问题并执行完整 Web 检查后再继续。
-- [ ] 4.2 将状态与路由组更新到 `pinia 4.0.3`、`vue-router 5.3.0`，验证书架、书源编辑、帮助入口和既有路由/持久化状态语义，并执行完整 Web 检查。
-- [ ] 4.3 对运行时迁移重新运行 11 个固定链接清单、动态 `href` 禁止和 opener/referrer 隔离测试，确认 Element Plus 升级没有放宽 `web-link-security` 合同。
+- [x] 4.1 将运行时基础组更新到 `@vueuse/core 14.4.0`、`@vueuse/shared 14.4.0`、`axios 1.20.0`、`element-plus 2.14.5`、`hotkeys-js 4.0.7`、`vue 3.5.42`，只修复该组引起的兼容问题并执行完整 Web 检查后再继续。
+- [x] 4.2 将状态与路由组更新到 `pinia 4.0.3`、`vue-router 5.3.0`，验证书架、书源编辑、帮助入口和既有路由/持久化状态语义，并执行完整 Web 检查。
+- [x] 4.3 对运行时迁移重新运行 11 个固定链接清单、动态 `href` 禁止和 opener/referrer 隔离测试，确认 Element Plus 升级没有放宽 `web-link-security` 合同。
 
 ## 5. Web 构建、类型与 lint 工具迁移
 
-- [ ] 5.1 将构建工具组更新到 `@vitejs/plugin-vue 6.0.8`、`npm-run-all2 9.0.3`、`unplugin-auto-import 21.1.0`、`unplugin-icons 23.0.1`、`unplugin-vue-components 32.1.0`、`vite 8.2.2`，解决真实兼容错误并执行完整 Web 检查。
-- [ ] 5.2 将类型系统组更新到 `@types/node 26.4.0`、`@vue/tsconfig 0.9.1`、`typescript 7.0.2`、`vue-tsc 3.3.11`；用专用 `tsconfig` 或等价受支持方式消除 `TS5112`，保留 `strict`、`noEmitOnError` 和章节测试真实执行。
-- [ ] 5.3 将 lint 工具组更新到 `eslint 10.9.1`、`eslint-plugin-vue 10.10.0`，只做配置 API 和规则语义所需迁移，保持 ESLint 零 error 且不禁用既有安全/质量规则。
-- [ ] 5.4 每个工具批次均执行固定版本安装、章节 HTML 测试、静态链接测试、类型检查、ESLint 和生产构建；任一批次失败时停止后续批次并记录精确失败，不通过全量锁文件刷新掩盖来源。
-- [ ] 5.5 最终对照 PR #45/#81 的批准版本清单，确认 20 项目标全部达到指定版本，未顺带升级 Kotlin/KSP、Node/pnpm、固定 Android 依赖或清单外 Web 依赖。
+- [x] 5.1 将构建工具组更新到 `@vitejs/plugin-vue 6.0.8`、`npm-run-all2 9.0.3`、`unplugin-auto-import 21.1.0`、`unplugin-icons 23.0.1`、`unplugin-vue-components 32.1.0`、`vite 8.2.2`，解决真实兼容错误并执行完整 Web 检查。
+- [x] 5.2 将类型系统组更新到 `@types/node 26.4.0`、`@vue/tsconfig 0.9.1`、`typescript 7.0.2`、`vue-tsc 3.3.11`；用专用 `tsconfig` 或等价受支持方式消除 `TS5112`，保留 `strict`、`noEmitOnError` 和章节测试真实执行。
+- [x] 5.3 将 lint 工具组更新到 `eslint 10.9.1`、`eslint-plugin-vue 10.10.0`，只做配置 API 和规则语义所需迁移，保持 ESLint 零 error 且不禁用既有安全/质量规则。
+- [x] 5.4 每个工具批次均执行固定版本安装、章节 HTML 测试、静态链接测试、类型检查、ESLint 和生产构建；任一批次失败时停止后续批次并记录精确失败，不通过全量锁文件刷新掩盖来源。
+- [x] 5.5 最终对照 PR #45/#81 的批准版本清单，确认 20 项目标全部达到指定版本，未顺带升级 Kotlin/KSP、Node/pnpm、固定 Android 依赖或清单外 Web 依赖。
 
 ## 6. Web 静态资产与本地总验证
 
-- [ ] 6.1 使用 `modules/web/scripts/sync.js` 的既有路径同步 `app/src/main/assets/web/vue/`，审查删除的旧哈希文件、新入口、脚本和样式，确认没有手工编辑生成产物或混入无关资产。
-- [ ] 6.2 在相同 Node.js 22 与 pnpm 9.15.9 环境连续执行两次生产构建，确认第二次构建后版本化 Web 资产无新增、删除或内容漂移。
-- [ ] 6.3 从干净依赖安装再次运行 `pnpm test:chapter-html`、`pnpm test:static-links`、`pnpm type-check`、`pnpm exec eslint .` 和 `pnpm build`，记录 Web 最终证据。
+- [x] 6.1 使用 `modules/web/scripts/sync.js` 的既有路径同步 `app/src/main/assets/web/vue/`，审查删除的旧哈希文件、新入口、脚本和样式，确认没有手工编辑生成产物或混入无关资产。
+- [x] 6.2 在相同 Node.js 22 与 pnpm 9.15.9 环境连续执行两次生产构建，确认第二次构建后版本化 Web 资产无新增、删除或内容漂移。
+- [x] 6.3 从干净依赖安装再次运行 `pnpm test:chapter-html`、`pnpm test:static-links`、`pnpm type-check`、`pnpm exec eslint .` 和 `pnpm build`，记录 Web 最终证据。
 - [ ] 6.4 再次运行 Android 单元测试、零 issue lint、Debug 构建及适用设备矩阵，确认 Web 资产变化和最终依赖图没有破坏 Android 打包或运行时入口。
 - [ ] 6.5 执行仓库契约测试、适用工作流语法/CodeQL 前置检查、`openspec validate --all --strict` 和 `git diff --check`，检查 `git diff --stat` 与完整差异，确认没有 Room schema、规则/备份/导入格式、正式签名或 Release 工作流副作用。
 - [ ] 6.6 将最终依赖图、资产确定性、Android/Web 结果和未运行项写入 `evidence/implementation-verification.md`，完成替代实现的人工审查。
