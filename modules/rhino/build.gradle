@@ -2,11 +2,10 @@ plugins {
     //d 'com.android.library'
     //id 'org.jetbrains.kotlin.android'
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.android
 }
 
 android {
-    compileSdk = compile_sdk_version
+    compileSdk = rootProject.ext.compile_sdk_version
     namespace = 'com.script'
     kotlin {
         jvmToolchain {

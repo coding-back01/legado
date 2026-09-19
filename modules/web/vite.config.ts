@@ -51,24 +51,25 @@ export default defineConfig(({ mode }) => {
         "@utils": fileURLToPath(new URL("./src/utils/", import.meta.url)),
       },
     },
-    esbuild: {
-      drop: mode === "development" ? undefined : ["console", "debugger"],
-    },
     build: {
-      rollupOptions: {
+      rolldownOptions: {
         output: {
+          minify:
+            mode === "development"
+              ? true
+              : {
+                  compress: {
+                    dropConsole: true,
+                    dropDebugger: true,
+                  },
+                  mangle: true,
+                  codegen: true,
+                },
           manualChunks: (id) => {
             if (id.includes("node_modules")) {
               return "vendor";
             }
           },
-        },
-      },
-    },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          api: 'modern-compiler', // or 'modern'
         },
       },
     },

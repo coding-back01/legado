@@ -5,7 +5,6 @@ plugins {
 //    //id 'kotlin-kapt'
 //    id 'com.google.devtools.ksp'
     alias libs.plugins.android.application
-    alias libs.plugins.kotlin.android
     alias libs.plugins.kotlin.parcelize
     alias libs.plugins.room
     alias libs.plugins.ksp
@@ -16,12 +15,12 @@ static def releaseTime() {
     return new Date().format("yy.MMddHH", TimeZone.getTimeZone("GMT+8"))
 }
 
-def name = "legado"
-def version = "3." + releaseTime()
+def apkBaseName = "legado"
+def appVersionName = "3." + releaseTime()
 def gitCommits = Integer.parseInt('git rev-list HEAD --count'.execute().text.trim())
 
 android {
-    compileSdk = compile_sdk_version
+    compileSdk = rootProject.ext.compile_sdk_version
     namespace = 'io.legado.app'
     kotlin {
         jvmToolchain {
@@ -48,9 +47,9 @@ android {
         minSdk 21
         targetSdk 36
         versionCode 10000 + gitCommits
-        versionName version
+        versionName appVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        project.ext.set("archivesBaseName", name + "_" + version)
+        project.ext.set("archivesBaseName", apkBaseName + "_" + appVersionName)
 
         buildConfigField "String", "Cronet_Version", "\"$CronetVersion\""
         buildConfigField "String", "Cronet_Main_Version", "\"$CronetMainVersion\""
@@ -107,14 +106,6 @@ android {
         }
     }
 
-    android.applicationVariants.configureEach { variant ->
-        variant.outputs.configureEach {
-            def flavor = variant.productFlavors[0].name
-            outputFileName = "${name}_${flavor}_${defaultConfig.versionName}.apk"
-        }
-    }
-
-
     room {
         schemaDirectory "$projectDir/schemas"
     }
@@ -151,6 +142,14 @@ android {
     tasks.withType(JavaCompile).tap {
         configureEach {
             //options.compilerArgs << "-Xlint:unchecked"
+        }
+    }
+}
+
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.outputs.each { output ->
+            output.outputFileName.set("${apkBaseName}_${variant.flavorName}_${appVersionName}.apk")
         }
     }
 }

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmitOnError": true,
+    "pretty": false,
+    "rootDir": ".",
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "outDir": "node_modules/.tmp/chapter-html-test"
+  },
+  "include": [
+    "src/utils/chapterHtml.ts",
+    "tests/chapterHtml.test.ts"
+  ]
+}

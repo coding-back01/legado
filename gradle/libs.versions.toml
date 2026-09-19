@@ -1,6 +1,6 @@
 [versions]
 
-# Kotlin 2.3.0 同时约束 Android、JVM、kapt、serialization、allopen、noarg、sam、lombok、parcelize 九个构建插件。
+# Kotlin 2.3.0 约束显式 Kotlin 工具、Parcelize 与应用运行时；Android 模块由 AGP 9 原生 Kotlin 集成编译。
 # Dependabot 提出升级且独立工具链变更通过全部模块编译、代码生成、单元测试与 API 21/23/36 构建矩阵时重新评估。
 #noinspection NewerVersionAvailable
 kotlin = "2.3.0"
@@ -8,7 +8,7 @@ ksp = "2.3.4"
 # AGP application/library/test 三个插件必须与当前 Gradle、JDK 17 和构建脚本成组升级。
 # 独立升级变更完成三插件迁移及 API 21/23/36 构建矩阵时重新评估。
 #noinspection AndroidGradlePluginVersion
-agp = "8.13.2"
+agp = "9.4.0"
 # AppCompat 1.7.1 已纳入当前 API 21/23/36 主题、窗口与组件回归矩阵，版本升级需独立验证 UI 兼容性。
 # Dependabot 提出升级且独立依赖变更完成上述矩阵时重新评估。
 #noinspection GradleDependency
@@ -29,6 +29,9 @@ flexbox = "3.0.0"
 fragment = "1.8.9"
 documentfile = "1.1.0"
 
+# Libarchive 参与压缩文件读取，版本升级需独立验证既有格式、异常处理与 API 21 兼容性。
+# Dependabot 提出升级且独立依赖变更通过压缩文件回归测试与 API 21/23/36 构建矩阵时重新评估。
+#noinspection NewerVersionAvailable
 libarchive = "1.1.6"
 # Glide 5.0.5 同时约束核心、compiler、KSP、OkHttp、RecyclerView 与 AVIF 六个坐标，必须作为图片加载栈成组升级。
 # Dependabot 提出升级且独立图片栈变更通过 API 21/23/36、mdpi/xxxhdpi、日夜主题及相关 golden 时重新评估。
@@ -256,7 +259,6 @@ android-test = { id = "com.android.test", version.ref = "agp" }
 
 #androidx-benchmark = { id = "androidx.benchmark", version = "1.3.3" }
 
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
