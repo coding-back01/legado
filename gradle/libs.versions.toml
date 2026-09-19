@@ -29,6 +29,9 @@ flexbox = "3.0.0"
 fragment = "1.8.9"
 documentfile = "1.1.0"
 
+# Libarchive 参与压缩文件读取，版本升级需独立验证既有格式、异常处理与 API 21 兼容性。
+# Dependabot 提出升级且独立依赖变更通过压缩文件回归测试与 API 21/23/36 构建矩阵时重新评估。
+#noinspection NewerVersionAvailable
 libarchive = "1.1.6"
 # Glide 5.0.5 同时约束核心、compiler、KSP、OkHttp、RecyclerView 与 AVIF 六个坐标，必须作为图片加载栈成组升级。
 # Dependabot 提出升级且独立图片栈变更通过 API 21/23/36、mdpi/xxxhdpi、日夜主题及相关 golden 时重新评估。

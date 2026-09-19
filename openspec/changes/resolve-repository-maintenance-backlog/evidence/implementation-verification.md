@@ -52,3 +52,10 @@
 - 唯一实现分支：`codex/resolve-repository-maintenance-backlog`。
 - 替代 Pull Request：[PR #85](https://github.com/coding-back01/legado/pull/85)。
 - PR 说明已关联 Dependabot 告警 #6 以及 PR #42/#45/#80/#81，并明确它们只能在 PR #85 合并及合并后门禁成功后关闭。
+
+## Pull Request 门禁环境差异诊断
+
+- workflow run `35446377850` 的首个 Android 作业 `105905974970` 在配置阶段因 Maven 仓库瞬时未能解析 `com.google.devtools.ksp:2.3.4` 而失败。同一提交的 Android CodeQL 构建随后成功；Maven Central 中的插件标记可以正常读取，并且使用全新 Gradle 用户目录的本地冷解析也成功，因此没有为瞬时网络故障修改插件仓库或 KSP 版本。
+- 重跑后的 Android 作业 `105907600140` 完整执行 lint 成功，但 CI 能读取到本地元数据缓存尚未返回的新版本信息，报告新增 1 个 `NewerVersionAvailable`：`me.zhanghai.android.libarchive:library 1.1.6 → 1.1.7`。
+- Libarchive 普通依赖升级不在本变更锁定的版本清单内。依据既有 lint 治理方式和本设计“不追逐实施期间新出现的普通更新”的边界，在该版本声明处补充压缩格式、异常处理和 API 21/23/36 独立回归条件，并只对该 occurrence 添加 `NewerVersionAvailable` 精确抑制；依赖版本与依赖图均未改变。
+- 修复后重新执行 `:app:lintAppDebug` 和 `scripts/android_lint_report.py assert-zero` 均通过，报告仍为 0 issue，SHA-256 仍为 `1b6e6f54270cf3298b1e965e53ea942f8dcb9f55dcd8f9c34744266238ed457f`。新的 Pull Request 门禁结果仍须实际成功后才能完成任务 7.2。
