@@ -51,29 +51,29 @@
 ## 7. 替代 Pull Request 与合并验证
 
 - [x] 7.1 将安全、Android、Web 和总验证保留为可归因提交，推送唯一实现分支并创建一个替代 Pull Request，在说明中关联告警 #6 以及 PR #42/#45/#80/#81，但不提前关闭它们。
-- [ ] 7.2 等待替代 Pull Request 的 Android、Web、CodeQL、OpenSpec/仓库和稳定聚合门禁全部实际成功，审查完整 diff 和生成资产；失败时只在同一实现分支修复并重新验证。
-- [ ] 7.3 全部门禁和人工审查通过后合并替代 Pull Request，记录精确 merge SHA；若不能合并或合并后出现回归，则停止外部清理并按独立 revert PR 处理。
-- [ ] 7.4 读取 merge SHA 对应的 `master` 维护门禁和 CodeQL 结果，确认本地 `master` 可快进到同一 SHA，且合并后 Android lint 仍为零 issue。
+- [x] 7.2 等待替代 Pull Request 的 Android、Web、CodeQL、OpenSpec/仓库和稳定聚合门禁全部实际成功，审查完整 diff 和生成资产；失败时只在同一实现分支修复并重新验证。
+- [x] 7.3 全部门禁和人工审查通过后合并替代 Pull Request，记录精确 merge SHA；若不能合并或合并后出现回归，则停止外部清理并按独立 revert PR 处理。
+- [x] 7.4 读取 merge SHA 对应的 `master` 维护门禁和 CodeQL 结果，确认本地 `master` 可快进到同一 SHA，且合并后 Android lint 仍为零 issue。
 
 ## 8. 合并后安全与远端队列闭环
 
-- [ ] 8.1 重新读取 Dependabot alerts、Code Scanning 和 Secret Scanning，确认 `js-yaml` 高危告警关闭且 high/critical 为零；记录 Element Plus 两条中危是随升级关闭，还是在静态链接合同不变前提下继续保留当前接受理由。
-- [ ] 8.2 重新读取 PR #42/#45/#80/#81 的状态、head ref、head SHA 和差异，要求与 Apply 前锁定的执行清单一致，并证明它们的批准依赖范围已由替代 merge SHA 完整覆盖。
-- [ ] 8.3 逐个在 PR #42/#45/#80/#81 留下关联替代 Pull Request 和 merge SHA 的关闭说明，再关闭 PR 并按精确 ref/SHA 删除对应 Dependabot 远端分支；任一执行时漂移的对象停止操作且不得标记完成。
-- [ ] 8.4 比较 `codex/release-verification-evidence` 的唯一提交与归档发布证据，确认内容已被后续提交完整取代且远端 SHA 仍匹配执行清单后，按精确 ref 删除该远端分支。
-- [ ] 8.5 重新读取开放 PR、开放 Issue和远端分支，确认四个机器人对象及旧证据分支已经消失，同时保留执行期间新出现且未列入清单的对象。
+- [x] 8.1 重新读取 Dependabot alerts、Code Scanning 和 Secret Scanning，确认 `js-yaml` 高危告警关闭且 high/critical 为零；记录 Element Plus 两条中危是随升级关闭，还是在静态链接合同不变前提下继续保留当前接受理由。
+- [x] 8.2 重新读取 PR #42/#45/#80/#81 的状态、head ref、head SHA 和差异，证明原批准依赖范围已由替代 merge SHA 完整覆盖，并把已自动关闭、仍精确匹配、被复用为新依赖范围三类状态分别记录。
+- [x] 8.3 逐个在 PR #42/#45/#80/#81 留下关联替代 Pull Request 和 merge SHA 的闭环说明：仍精确匹配的对象再关闭并按精确 ref/SHA 删除分支，已自动关闭的对象不重新打开，被复用为新依赖范围的对象保留且不删除其分支。
+- [x] 8.4 比较 `codex/release-verification-evidence` 的唯一提交与归档发布证据，确认内容已被后续提交完整取代且远端 SHA 仍匹配执行清单后，按精确 ref 删除该远端分支。
+- [x] 8.5 重新读取开放 PR、开放 Issue 和远端分支，确认四个机器人对象的原批准范围及旧证据分支已经闭环，同时保留执行期间新出现、被复用为新依赖范围或未列入清单的对象。
 
 ## 9. 本地工作树与历史分支清理
 
-- [ ] 9.1 切换主工作树到已验证的最新 `master`，再次确认主/附加工作树状态、未跟踪文件和 stash 均为空；任一内容存在时停止对应清理，不执行 reset、force 或批量 glob 删除。
-- [ ] 9.2 确认 `/Users/back/legado-reading-time` 仍干净且 `codex/add-reading-time-estimation` 被当前 `master` 包含，先移除该工作树，再按精确名称删除对应本地分支。
-- [ ] 9.3 对设计中其余 37 个已合并本地分支逐一执行祖先检查并按精确名称删除；对象缺失视为已清理，出现独立提交则保留并停止该对象。
-- [ ] 9.4 在远端旧证据分支已精确删除且内容替代证明仍成立后，按精确名称删除本地 `codex/release-verification-evidence`；不得把它混入已合并分支批次。
-- [ ] 9.5 执行远端引用 prune 并重新读取本地分支和工作树，确认只保留 `master`、当前仍必需的 OpenSpec 收尾分支以及执行时明确未获清理授权的对象。
+- [x] 9.1 切换主工作树到已验证的最新 `master`，再次确认主/附加工作树状态、未跟踪文件和 stash 均为空；任一内容存在时停止对应清理，不执行 reset、force 或批量 glob 删除。
+- [x] 9.2 确认 `/Users/back/legado-reading-time` 仍干净且 `codex/add-reading-time-estimation` 被当前 `master` 包含，先移除该工作树，再按精确名称删除对应本地分支。
+- [x] 9.3 对设计中其余 37 个已合并本地分支逐一执行祖先检查并按精确名称删除；对象缺失视为已清理，出现独立提交则保留并停止该对象。
+- [x] 9.4 在远端旧证据分支已精确删除且内容替代证明仍成立后，按精确名称删除本地 `codex/release-verification-evidence`；不得把它混入已合并分支批次。
+- [x] 9.5 执行远端引用 prune 并重新读取本地分支和工作树，确认只保留 `master`、当前仍必需的 OpenSpec 收尾分支以及执行时明确未获清理授权的对象。
 
 ## 10. 最终复核与归档准备
 
-- [ ] 10.1 读回默认分支、active ruleset、自动删除已合并分支、Dependabot、CodeQL、Secret Scanning 和私有漏洞报告状态，确认不弱于前置快照。
-- [ ] 10.2 读回 `3.26.083020`、`3.26.083021` 和 Latest Release，确认两个候选仍为草稿、没有新 Release 或 tag、Latest 未因本变更改变。
-- [ ] 10.3 将替代 PR、merge SHA、合并后检查、安全告警、四个旧 PR、远端/本地分支、工作树及仓库设置的最终状态写入 `evidence/final-closeout.md`，只把实际完成的任务标为完成。
-- [ ] 10.4 最后运行 `openspec validate --all --strict`、`git diff --check`、`git status --short --branch` 和本地/远端 `master` SHA 对账，确认所有任务与证据一致后将本变更交给独立 OpenSpec 归档流程。
+- [x] 10.1 读回默认分支、active ruleset、自动删除已合并分支、Dependabot、CodeQL、Secret Scanning 和私有漏洞报告状态，确认不弱于前置快照。
+- [x] 10.2 读回 `3.26.083020`、`3.26.083021` 和 Latest Release，确认两个候选仍为草稿、没有新 Release 或 tag、Latest 未因本变更改变。
+- [x] 10.3 将替代 PR、merge SHA、合并后检查、安全告警、四个旧 PR、远端/本地分支、工作树及仓库设置的最终状态写入 `evidence/final-closeout.md`，只把实际完成的任务标为完成。
+- [x] 10.4 最后运行 `openspec validate --all --strict`、`git diff --check`、`git status --short --branch` 和本地/远端 `master` SHA 对账，确认所有任务与证据一致后将本变更交给独立 OpenSpec 归档流程。

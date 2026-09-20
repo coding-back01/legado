@@ -88,7 +88,7 @@ Vite 8 已使用 Rolldown/Oxc 取代原有构建路径。迁移时移除不再�
 | PR #81 | `dependabot/npm_and_yarn/modules/web/web-production-aa57cd536c` | `6554a8a935d91aba6cc8b352c384fa584008121e` |
 | 旧发布证据分支 | `codex/release-verification-evidence` | `182b67140b4eb4d1dbdace589a6c15f67447e61e` |
 
-四个机器人 PR 只在替代 PR 合并且 `master` 合并后门禁成功后关闭，关闭说明关联替代 PR；随后按精确 ref 删除对应远端分支。旧发布证据分支还必须再次证明其唯一内容已被 `openspec/changes/archive/2026-08-31-stabilize-independent-fork-governance/` 中的后续发布验证和归档记录取代。
+四个机器人 PR 只在替代 PR 合并且 `master` 合并后门禁成功后闭环。仍匹配锁定编号、ref、SHA 和依赖范围的对象先留下关联替代 PR 的关闭说明，再关闭并按精确 ref 删除远端分支；已经被 Dependabot 自动关闭和删分支的对象只补充替代记录，不重新打开；编号或 ref 被 Dependabot 复用为新依赖范围时，将当前状态视为执行期间新出现对象并保留，只记录原批准范围已由替代 merge SHA 覆盖。旧发布证据分支还必须再次证明其唯一内容已被 `openspec/changes/archive/2026-08-31-stabilize-independent-fork-governance/` 中的后续发布验证和归档记录取代。
 
 本地清理先确认无 stash、所有工作树干净，再移除 `/Users/back/legado-reading-time`。以下 38 个提案时已被 `master` 包含的本地分支组成精确候选清单；执行时仍需逐个运行祖先检查，不能按 `codex/*` 批量删除：
 
@@ -157,7 +157,7 @@ codex/web-chapter-content-safety-evidence
 4. 按固定五批迁移 Web 生产与开发依赖，逐批验证，最终同步并复现内置 Web 资产。
 5. 运行 Android、Web、CodeQL、OpenSpec 和仓库全量门禁，复核安全告警和发布/保护边界；创建一个替代 PR。
 6. 替代 PR 合并后读取 `master` 的精确合并提交和全部检查；若出现回归，使用独立 revert PR，不关闭原机器人队列。
-7. 只有合并后状态绿色时，按执行时精确快照关闭四个机器人 PR、删除对应远端分支、证明并删除旧证据分支，再移除干净附加工作树和逐个删除批准的本地分支。
+7. 只有合并后状态绿色时，按执行时精确快照闭环四个机器人 PR 的原批准范围：关闭并删除仍匹配的对象、记录已自动关闭的对象、保留被复用为新范围的对象；随后证明并删除旧证据分支，再移除干净附加工作树和逐个删除批准的本地分支。
 8. 再次核对工作树、`master`、OpenSpec、告警、ruleset、草稿 Release 和远端队列，记录归档前证据。
 
 合并前回滚只撤销实现分支中对应的内部检查点，不改写 `master`。合并后若发现代码或兼容性回归，按仓库治理要求建立独立 revert PR；Git 清理位于最后阶段，因此代码回滚不会依赖已经删除的机器人分支。
