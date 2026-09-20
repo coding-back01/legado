@@ -8,7 +8,7 @@ Android lint 清零后，仓库仍有一条可修复但机器人未能生成补�
 - 将 Gradle `8.13 → 9.7.1` 与 Android Gradle Plugin `8.13.2 → 9.4.0` 作为同一工具链迁移处理，修复 wrapper 文本一致性及 AGP 9 构建脚本兼容问题，并验证 JDK 17、Kotlin/KSP、三个 Android 模块和 API 21/23/36 边界。
 - 从最新 `master` 重建 Web 依赖升级，不直接合并陈旧机器人分支；在同一次 Apply 内按生产运行时、构建工具、类型系统和 lint 工具的依赖关系分批迁移，修复 TypeScript 7 的 `TS5112` 等兼容问题，并同步提交确定性的 Android Web 静态资产。
 - 升级后重新核对 Element Plus 静态链接安全合同和 Dependabot 告警；高危/严重告警必须清零，中危告警必须被修复或保留有当前证据支持的精确接受理由。
-- 替代实现通过全部门禁后，按精确编号、head ref 和 SHA 关闭 Dependabot PR #42、#45、#80、#81，删除对应机器人分支，并清理已被 `master` 包含的本地历史分支、`legado-reading-time` 工作树及已被归档证据取代的 `codex/release-verification-evidence` 分支。
+- 替代实现通过全部门禁后，按精确编号、head ref、SHA 和依赖范围闭环 Dependabot PR #42、#45、#80、#81：仍匹配执行清单的对象补充关联说明后关闭并删除分支，已由 Dependabot 自动关闭的对象补充替代记录，编号或 ref 被复用为新依赖范围的对象保留；同时清理已被 `master` 包含的本地历史分支、`legado-reading-time` 工作树及已被归档证据取代的 `codex/release-verification-evidence` 分支。
 - 整个范围使用一个 OpenSpec 和一次连续 Apply 串行完成；任一内部批次失败时停止后续变更和远端清理，不把部分完成描述为闭环。
 - 不删除或公开 `3.26.083020`、`3.26.083021` 两个审计草稿，不触发正式发布，不改变 `master` 保护、自动删已合并分支设置或既有安全能力。
 
@@ -29,4 +29,4 @@ Android lint 清零后，仓库仍有一条可修复但机器人未能生成补�
 - Web 构建：`modules/web/package.json`、`modules/web/pnpm-lock.yaml`、TypeScript/Vite/ESLint 配置与聚焦测试，以及 `app/src/main/assets/web/vue/` 中由 Web 构建同步的静态产物。
 - 仓库治理：`.github/dependabot.yml`、安全告警状态、四个机器人 Pull Request 及其精确分支、一个远端证据分支、已合并本地分支和附加工作树。
 - 兼容性：不得提高最低 API 21，不改变 `io.legado.app.release`、Room schema、备份格式、书源/订阅源规则、导入 URI、JSON 字段、阅读数据或现有网页端用户流程；不得顺带升级带固定说明且不在本变更清单内的依赖。
-- 可观察验收：Android 与 Web 全部适用门禁及 CodeQL 成功，Web 构建后版本化资产无漂移，Android lint 继续保持零 issue，高危/严重安全告警为零，既定中危判断可审计，四个旧 PR 和批准清理对象全部闭环，审计草稿与仓库保护状态保持不变。
+- 可观察验收：Android 与 Web 全部适用门禁及 CodeQL 成功，Web 构建后版本化资产无漂移，Android lint 继续保持零 issue，高危/严重安全告警为零，既定中危判断可审计，四个旧 PR 的原批准范围和批准清理对象全部闭环，执行期间新出现或被复用的新依赖范围对象得到保留，审计草稿与仓库保护状态保持不变。

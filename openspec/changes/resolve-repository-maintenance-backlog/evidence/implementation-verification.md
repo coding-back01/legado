@@ -59,3 +59,18 @@
 - 重跑后的 Android 作业 `105907600140` 完整执行 lint 成功，但 CI 能读取到本地元数据缓存尚未返回的新版本信息，报告新增 1 个 `NewerVersionAvailable`：`me.zhanghai.android.libarchive:library 1.1.6 → 1.1.7`。
 - Libarchive 普通依赖升级不在本变更锁定的版本清单内。依据既有 lint 治理方式和本设计“不追逐实施期间新出现的普通更新”的边界，在该版本声明处补充压缩格式、异常处理和 API 21/23/36 独立回归条件，并只对该 occurrence 添加 `NewerVersionAvailable` 精确抑制；依赖版本与依赖图均未改变。
 - 修复后重新执行 `:app:lintAppDebug` 和 `scripts/android_lint_report.py assert-zero` 均通过，报告仍为 0 issue，SHA-256 仍为 `1b6e6f54270cf3298b1e965e53ea942f8dcb9f55dcd8f9c34744266238ed457f`。新的 Pull Request 门禁结果仍须实际成功后才能完成任务 7.2。
+
+## Pull Request 最终门禁与差异审查
+
+- PR #85 最终实现 head 为 `8881bd3466484dcc3ae6c2b34341b18d1ef852c8`，workflow run `35447621161` 的 Android、Web、Android CodeQL、Web CodeQL、OpenSpec/仓库、Artifact 完整性和稳定聚合门禁全部成功。
+- 完整差异共 50 个文件，`git diff --check origin/master...HEAD` 通过；人工复核确认没有修改 Room schema、业务源码、Android Manifest、正式签名材料或 Release workflow。
+- Web 入口的 5 个版本化资产引用均存在，构建资产目录共有 14 个文件；扫描未发现 `sourceMappingURL`、本机绝对路径、GitHub runner 路径、私钥头或 AWS access key 模式。锁文件 importer 与批准的 20 项目标版本、TypeScript 双编译器兼容层一致。
+- PR #85 于 2026-09-20 09:50:01（Asia/Shanghai）以 merge commit `791f53cc0598696b20461ba6bbb785952f791da9` 进入 `master`；Git 祖先检查确认实现 head `8881bd3466484dcc3ae6c2b34341b18d1ef852c8` 被该 merge commit 完整包含。
+- merge SHA 对应的 `master` workflow run `35482403819` 全部成功：Android 质量检查、Web 质量检查、Android/Web CodeQL、OpenSpec/仓库、Artifact 完整性和稳定聚合门禁均通过；Android 作业中的 lint 零 issue 断言、单元测试和 Debug APK 构建均成功。
+- 本地 `master` 与 `origin/master` 的祖先检查为纯快进关系（读取时落后 7 个提交、无本地独立提交），能够安全快进到精确 merge SHA。
+
+## 合并后安全状态
+
+- Dependabot 告警 #6（`GHSA-2883-xcg3-v3hh`，high）在 merge 后于 `2026-09-20T01:50:05Z` 自动变为 `fixed`；当前没有打开的 high 或 critical Dependabot 告警。
+- Element Plus 的 Dependabot #1 与 #5（`GHSA-5m5x-9j46-h678`，medium）均随本次依赖升级自动变为 `fixed`，不再需要沿用接受理由；既有 11 个静态链接合同与相关测试保持不变。
+- Code Scanning 打开告警为 0，Secret Scanning 打开告警为 0。
