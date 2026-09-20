@@ -65,15 +65,15 @@
 
 ## 9. 本地工作树与历史分支清理
 
-- [ ] 9.1 切换主工作树到已验证的最新 `master`，再次确认主/附加工作树状态、未跟踪文件和 stash 均为空；任一内容存在时停止对应清理，不执行 reset、force 或批量 glob 删除。
-- [ ] 9.2 确认 `/Users/back/legado-reading-time` 仍干净且 `codex/add-reading-time-estimation` 被当前 `master` 包含，先移除该工作树，再按精确名称删除对应本地分支。
-- [ ] 9.3 对设计中其余 37 个已合并本地分支逐一执行祖先检查并按精确名称删除；对象缺失视为已清理，出现独立提交则保留并停止该对象。
-- [ ] 9.4 在远端旧证据分支已精确删除且内容替代证明仍成立后，按精确名称删除本地 `codex/release-verification-evidence`；不得把它混入已合并分支批次。
-- [ ] 9.5 执行远端引用 prune 并重新读取本地分支和工作树，确认只保留 `master`、当前仍必需的 OpenSpec 收尾分支以及执行时明确未获清理授权的对象。
+- [x] 9.1 切换主工作树到已验证的最新 `master`，再次确认主/附加工作树状态、未跟踪文件和 stash 均为空；任一内容存在时停止对应清理，不执行 reset、force 或批量 glob 删除。
+- [x] 9.2 确认 `/Users/back/legado-reading-time` 仍干净且 `codex/add-reading-time-estimation` 被当前 `master` 包含，先移除该工作树，再按精确名称删除对应本地分支。
+- [x] 9.3 对设计中其余 37 个已合并本地分支逐一执行祖先检查并按精确名称删除；对象缺失视为已清理，出现独立提交则保留并停止该对象。
+- [x] 9.4 在远端旧证据分支已精确删除且内容替代证明仍成立后，按精确名称删除本地 `codex/release-verification-evidence`；不得把它混入已合并分支批次。
+- [x] 9.5 执行远端引用 prune 并重新读取本地分支和工作树，确认只保留 `master`、当前仍必需的 OpenSpec 收尾分支以及执行时明确未获清理授权的对象。
 
 ## 10. 最终复核与归档准备
 
-- [ ] 10.1 读回默认分支、active ruleset、自动删除已合并分支、Dependabot、CodeQL、Secret Scanning 和私有漏洞报告状态，确认不弱于前置快照。
-- [ ] 10.2 读回 `3.26.083020`、`3.26.083021` 和 Latest Release，确认两个候选仍为草稿、没有新 Release 或 tag、Latest 未因本变更改变。
-- [ ] 10.3 将替代 PR、merge SHA、合并后检查、安全告警、四个旧 PR、远端/本地分支、工作树及仓库设置的最终状态写入 `evidence/final-closeout.md`，只把实际完成的任务标为完成。
-- [ ] 10.4 最后运行 `openspec validate --all --strict`、`git diff --check`、`git status --short --branch` 和本地/远端 `master` SHA 对账，确认所有任务与证据一致后将本变更交给独立 OpenSpec 归档流程。
+- [x] 10.1 读回默认分支、active ruleset、自动删除已合并分支、Dependabot、CodeQL、Secret Scanning 和私有漏洞报告状态，确认不弱于前置快照。
+- [x] 10.2 读回 `3.26.083020`、`3.26.083021` 和 Latest Release，确认两个候选仍为草稿、没有新 Release 或 tag、Latest 未因本变更改变。
+- [x] 10.3 将替代 PR、merge SHA、合并后检查、安全告警、四个旧 PR、远端/本地分支、工作树及仓库设置的最终状态写入 `evidence/final-closeout.md`，只把实际完成的任务标为完成。
+- [x] 10.4 最后运行 `openspec validate --all --strict`、`git diff --check`、`git status --short --branch` 和本地/远端 `master` SHA 对账，确认所有任务与证据一致后将本变更交给独立 OpenSpec 归档流程。
