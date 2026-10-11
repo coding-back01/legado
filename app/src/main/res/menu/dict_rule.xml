@@ -40,4 +40,8 @@
         android:title="@string/help"
         app:showAsAction="never" />
 
+    <item android:id="@+id/menu_local_dictionary"
+        android:title="@string/local_dictionary"
+        app:showAsAction="never" />
+
 </menu>

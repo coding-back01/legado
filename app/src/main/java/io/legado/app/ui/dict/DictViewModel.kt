@@ -4,34 +4,54 @@ import android.app.Application
 import io.legado.app.base.BaseViewModel
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.DictRule
+import io.legado.app.data.entities.LocalDictionary
 import io.legado.app.help.coroutine.Coroutine
+import io.legado.app.model.dictionary.DictionaryEntry
+import io.legado.app.model.dictionary.LocalDictionaryStore
+
+data class DictSource(val local: LocalDictionary? = null, val online: DictRule? = null) {
+    val name: String get() = local?.name ?: online?.name.orEmpty()
+}
+
+data class DictResult(val entries: List<DictionaryEntry> = emptyList(), val onlineHtml: String? = null)
 
 class DictViewModel(application: Application) : BaseViewModel(application) {
 
-    private var dictJob: Coroutine<String>? = null
+    private var dictJob: Coroutine<DictResult>? = null
+    private var request = 0L
 
-    fun initData(onSuccess: (List<DictRule>) -> Unit) {
+    fun initData(onSuccess: (List<DictSource>) -> Unit) {
         execute {
-            appDb.dictRuleDao.enabled
+            LocalDictionaryStore.instance.prepare()
+            appDb.localDictionaryDao.all.filter { it.state == "ready" }.map { DictSource(local = it) } +
+                appDb.dictRuleDao.enabled.map { DictSource(online = it) }
         }.onSuccess {
             onSuccess.invoke(it)
         }
     }
 
     fun dict(
-        dictRule: DictRule,
+        source: DictSource,
         word: String,
-        onFinally: (String) -> Unit
+        onSuccess: (DictResult) -> Unit,
+        onError: (Throwable) -> Unit,
+        entryId: Long? = null
     ) {
-        dictJob?.cancel()
+        cancelQuery()
+        val token = request
         dictJob = execute {
-            dictRule.search(word)
+            val local = source.local
+            if (local != null) {
+                val entries = if (entryId == null) LocalDictionaryStore.instance.lookup(local.id, word)
+                else listOfNotNull(LocalDictionaryStore.instance.byId(local.id, entryId))
+                DictResult(entries = entries)
+            } else DictResult(onlineHtml = requireNotNull(source.online).search(word))
         }.onSuccess {
-            onFinally.invoke(it)
+            if (request == token) onSuccess(it)
         }.onError {
-            onFinally.invoke(it.localizedMessage ?: "ERROR")
+            if (request == token) onError(it)
         }
     }
 
-
+    fun cancelQuery() { request++; dictJob?.cancel() }
 }

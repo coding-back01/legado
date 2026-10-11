@@ -1,5 +1,8 @@
 [versions]
 
+# 本地 MDict 的 LZO 解压与索引摘要；升级需复测词库压缩、混淆索引及 API 21。
+lzo = "1.0.6"
+
 # Kotlin 2.3.0 约束显式 Kotlin 工具、Parcelize 与应用运行时；Android 模块由 AGP 9 原生 Kotlin 集成编译。
 # Dependabot 提出升级且独立工具链变更通过全部模块编译、代码生成、单元测试与 API 21/23/36 构建矩阵时重新评估。
 #noinspection NewerVersionAvailable
@@ -124,6 +127,8 @@ startup = "1.2.0"
 #noinspection GradleDependency
 viewpager2 = "1.0.0"
 [libraries]
+
+dictionary-lzo = { module = "org.anarres.lzo:lzo-core", version.ref = "lzo" }
 
 activity-activity = { module = "androidx.activity:activity", version.ref = "activity" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }

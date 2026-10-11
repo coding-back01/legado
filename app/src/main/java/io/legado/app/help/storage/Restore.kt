@@ -34,6 +34,7 @@ import io.legado.app.help.config.LocalConfig
 import io.legado.app.help.config.ReadBookConfig
 import io.legado.app.help.config.ThemeConfig
 import io.legado.app.model.BookCover
+import io.legado.app.model.dictionary.LocalDictionaryStore
 import io.legado.app.model.localBook.LocalBook
 import io.legado.app.utils.ACache
 import io.legado.app.utils.FileUtils
@@ -51,6 +52,7 @@ import io.legado.app.utils.isJsonArray
 import io.legado.app.utils.openInputStream
 import io.legado.app.utils.toastOnUi
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -164,6 +166,17 @@ object Restore {
         }
         fileToListT<DictRule>(path, "dictRule.json")?.let {
             appDb.dictRuleDao.insert(*it.toTypedArray())
+        }
+        val dictionaryRestoreFailed = try {
+            LocalDictionaryStore.instance.restore(File(path)).isNotEmpty()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppLog.put("本地词典恢复失败", e)
+            true
+        }
+        if (dictionaryRestoreFailed) {
+            withContext(Main) { appCtx.toastOnUi(R.string.dictionary_restore_incomplete) }
         }
         fileToListT<KeyboardAssist>(path, "keyboardAssists.json")?.let {
             appDb.keyboardAssistsDao.insert(*it.toTypedArray())

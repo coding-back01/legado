@@ -64,6 +64,11 @@ updates:
     # 以下依赖带有最低 Android 版本或行为兼容性约束。只忽略普通 semver
     # 更新；安全更新任务不应用 update-types，仍可创建独立安全修复 PR。
     ignore:
+      - dependency-name: "org.anarres.lzo:lzo-core"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
       - dependency-name: "cn.hutool:hutool-crypto"
         update-types:
           - "version-update:semver-major"

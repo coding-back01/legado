@@ -20,6 +20,13 @@ def appVersionName = "3." + releaseTime()
 def gitCommits = Integer.parseInt('git rev-list HEAD --count'.execute().text.trim())
 
 android {
+    ndkVersion "27.2.12479018"
+    externalNativeBuild {
+        cmake {
+            path file("src/main/cpp/CMakeLists.txt")
+            version "3.22.1"
+        }
+    }
     compileSdk = rootProject.ext.compile_sdk_version
     namespace = 'io.legado.app'
     kotlin {
@@ -261,6 +268,12 @@ dependencies {
 
     //压缩解压
     implementation libs.libarchive
+
+    // 本地词典的 LZO 块与 MDict 索引混淆，不使用账户绑定解密。
+    implementation(libs.dictionary.lzo) {
+        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude group: 'com.google.code.findbugs', module: 'annotations'
+    }
 
     //apache
     implementation(libs.commons.text)

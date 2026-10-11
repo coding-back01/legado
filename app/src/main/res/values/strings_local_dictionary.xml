@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="local_dictionary">Local dictionaries</string>
+    <string name="dictionary_manage">Manage dictionaries</string>
+    <string name="dictionary_import_files">Import dictionary files</string>
+    <string name="dictionary_import_folder">Import dictionary folder</string>
+    <string name="dictionary_empty">No local dictionary imported. Legado provides no dictionary content; import your own files.</string>
+    <string name="dictionary_select">Select dictionary</string>
+    <string name="dictionary_select_prompt">Select a dictionary.</string>
+    <string name="dictionary_previous_unavailable">The last dictionary is unavailable. Select another dictionary.</string>
+    <string name="dictionary_not_found">No entry in this dictionary. You can switch dictionaries.</string>
+    <string name="dictionary_importing">Importing: %1$s</string>
+    <string name="dictionary_imported">Dictionaries imported: %1$d</string>
+    <string name="dictionary_corrupt">The dictionary or index is damaged. Import it again or rebuild the index.</string>
+    <string name="dictionary_missing_file">Required files are missing. Select the companion files or the dictionary folder.</string>
+    <string name="dictionary_unsupported">Unsupported format or version. Extract multipart archives before importing.</string>
+    <string name="dictionary_protected">The file is protected. Use a readable dictionary or extract password-protected archives first.</string>
+    <string name="dictionary_limit">The dictionary exceeds processing limits or storage is insufficient.</string>
+    <string name="dictionary_invalid_path">The dictionary contains an invalid or out-of-bounds path.</string>
+    <string name="dictionary_missing_resource">Some images, styles or sounds are missing. Available definitions remain readable.</string>
+    <string name="dictionary_missing_state">Import required</string>
+    <string name="dictionary_set_current">Use this dictionary next time</string>
+    <string name="dictionary_rebuild">Rebuild query index</string>
+    <string name="dictionary_rebuilt">Query index rebuilt</string>
+    <string name="dictionary_move_up">Move up</string>
+    <string name="dictionary_move_down">Move down</string>
+    <string name="dictionary_delete_confirm">Delete the app copy and index of “%1$s”? The original files will be kept.</string>
+    <string name="dictionary_info">Format: %1$s\nEntries: %2$d\nInput language: %3$s\nDefinition language: %4$s</string>
+    <string name="dictionary_expand">Expand</string>
+    <string name="dictionary_collapse">Collapse</string>
+    <string name="dictionary_back">Back to entry</string>
+    <string name="dictionary_match">%1$s → %2$s</string>
+    <string name="dictionary_backup_files">Include local dictionary files in backups</string>
+    <string name="dictionary_backup_summary">Normally only the catalog and settings are backed up. Including dictionary files increases backup size; indexes are rebuilt on restore.</string>
+    <string name="dictionary_restore_incomplete">Some dictionaries could not be restored. Import them again. Other backup content can still be restored.</string>
+    <string name="dictionary_layout_limit">Some interactive layouts may differ. Dictionary scripts are disabled.</string>
+    <string name="dictionary_details">Dictionary details</string>
+</resources>

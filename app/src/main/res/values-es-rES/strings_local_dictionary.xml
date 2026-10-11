@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="local_dictionary">Diccionarios locales</string>
+    <string name="dictionary_manage">Gestionar diccionarios</string>
+    <string name="dictionary_import_files">Importar archivos de diccionario</string>
+    <string name="dictionary_import_folder">Importar carpeta de diccionario</string>
+    <string name="dictionary_empty">No hay diccionarios locales. La aplicación no proporciona contenido; importa tus propios archivos.</string>
+    <string name="dictionary_select">Seleccionar diccionario</string>
+    <string name="dictionary_select_prompt">Selecciona un diccionario.</string>
+    <string name="dictionary_previous_unavailable">El último diccionario no está disponible. Selecciona otro.</string>
+    <string name="dictionary_not_found">No hay una entrada en este diccionario. Puedes cambiar de diccionario.</string>
+    <string name="dictionary_importing">Importando: %1$s</string>
+    <string name="dictionary_imported">Diccionarios importados: %1$d</string>
+    <string name="dictionary_corrupt">El diccionario o su índice está dañado. Impórtalo de nuevo o reconstruye el índice.</string>
+    <string name="dictionary_missing_file">Faltan archivos necesarios. Selecciona los archivos asociados o la carpeta del diccionario.</string>
+    <string name="dictionary_unsupported">Formato o versión no compatible. Extrae primero los archivos divididos.</string>
+    <string name="dictionary_protected">El archivo está protegido. Usa un diccionario legible o extrae primero los archivos con contraseña.</string>
+    <string name="dictionary_limit">El diccionario supera los límites o no hay suficiente espacio.</string>
+    <string name="dictionary_invalid_path">El diccionario contiene una ruta no válida o fuera de los límites.</string>
+    <string name="dictionary_missing_resource">Faltan algunas imágenes, estilos o sonidos. Las definiciones disponibles siguen siendo legibles.</string>
+    <string name="dictionary_missing_state">Se requiere importar de nuevo</string>
+    <string name="dictionary_set_current">Usar este diccionario la próxima vez</string>
+    <string name="dictionary_rebuild">Reconstruir índice de búsqueda</string>
+    <string name="dictionary_rebuilt">Índice de búsqueda reconstruido</string>
+    <string name="dictionary_move_up">Mover arriba</string>
+    <string name="dictionary_move_down">Mover abajo</string>
+    <string name="dictionary_delete_confirm">¿Eliminar la copia y el índice de “%1$s” en la aplicación? Se conservarán los archivos originales.</string>
+    <string name="dictionary_info">Formato: %1$s\nEntradas: %2$d\nIdioma de búsqueda: %3$s\nIdioma de definición: %4$s</string>
+    <string name="dictionary_expand">Expandir</string>
+    <string name="dictionary_collapse">Contraer</string>
+    <string name="dictionary_back">Volver a la entrada</string>
+    <string name="dictionary_match">%1$s → %2$s</string>
+    <string name="dictionary_backup_files">Incluir diccionarios locales en las copias</string>
+    <string name="dictionary_backup_summary">Normalmente solo se guardan la lista y los ajustes. Incluir archivos de diccionario aumenta el tamaño; los índices se reconstruyen al restaurar.</string>
+    <string name="dictionary_restore_incomplete">No se pudieron restaurar algunos diccionarios. Impórtalos de nuevo. El resto de la copia se puede restaurar.</string>
+    <string name="dictionary_layout_limit">Parte del contenido interactivo se muestra como definiciones estáticas.</string>
+    <string name="dictionary_details">Información del diccionario</string>
+</resources>

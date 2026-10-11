@@ -1,0 +1,546 @@
+[
+  {
+    "file": "binary.dict",
+    "bytes": 64063,
+    "sha256": "be782c13e785df9fa4ae96a64fc612a7488626c74d288ab67256c2a30e253d3e",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "binary.idx",
+    "bytes": 14,
+    "sha256": "7fa8863d050dec0b8ac8fd94b7295c6b0d2010c7f2d8b1e3bdb1aace9f4e0f2d",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "binary.ifo",
+    "bytes": 99,
+    "sha256": "fb1347181f8966dde585053c1db78de1bcb35bbb8237716d45694303ed4f60ea",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "cycle.mdx",
+    "bytes": 480,
+    "sha256": "552ab44767ceb278e2e3bcec5509eb6bcca98b61dab54d7a9c72d35186fcb915",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "diagram.png",
+    "bytes": 99,
+    "sha256": "0061f0f5f073bb821bfecd3cfd8eaf2ba489ecef2d9d5d1600e44086ee3048b7",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "dictd.dict.dz",
+    "bytes": 53,
+    "sha256": "23878aadd49995b61d2d9e3dd4247cd500a4a73d993f2e18e180d4a0f2eba7d6",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "dictd.index",
+    "bytes": 18,
+    "sha256": "db1cf1801f8bf38fe18a2a4d872fdcdca7e1298c2a11b552f4f628275051373c",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "escape.zip",
+    "bytes": 141,
+    "sha256": "dd9177fff2a47a3786b105865b1be6854a775d50154088ee114e75036d5edae5",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "external.xdxf",
+    "bytes": 113,
+    "sha256": "df7a17f7ca147e289621b36af5a403370e54994c3ad237841031d10f6064271c",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "gbk.mdx",
+    "bytes": 511,
+    "sha256": "74b2e4b7cff1ef35f0e3c1207201a0f256740ea68badab56105521b00e95b022",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "import.7z",
+    "bytes": 734,
+    "sha256": "695dedc4dfbf01b7728bab82b3cf30a6f223d6d713cda2eaae4dcad9ab8573d0",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "import.rar",
+    "bytes": 1230,
+    "sha256": "59dde96d65d1c1934c63ef47b83ddb23ad9ec2f68821b901d777280d39dc36ca",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "import.tar.gz",
+    "bytes": 750,
+    "sha256": "6fd91f8a62b95a826997855305ea2b92d8a7a067e8c2c41f2a94c920dadbdc38",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "import.zip",
+    "bytes": 948,
+    "sha256": "ee0ea3d57e49130538709d87e2eeabaed4b047d081f889be6ce78ce2936fc313",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "latin.bgl",
+    "bytes": 53,
+    "sha256": "0e5aab4f555b4fa54183628b52e2b4e286166e1fbc8c4ae405adda591a6e77cc",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "legacy.mdx",
+    "bytes": 452,
+    "sha256": "b040e9ef4e7a10863c10d04d40d98020bd1aa7974024347ccbf99f296ae222ec",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "lzo.mdx",
+    "bytes": 524,
+    "sha256": "b042173c5649712406a912850eae57e4f86b099f56174fee6f4e3a2e1828899f",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "media.mdd",
+    "bytes": 1726,
+    "sha256": "115974206a7751fb54bec3056bcbadc38a4dc675b54a6da5e89a2fd9188e6457",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "media.mdx",
+    "bytes": 721,
+    "sha256": "b319e084e1af790f2c241741f8768c56f878f973db2146dde4786150f75c7775",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "mobi-compression-1.mobi",
+    "bytes": 135349,
+    "sha256": "4dd10b5114b15706d2cc87d5822394e119d2ebb5e5977d4e680dee2ce7968cb3",
+    "source": "libmobi-v0.12-derived",
+    "license": "LGPL-3.0-or-later",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "mobi-compression-2.mobi",
+    "bytes": 135394,
+    "sha256": "64a43cb930422d82525983e1deaca5cb05c433a2a353288167b29a40e5b4ebfc",
+    "source": "libmobi-v0.12-derived",
+    "license": "LGPL-3.0-or-later",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "mobi-cross-record.azw",
+    "bytes": 135357,
+    "sha256": "3a95e54882af3135f837a6aa8330fb6a2eaa811a55835cefc99569a284a305e4",
+    "source": "libmobi-v0.12-derived",
+    "license": "LGPL-3.0-or-later",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "mobi-dictionary-huff.mobi",
+    "bytes": 610881,
+    "sha256": "fddd24e3385dec15da2c7e7c9caf06d0380abd2666680de8cd66d4737c5efc26",
+    "source": "libmobi-v0.12-derived",
+    "license": "LGPL-3.0-or-later",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "mobi-extra-flow.mobi",
+    "bytes": 130781,
+    "sha256": "150591bafff11e2d78f1c463b4bef7bff833c5bfe67e239446353103c8796c9a",
+    "source": "基于固定 libmobi v0.12 测试容器的自建别名、正文及附加面板",
+    "license": "LGPL-3.0-or-later（容器）；GPL-3.0（自建内容）",
+    "expected": "MobiCompatibilityIntegrationTest 验证标签 22 规范词头、附加面板不混入正文、循环及越界拒绝"
+  },
+  {
+    "file": "mobi-huff-expected.txt",
+    "bytes": 34,
+    "sha256": "fc378217a2476afcb6d05153d0b65fb49323cfab9b114c7e9f791ba87f033dfe",
+    "source": "libmobi-v0.12-derived",
+    "license": "LGPL-3.0-or-later",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "mobi-inflections.mobi",
+    "bytes": 135212,
+    "sha256": "08c732795d5c096e28da6fd1319357e468f4722af328a4b57932d297943a296f",
+    "source": "libmobi-v0.12-derived",
+    "license": "LGPL-3.0-or-later",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "mobi-languages.mobi",
+    "source": "libmobi v0.12 sample-dict-infl2.mobi 的语言字段派生夹具",
+    "license": "LGPL-3.0-or-later",
+    "expected": "查询语言 en、释义语言 zh，词形 jest 对应 być；见 DictionaryVariantIntegrationTest",
+    "bytes": 135349,
+    "sha256": "ac0009b0997c567cc6f0612c215755094af1c21b1d884d069848fc9169dfc9f3"
+  },
+  {
+    "file": "mobi-latin.mobi",
+    "source": "libmobi v0.12 词形索引的自建 Windows-1252 派生夹具",
+    "license": "LGPL-3.0-or-later",
+    "expected": "无词形表的 ORDT 词头 byé 与 Windows-1252 正文 café 重音字符正确；见 DictionaryVariantIntegrationTest",
+    "bytes": 135349,
+    "sha256": "067859b7746acf16a82ff6a2ee421379fe15963aff6c963e999963121690b898"
+  },
+  {
+    "file": "mobi-no-length.mobi",
+    "bytes": 135349,
+    "sha256": "d0b1352fac0d2ecfe403e9e2ec9e00568f77046fe3073ba7243cfed5fd1867e4",
+    "source": "libmobi-v0.12-derived",
+    "license": "LGPL-3.0-or-later",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "mobi-ordinary-huff.mobi",
+    "bytes": 484776,
+    "sha256": "560dda58429878a64f73381ffddfcf1a59809e7c669a5222666257df8976a68f",
+    "source": "libmobi-v0.12-derived",
+    "license": "LGPL-3.0-or-later",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "mobi-orth-alias.mobi",
+    "bytes": 130698,
+    "sha256": "ec16aeb5462cd9951dad0d83442713aea94514cb31818bf9e47bcf561265c78d",
+    "source": "基于固定 libmobi v0.12 测试容器的自建别名、正文及附加面板",
+    "license": "LGPL-3.0-or-later（容器）；GPL-3.0（自建内容）",
+    "expected": "MobiCompatibilityIntegrationTest 验证标签 22 规范词头、附加面板不混入正文、循环及越界拒绝"
+  },
+  {
+    "file": "mobi-orth-cycle.mobi",
+    "bytes": 130654,
+    "sha256": "1319e4e0e6556fd5731a1a75de99442b920e67d1918d5bf475eb8a7c72b48a5c",
+    "source": "基于固定 libmobi v0.12 测试容器的自建别名、正文及附加面板",
+    "license": "LGPL-3.0-or-later（容器）；GPL-3.0（自建内容）",
+    "expected": "MobiCompatibilityIntegrationTest 验证标签 22 规范词头、附加面板不混入正文、循环及越界拒绝"
+  },
+  {
+    "file": "mobi-orth-outside.mobi",
+    "bytes": 130656,
+    "sha256": "7f495d59762d5d664380c596c2ae23d7b5a6352c2386850d63d7940fe94bdc88",
+    "source": "基于固定 libmobi v0.12 测试容器的自建别名、正文及附加面板",
+    "license": "LGPL-3.0-or-later（容器）；GPL-3.0（自建内容）",
+    "expected": "MobiCompatibilityIntegrationTest 验证标签 22 规范词头、附加面板不混入正文、循环及越界拒绝"
+  },
+  {
+    "file": "mobi-protected.mobi",
+    "bytes": 86580,
+    "sha256": "631e7afe719c04a91744c22f3021a2af1cafef541f93612a27d629ab74645494",
+    "source": "libmobi-v0.12-derived",
+    "license": "LGPL-3.0-or-later",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "mobi-resource.prc",
+    "bytes": 135456,
+    "sha256": "4e3b8e7f312aef911fca6188f51975a5be2f6eef002a89e32e3080a0a7a329d1",
+    "source": "libmobi-v0.12-derived",
+    "license": "LGPL-3.0-or-later",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "obfuscated.mdx",
+    "bytes": 545,
+    "sha256": "07d1c75280cc55580dcd7f8b9dc24dfa2a796895cb627d2374dd9033b72a5873",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "optional.dsl",
+    "bytes": 95,
+    "sha256": "b0d0735a01ce85334f9bd91afe2edc721e941625cd135639eff9ee8250d3e387",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "oversized.tar.gz",
+    "bytes": 146,
+    "sha256": "d120186d7d2848e0620bc15d9b80bfb61481f2567daba01d2093b4e0cc5d56e5",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "protected.zip",
+    "bytes": 562,
+    "sha256": "1fdc7602fe779d1eee5ddd4f4ba4ca20649f6a8684070038bbc04d4211f9d70e",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.1.mdd",
+    "bytes": 1589,
+    "sha256": "24e5b58dc68e687fe2a5596eaaff5246989c01b797a05b02f05990d0d2e71d06",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.bgl",
+    "bytes": 237,
+    "sha256": "8331dbdd917aa56e74b7862bfc3fba02764740e36a2b4d10a532484948587404",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.css",
+    "bytes": 23,
+    "sha256": "c91ddf1f08a492ad84ca3d9a4e5b0eb5bbdf394dce1ca96df8eae3ed834ca436",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.dict.dz",
+    "bytes": 93,
+    "sha256": "795c4cbf807bac378760b59bb4b51e571c26dc7f81e51dd54fa21e81476dfe15",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.dsl",
+    "bytes": 280,
+    "sha256": "f8c0eb1e8d4abe2eecf19e6a664417174295da74be513034c5b2bd8f8af8cc2e",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.dsl.dz",
+    "bytes": 205,
+    "sha256": "820e561a8395eb1c4fcd9876062033358ade51eeb590216dbcb36e4049107e2e",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.dsl.files.zip",
+    "bytes": 64355,
+    "sha256": "06c6f02e5237ec0a1eae6f23cd1b9c0fe9d35b9dc8be4f50bb497e3e79e7c4fc",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.idx.gz",
+    "bytes": 36,
+    "sha256": "b905efacdc9153d410a84a875b7409f575fb86f361afe35d2c4c596d1a38337f",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.ifo",
+    "bytes": 113,
+    "sha256": "8d97a6ce7b1f1e0f197b7448c0f7723cfd2a7643c15552ba2d1c6ad7c7973a4b",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.mdd",
+    "bytes": 574,
+    "sha256": "1dd834c7ca22047cfa583a10d8e41e1cf68638b5dc0c6f952ea423331a83bef9",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.mdx",
+    "bytes": 545,
+    "sha256": "a83815f4e55dd755c98d3429d064e5fd5119dbc05b24e29b856b75ba9bd4fdad",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.res.zip",
+    "bytes": 219,
+    "sha256": "6bdf7011afbf59365bd2b0f9e98cac63e6310eafa987dc0038abb04adbaeeaae",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.syn",
+    "bytes": 9,
+    "sha256": "c60466faf02553fe283a32f56c2ef27865848fa1e662ceb507da1cd824d0bf20",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.xdxf",
+    "bytes": 231,
+    "sha256": "30d13c98183f38726a8194c9434f13337cd382482ad8ac4899310a1339fd952e",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "sample.xdxf.dz",
+    "bytes": 200,
+    "sha256": "a8b60714b62bc732676a090b5ab80a089a29c10c2559c32836393f76f1c5c471",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "styled.mdx",
+    "bytes": 619,
+    "sha256": "fd43c30fbbef372605bd5d05517471b4419457b85a38af9981c46d2eeaad4cde",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "symlink.tar.gz",
+    "bytes": 99,
+    "sha256": "2590569caea51e669cb3c68259e8d789900cc4997f8fd5f6fca99b1694d1786e",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "text.dict",
+    "bytes": 16,
+    "sha256": "08c04908ca41a6a9c6a747942d7c3867559a00d6ef8895671478029d887c0c5d",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "text.idx",
+    "bytes": 14,
+    "sha256": "18d73d4ac68576ace9e3965a38e22be2d04e87e822e2c189be32e54acfd3a834",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "text.ifo",
+    "bytes": 98,
+    "sha256": "e1db300fef58772f1d66af44815a48227cefdff8782674497012b113c9d063d8",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "too-many.tar.gz",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "10 万个目录条目之后返回 LIMIT，见 DictionaryArchiveTest",
+    "bytes": 223511,
+    "sha256": "13b50554b597e130f6971b1828bfdcc68749a8394e01739656bb09c505e9a41c"
+  },
+  {
+    "file": "uncompressed.mdx",
+    "bytes": 512,
+    "sha256": "d0b2e069f3bb12b24d2ab1a1871df7354f7e47a61c5aff7c4fac0103286065c8",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "utf16.mdx",
+    "bytes": 547,
+    "sha256": "79597d5e98310c46404be3de3eeb262a3996b623b92ba3bd3f486a80ac724d25",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "wide.dict",
+    "bytes": 72,
+    "sha256": "2d348812b2680d36fcc7116f66701835746db2e7d1328ef51c0b2f092c23b663",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "wide.idx",
+    "bytes": 34,
+    "sha256": "7e3bb9693dd404addd318fd4848ca4b6a3a376cdfe46b9a84d74035cd8a660e5",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "wide.ifo",
+    "bytes": 112,
+    "sha256": "442692d837c7792d453e06e143a026541b21eb8fdcb2a29621e93541f8114c75",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "xmlbody.dict",
+    "bytes": 60,
+    "sha256": "1578ad43146895e23daee0bc50ae321badfb16e3bf8ec88506b17bdcaf33ab00",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "xmlbody.idx",
+    "bytes": 12,
+    "sha256": "8b305b64d4c4783dd7df415174fdf7b921a00af34c88f777d779adbb2448b8dc",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  },
+  {
+    "file": "xmlbody.ifo",
+    "bytes": 98,
+    "sha256": "89d7f4506ce79bd6f6aa077c8eb81e22ad6138f4983141ac6cf80f1ac4489820",
+    "source": "self-generated",
+    "license": "GPL-3.0",
+    "expected": "预期词头、正文、资源与失败条件见对应 DictionaryParserTest、DictionaryVariantTest、DictionaryVariantIntegrationTest、DictionaryArchiveTest、DictionaryQueryTest 和 DictionaryCardTest 的断言"
+  }
+]

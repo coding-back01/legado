@@ -17,6 +17,7 @@ import io.legado.app.help.config.ReadBookConfig
 import io.legado.app.help.config.ThemeConfig
 import io.legado.app.help.coroutine.Coroutine
 import io.legado.app.model.BookCover
+import io.legado.app.model.dictionary.LocalDictionaryStore
 import io.legado.app.utils.FileUtils
 import io.legado.app.utils.GSON
 import io.legado.app.utils.LogUtils
@@ -207,6 +208,7 @@ object Backup {
         for (i in 0 until paths.size) {
             paths[i] = backupPath + File.separator + paths[i]
         }
+        paths.addAll(LocalDictionaryStore.instance.backup(File(backupPath)).map { it.absolutePath })
         FileUtils.delete(zipFilePath)
         FileUtils.delete(zipFilePath.replace("tmp_", ""))
         val backupFileName = if (AppConfig.onlyLatestBackup) {

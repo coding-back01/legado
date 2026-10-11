@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="local_dictionary">ローカル辞書</string>
+    <string name="dictionary_manage">辞書を管理</string>
+    <string name="dictionary_import_files">辞書ファイルを読み込む</string>
+    <string name="dictionary_import_folder">辞書フォルダーを読み込む</string>
+    <string name="dictionary_empty">ローカル辞書はありません。アプリは辞書データを提供しません。お持ちのファイルを読み込んでください。</string>
+    <string name="dictionary_select">辞書を選択</string>
+    <string name="dictionary_select_prompt">辞書を選択してください。</string>
+    <string name="dictionary_previous_unavailable">前回の辞書は利用できません。別の辞書を選択してください。</string>
+    <string name="dictionary_not_found">この辞書には項目がありません。別の辞書に切り替えられます。</string>
+    <string name="dictionary_importing">読み込み中：%1$s</string>
+    <string name="dictionary_imported">読み込んだ辞書：%1$d</string>
+    <string name="dictionary_corrupt">辞書または索引が破損しています。再読み込みまたは索引の再構築を行ってください。</string>
+    <string name="dictionary_missing_file">必要なファイルがありません。関連ファイルまたは辞書フォルダーを選択してください。</string>
+    <string name="dictionary_unsupported">未対応の形式またはバージョンです。分割圧縮ファイルは先に展開してください。</string>
+    <string name="dictionary_protected">ファイルは保護されています。読み取り可能な辞書を使用するか、暗号化された圧縮ファイルを先に展開してください。</string>
+    <string name="dictionary_limit">処理上限を超えているか、空き容量が不足しています。</string>
+    <string name="dictionary_invalid_path">辞書に無効な、または範囲外のファイルパスが含まれています。</string>
+    <string name="dictionary_missing_resource">一部の画像、書式、音声がありません。利用可能な説明は表示できます。</string>
+    <string name="dictionary_missing_state">再読み込みが必要</string>
+    <string name="dictionary_set_current">次回もこの辞書を使用</string>
+    <string name="dictionary_rebuild">検索索引を再構築</string>
+    <string name="dictionary_rebuilt">検索索引を再構築しました</string>
+    <string name="dictionary_move_up">上へ移動</string>
+    <string name="dictionary_move_down">下へ移動</string>
+    <string name="dictionary_delete_confirm">「%1$s」のアプリ内コピーと索引を削除しますか？元のファイルは保持されます。</string>
+    <string name="dictionary_info">形式：%1$s\n項目：%2$d\n検索言語：%3$s\n説明言語：%4$s</string>
+    <string name="dictionary_expand">展開</string>
+    <string name="dictionary_collapse">折りたたむ</string>
+    <string name="dictionary_back">前の項目に戻る</string>
+    <string name="dictionary_match">%1$s → %2$s</string>
+    <string name="dictionary_backup_files">ローカル辞書ファイルもバックアップ</string>
+    <string name="dictionary_backup_summary">通常は一覧と設定のみを保存します。有効にすると辞書と関連データも保存され、容量が増えます。索引は復元時に再構築されます。</string>
+    <string name="dictionary_restore_incomplete">一部の辞書を復元できませんでした。再読み込みしてください。他のバックアップ内容は復元できます。</string>
+    <string name="dictionary_layout_limit">一部の操作可能な内容は静的な説明として表示されます。</string>
+    <string name="dictionary_details">辞書情報</string>
+</resources>
