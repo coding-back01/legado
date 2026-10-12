@@ -25,7 +25,7 @@ enum class DictionaryFormat {
 }
 
 enum class DictionaryProblem {
-    CORRUPT, MISSING_FILE, UNSUPPORTED, PROTECTED, LIMIT, INVALID_PATH
+    CORRUPT, MISSING_FILE, UNSUPPORTED, PROTECTED, LIMIT, INVALID_PATH, ASSOCIATION_REQUIRED
 }
 
 class DictionaryException(

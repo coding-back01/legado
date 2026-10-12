@@ -29,7 +29,28 @@ class DictionaryQueryTest {
         }.use { index ->
             assertEquals(listOf("original sense one", "original sense two"), index.lookup("went") {}.map { it.html })
             assertEquals("uppercase name", index.lookup("GO") {}.single().html)
-            assertEquals("verb go", index.lookup("gone") {}.single().html)
+            assertEquals("verb go", index.lookup("gone", "en") {}.single().html)
+        }
+    }
+
+    @Test fun matchProvenanceDistinguishesExactMappingNormalizationChineseAndEnglishForms() {
+        index { sink ->
+            sink.entry(0, listOf("go", "went"), "motion")
+            sink.entry(1, listOf("學習"), "knowledge")
+            sink.entry(2, listOf("redirect"), "link", "go")
+        }.use { index ->
+            fun provenance(word: String, language: String? = null): String {
+                val entry = index.lookup(word, language) {}.single()
+                val getter = entry.javaClass.methods.firstOrNull { it.name == "getMatch" }
+                assertNotNull("结果必须保留匹配来源", getter)
+                return getter!!.invoke(entry).toString()
+            }
+            assertEquals("EXACT", provenance("go"))
+            assertEquals("DICTIONARY_MAPPING", provenance("went"))
+            assertEquals("DICTIONARY_MAPPING", provenance("redirect"))
+            assertEquals("NORMALIZED", provenance("GO"))
+            assertEquals("CHINESE_VARIANT", provenance("学习", "zh"))
+            assertEquals("ENGLISH_FORM", provenance("gone", "en"))
         }
     }
 
@@ -69,12 +90,55 @@ class DictionaryQueryTest {
             sink.entry(4, listOf("new"), "new")
             sink.entry(5, listOf("count"), "count")
         }.use { index ->
-            assertEquals("hope", index.lookup("hoped") {}.single().headword)
-            assertEquals("hop", index.lookup("hopping") {}.single().headword)
-            assertEquals("give up", index.lookup("gave up") {}.single().headword)
-            assertEquals("study", index.lookup("studied") {}.single().headword)
+            assertEquals("hope", index.lookup("hoped", "en") {}.single().headword)
+            assertEquals("hop", index.lookup("hopping", "en") {}.single().headword)
+            assertEquals("give up", index.lookup("gave up", "en") {}.single().headword)
+            assertEquals("study", index.lookup("studied", "en") {}.single().headword)
             assertTrue(index.lookup("news") {}.isEmpty())
             assertTrue(index.lookup("counter") {}.isEmpty())
+        }
+    }
+
+    @Test fun singingDoesNotChooseSingeWhenBothHeadwordsExist() {
+        index { sink ->
+            sink.entry(0, listOf("singe"), "burn lightly")
+            sink.entry(1, listOf("sing"), "make musical sounds")
+            sink.entry(2, listOf("sing"), "another sense")
+        }.use { index ->
+            assertEquals(listOf("sing", "sing"), index.lookup("singing", "en") {}.map { it.headword })
+        }
+    }
+
+    @Test fun leavesKeepsBothRealCandidatesInsteadOfOnlyFirstMatch() {
+        index { sink ->
+            sink.entry(0, listOf("leaf"), "plant organ")
+            sink.entry(1, listOf("leave"), "depart")
+        }.use { index ->
+            assertEquals(setOf("leaf", "leave"), index.lookup("leaves", "en") {}.map { it.headword }.toSet())
+        }
+    }
+
+    @Test fun explicitLeavesMappingWinsOverAdditionalCandidates() {
+        index { sink ->
+            sink.entry(0, listOf("leaf", "leaves"), "mapped plant organ")
+            sink.entry(1, listOf("leave"), "depart")
+        }.use { index ->
+            assertEquals(listOf("leaf"), index.lookup("leaves", "en") {}.map { it.headword })
+        }
+    }
+
+    @Test fun extraEnglishFormsRequireExplicitEnglishButAliasesRemainLanguageIndependent() {
+        index { sink ->
+            sink.entry(0, listOf("go"), "motion")
+            sink.entry(1, listOf("leaf", "declared"), "mapping")
+            sink.entry(2, listOf("學習"), "knowledge")
+        }.use { index ->
+            assertEquals(listOf("go"), index.lookup("went", "en") {}.map { it.headword })
+            for (language in listOf(null, "", "de", "fr", "zh", "ja", "ko")) {
+                assertTrue("language=$language", index.lookup("went", language) {}.isEmpty())
+                assertEquals("leaf", index.lookup("declared", language) {}.single().headword)
+                assertEquals("學習", index.lookup("学习", language) {}.single().headword)
+            }
         }
     }
 

@@ -37,6 +37,7 @@ class DictionaryCardTest {
     private val store = LocalDictionaryStore(context)
     private val folder = File(context.cacheDir, "card-test-${UUID.randomUUID()}").apply { mkdirs() }
     private val ids = linkedSetOf<String>()
+    private val previousSettings = store.querySettings
     private val previous = store.lastDictionaryId
     private val fontScale = context.getPrefInt(PreferKey.fontScale)
     private val night = AppConfig.isNightTheme
@@ -44,6 +45,7 @@ class DictionaryCardTest {
     @After fun cleanup() = runBlocking {
         ids.forEach { store.delete(it) }
         store.lastDictionaryId = previous
+        store.querySettings = previousSettings
         AppConfig.isNightTheme = night
         context.putPrefInt(PreferKey.fontScale, fontScale)
         folder.deleteRecursively()
@@ -149,12 +151,71 @@ class DictionaryCardTest {
         return result.get()
     }
 
-    private fun open(scenario: ActivityScenario<LocalDictionaryActivity>, word: String) {
-        scenario.onActivity { DictDialog(word).show(it.supportFragmentManager, "card-test") }
+    private fun open(scenario: ActivityScenario<LocalDictionaryActivity>, word: String, language: String? = null) {
+        scenario.onActivity { DictDialog(word, language, if (language == null) store.lastDictionaryId else null).show(it.supportFragmentManager, "card-test") }
     }
 
     private fun player(dialog: DictDialog): MediaPlayer? =
         DictDialog::class.java.getDeclaredField("player").apply { isAccessible = true }.get(dialog) as MediaPlayer?
+
+    @Test fun reliableDefinitionShowsNativePreviewThenExpandsToFullArticle() = runBlocking {
+        val dictionary = dictionary("dictd.index", "dictd.dict.dz")
+        store.lastDictionaryId = dictionary.id
+        ActivityScenario.launch(LocalDictionaryActivity::class.java).use { scenario ->
+            open(scenario, "学习")
+            waitUntil {
+                var ready = false
+                scenario.onActivity {
+                    val view = card(scenario).requireView()
+                    val text = view.findViewById<TextView>(R.id.tv_dict)
+                    ready = text.visibility == android.view.View.VISIBLE && text.text.contains("知识") &&
+                        view.findViewById<WebView>(R.id.web_view).visibility != android.view.View.VISIBLE
+                }
+                ready
+            }
+            scenario.onActivity { card(scenario).requireView().findViewById<android.widget.Button>(R.id.btn_expand).performClick() }
+            waitUntil {
+                var full = false
+                scenario.onActivity { full = card(scenario).requireView().findViewById<WebView>(R.id.web_view).visibility == android.view.View.VISIBLE }
+                full
+            }
+        }
+    }
+
+    @Test fun longSummaryShowsOmissionNoticeAndFullArticleIsStillScrollable() = runBlocking {
+        val source = File(folder, UUID.randomUUID().toString()).apply { mkdirs() }
+        val body = "详细释义".repeat(3000) + " full article sentinel"
+        File(source, "summary.dict").writeText(body)
+        val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+        var length = body.toByteArray().size
+        var encoded = ""
+        while (length > 0) { encoded = alphabet[length % 64] + encoded; length /= 64 }
+        File(source, "summary.index").writeText("long-summary\tA\t$encoded\n")
+        val dictionary = store.importFiles(source, "summary.index").also { ids.add(it.id) }
+        store.lastDictionaryId = dictionary.id
+        ActivityScenario.launch(LocalDictionaryActivity::class.java).use { scenario ->
+            open(scenario, "long-summary")
+            waitUntil {
+                var omitted = false
+                scenario.onActivity {
+                    val view = card(scenario).requireView()
+                    omitted = view.findViewById<TextView>(R.id.tv_warning).text.toString() == context.getString(R.string.dictionary_summary_truncated) &&
+                        view.findViewById<TextView>(R.id.tv_dict).text.length <= 480
+                }
+                omitted
+            }
+            scenario.onActivity { card(scenario).requireView().findViewById<android.view.View>(R.id.btn_expand).performClick() }
+            waitUntil {
+                var full = false
+                scenario.onActivity {
+                    val web = card(scenario).requireView().findViewById<WebView>(R.id.web_view)
+                    full = web.isShown && web.contentHeight * resourcesDensity(web) > web.height
+                }
+                full
+            }
+            assertTrue(store.lookup(dictionary.id, "long-summary").single().html.contains("full article sentinel"))
+        }
+    }
 
     @Test fun localCardRendersResourcesNavigatesAndStopsManualAudio() = runBlocking {
         val dictionary = dictionary("media.mdx", "media.mdd")
@@ -209,7 +270,7 @@ class DictionaryCardTest {
             scenario.onActivity { card(scenario).requireView().findViewById<android.view.View>(R.id.btn_dictionary).performClick() }
             androidx.test.espresso.Espresso.onView(androidx.test.espresso.matcher.ViewMatchers.withText(second.name)).inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog()).perform(androidx.test.espresso.action.ViewActions.click())
             waitUntil { var missing = false; scenario.onActivity { missing = card(scenario).requireView().findViewById<TextView>(R.id.tv_dict).text.toString() == context.getString(R.string.dictionary_not_found) }; missing }
-            assertEquals(second.id, store.lastDictionaryId)
+            assertEquals(first.id, store.lastDictionaryId)
             assertNull(player(card(scenario)))
             val model = AtomicReference<DictViewModel>()
             var delivered = ""
@@ -228,29 +289,31 @@ class DictionaryCardTest {
             scenario.onActivity { card(scenario).dismiss() }
             waitUntil { scenario.onActivity { }; accessibleText().contains("meaning").not() }
             open(scenario, "media")
-            waitUntil { var missing = false; scenario.onActivity { missing = card(scenario).requireView().findViewById<TextView>(R.id.tv_dict).text.toString() == context.getString(R.string.dictionary_not_found) }; missing }
+            waitForCard(scenario, "media")
             scenario.onActivity { card(scenario).dismiss() }
         }
-        assertEquals(second.id, LocalDictionaryStore(context).lastDictionaryId)
+        assertEquals(first.id, LocalDictionaryStore(context).lastDictionaryId)
     }
 
     @Test fun firstUseAndDeletedHistoryRequireAnExplicitChoiceWithoutOnlineFallback() = runBlocking {
         val first = dictionary("legacy.mdx")
         assertEquals("界面测试需使用仅有测试词典的可丢弃 Debug 环境", 1, store.all.count { it.state == "ready" })
         store.lastDictionaryId = null
+        store.querySettings = DictionaryQuerySettings().withLanguage(first.id, "en")
         ActivityScenario.launch(LocalDictionaryActivity::class.java).use { scenario ->
-            open(scenario, "go")
+            open(scenario, "go", "en")
             waitForCard(scenario, "go")
-            assertEquals(first.id, store.lastDictionaryId)
+            assertNull(store.querySettings.languages["en"]?.primaryId)
             scenario.onActivity { card(scenario).dismiss() }
         }
-        dictionary("media.mdx", "media.mdd")
+        val other = dictionary("media.mdx", "media.mdd")
+        store.querySettings = store.querySettings.withLanguage(other.id, "en")
         store.lastDictionaryId = null
         for (historical in listOf(false, true)) {
-            if (historical) store.lastDictionaryId = UUID.randomUUID().toString()
+            store.querySettings = store.querySettings.withPrimary("en", if (historical) UUID.randomUUID().toString() else null)
             val expected = context.getString(if (historical) R.string.dictionary_previous_unavailable else R.string.dictionary_select_prompt)
             ActivityScenario.launch(LocalDictionaryActivity::class.java).use { scenario ->
-                open(scenario, "go")
+                open(scenario, "go", "en")
                 waitUntil { var prompted = false; scenario.onActivity { prompted = card(scenario).requireView().findViewById<TextView>(R.id.tv_dict).text.toString() == expected }; prompted }
                 scenario.onActivity {
                     assertFalse(card(scenario).requireView().findViewById<WebView>(R.id.web_view).isShown)
@@ -306,10 +369,18 @@ class DictionaryCardTest {
             scenario.onActivity {
                 val view = card(scenario).requireView()
                 val web = view.findViewById<WebView>(R.id.web_view)
-                rendered = view.findViewById<TextView>(R.id.tv_query).text.contains("$word → $word") && web.isShown && web.contentHeight > 0
+                rendered = view.findViewById<TextView>(R.id.tv_query).text.toString() == word && web.isShown && web.contentHeight > 0
             }
             rendered
         }
+        val painted = java.util.concurrent.CountDownLatch(1)
+        scenario.onActivity {
+            val web = card(scenario).requireView().findViewById<WebView>(R.id.web_view)
+            if (android.os.Build.VERSION.SDK_INT >= 23) web.postVisualStateCallback(1,
+                object : WebView.VisualStateCallback() { override fun onComplete(id: Long) { painted.countDown() } })
+            else painted.countDown()
+        }
+        assertTrue("全文须完成绘制再交互", painted.await(5, java.util.concurrent.TimeUnit.SECONDS))
         SystemClock.sleep(150)
     }
 

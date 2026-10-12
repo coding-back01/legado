@@ -80,7 +80,7 @@ class DictionaryPerformanceTest {
                 ActivityScenario.launch(LocalDictionaryActivity::class.java).use { scenario ->
                     for (number in listOf(0, 500_000, 999_999)) {
                         val word = "entry" + number.toString().padStart(7, '0')
-                        val dialog = DictDialog(word)
+                        val dialog = DictDialog(word, dictionaryId = dictionary.id)
                         val start = SystemClock.elapsedRealtime()
                         scenario.onActivity { dialog.show(it.supportFragmentManager, "performance-card") }
                         val rendered = AtomicBoolean(false)

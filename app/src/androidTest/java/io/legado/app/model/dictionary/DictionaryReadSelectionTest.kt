@@ -40,11 +40,13 @@ class DictionaryReadSelectionTest {
     private val books = arrayListOf<String>()
     private val store = LocalDictionaryStore(context)
     private var dictionaryId: String? = null
+    private val previousSettings = store.querySettings
     private val previous = store.lastDictionaryId
 
     @After fun cleanup() = runBlocking {
         dictionaryId?.let { store.delete(it) }
         store.lastDictionaryId = previous
+        store.querySettings = previousSettings
         books.forEach { appDb.bookChapterDao.delByBook(it); appDb.bookDao.getBook(it)?.delete() }
         root.deleteRecursively()
         Unit
@@ -69,6 +71,14 @@ class DictionaryReadSelectionTest {
 
     private fun longPress(scenario: ActivityScenario<ReadBookActivity>) {
         val point = FloatArray(2)
+        waitUntil {
+            var ready = false
+            scenario.onActivity { activity ->
+                ready = activity.findViewById<ReadView>(R.id.read_view).curPage.textPage.lines.any {
+                    it.text.contains("go 学习") && it.columns.filterIsInstance<TextColumn>().any { column -> column.charData == "g" }
+                }
+            }; ready
+        }
         scenario.onActivity { activity ->
             val read = activity.findViewById<ReadView>(R.id.read_view)
             val line = read.curPage.textPage.lines.first { it.text.contains("go 学习") }
@@ -104,10 +114,13 @@ class DictionaryReadSelectionTest {
         val dictionary = store.importFiles(root, "legacy.mdx")
         dictionaryId = dictionary.id
         store.lastDictionaryId = dictionary.id
+        store.querySettings = store.querySettings.withLanguage(dictionary.id, "en").withPrimary("en", dictionary.id)
         repeat(2) { number ->
             val file = File(root, "选词验证$number.txt").apply { writeText(("go 学习 meaning 阅读正文。\n").repeat(100)) }
             val book = LocalBook.importFile(Uri.fromFile(file))
             books.add(book.bookUrl)
+            book.config.dictionaryQueryLanguage = "en"
+            appDb.bookDao.insert(book)
             val intent = Intent(context, ReadBookActivity::class.java).putExtra("bookUrl", book.bookUrl).putExtra("inBookshelf", true)
             ActivityScenario.launch<ReadBookActivity>(intent).use { scenario ->
                 waitUntil { ReadBook.curTextChapter?.isCompleted == true && ReadBook.book?.bookUrl == book.bookUrl }

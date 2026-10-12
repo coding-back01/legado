@@ -4,6 +4,11 @@ import java.util.Locale
 
 /** 只生成检索候选，不改写原词；词典存在候选词条时才显示命中。 */
 object EnglishDictionaryForms {
+    fun candidates(text: String, language: String?): List<String> {
+        return if (DictionaryLanguages.canonical(language) == "en") candidates(text)
+        else emptyList()
+    }
+
     private val irregular = mapOf(
         "went" to "go", "gone" to "go", "goes" to "go", "was" to "be", "were" to "be",
         "am" to "be", "is" to "be", "are" to "be", "been" to "be", "being" to "be",
@@ -24,6 +29,7 @@ object EnglishDictionaryForms {
         "children" to "child", "men" to "man", "women" to "woman", "people" to "person",
         "died" to "die", "dying" to "die", "lying" to "lie", "tied" to "tie",
         "mice" to "mouse", "geese" to "goose", "teeth" to "tooth", "feet" to "foot",
+        "wolves" to "wolf", "knives" to "knife",
         "better" to "good", "best" to "good", "worse" to "bad", "worst" to "bad"
     )
     private val unchanged = setOf("news", "series", "species", "business", "physics", "mathematics", "analysis", "basis", "crisis")
@@ -42,6 +48,8 @@ object EnglishDictionaryForms {
         }
         if (!Regex("[a-z]+(?:'[a-z]+)?").matches(word) || word in unchanged) return emptyList()
         irregular[word]?.let { return listOf(it) }
+        // leaves 同时是 leaf 的复数和 leave 的第三人称形式。
+        if (word == "leaves") return listOf("leaf", "leave")
         val result = linkedSetOf<String>()
         fun base(suffix: String): String = word.removeSuffix(suffix)
         if (word.endsWith("'s") && word.length > 3) result.add(base("'s"))
@@ -80,7 +88,8 @@ object EnglishDictionaryForms {
     private fun suffixForm(base: String, suffix: String): String {
         if (suffix == "ed" && base.endsWith('e')) return base + "d"
         if (suffix == "ed" && base.endsWith('y') && base.length > 1 && base[base.lastIndex - 1] !in "aeiou") return base.dropLast(1) + "ied"
-        if (suffix == "ing" && base.endsWith('e') && !base.endsWith("ee")) return base.dropLast(1) + suffix
+        // singe/tinge 保留 e，避免把 singing 误还原成另一个有效词头。
+        if (suffix == "ing" && base.endsWith('e') && !base.endsWith("ee") && base !in setOf("singe", "tinge")) return base.dropLast(1) + suffix
         val stress = setOf("admit", "commit", "permit", "prefer", "refer", "infer", "occur", "compel", "control", "regret")
         val vowels = "aeiou"
         val cvc = base.length >= 3 && base.last() !in vowels + "wxy" && base[base.lastIndex - 1] in vowels && base[base.lastIndex - 2] !in vowels

@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.legado.app.ui.dict.dictionaryMessage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.async
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Test
@@ -128,9 +129,50 @@ class DictionaryStorageTest {
         result.forEach { ids.add(it.id) }
         assertEquals(1, result.size)
         assertEquals("go", store.lookup(result.first().id, "went").first().headword)
+        val published = File(store.directory(result.first().id), "sources")
+        assertTrue(File(published, "sample.mdx").isFile)
+        assertTrue(File(published, "sample.mdd").isFile)
+        assertFalse("只选 MDict 不得发布未选择的 DSL", File(published, "optional.dsl").exists())
         val authority = testContext.packageName + ".dictionaryFixture"
         val ungranted = DocumentsContract.buildTreeDocumentUri(authority, "root")
         try { store.importDocuments(listOf(ungranted)); fail() } catch (_: Exception) { }
+    }
+
+    @Test fun explicitExternalResourcesPublishWithTextWithoutSiblingDictionary() = runBlocking {
+        val source = fixture("sample.xdxf", "diagram.png", "optional.dsl")
+        // 自建有效的单声道静音 WAV；测试压缩包没有独立 tone.wav。
+        File(source, "tone.wav").writeBytes(java.nio.ByteBuffer.allocate(3244).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+            .put("RIFF".toByteArray()).putInt(3236).put("WAVEfmt ".toByteArray()).putInt(16)
+            .putShort(1).putShort(1).putInt(8000).putInt(16000).putShort(2).putShort(16)
+            .put("data".toByteArray()).putInt(3200).array())
+        val dictionary = store.importFiles(source, "sample.xdxf", setOf("diagram.png", "tone.wav")).also { ids.add(it.id) }
+        assertTrue(store.lookup(dictionary.id, "学习").single().html.contains("知识"))
+        assertTrue(store.resource(dictionary.id, "diagram.png").isFile)
+        assertTrue(store.resource(dictionary.id, "tone.wav").length() > 1000)
+        assertFalse(File(store.directory(dictionary.id), "sources/optional.dsl").exists())
+    }
+
+    @Test fun preparedDictionaryQueryDoesNotWaitForUnrelatedImportLock() = runBlocking {
+        val existing = store.importFiles(fixture("sample.mdx"), "sample.mdx").also { ids.add(it.id) }
+        val source = fixture("optional.dsl")
+        val started = java.util.concurrent.CountDownLatch(1)
+        val release = java.util.concurrent.CountDownLatch(1)
+        val blocking = LocalDictionaryStore(context) {
+            if (it == DictionaryOperation.BEFORE_PUBLISH) {
+                started.countDown()
+                check(release.await(10, java.util.concurrent.TimeUnit.SECONDS))
+            }
+        }
+        val importing = async(kotlinx.coroutines.Dispatchers.IO) { blocking.importFiles(source, "optional.dsl") }
+        try {
+            assertTrue(started.await(5, java.util.concurrent.TimeUnit.SECONDS))
+            kotlinx.coroutines.withTimeout(1000) {
+                assertEquals("go", store.lookup(existing.id, "go").single().headword)
+            }
+        } finally {
+            release.countDown()
+            ids.add(importing.await().id)
+        }
     }
 
     @Test fun indexVersionRebuildAndSameNameDifferentContentStayDistinct() = runBlocking {

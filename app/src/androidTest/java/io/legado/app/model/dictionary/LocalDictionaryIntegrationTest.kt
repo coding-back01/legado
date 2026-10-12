@@ -71,7 +71,7 @@ class LocalDictionaryIntegrationTest {
             val dictionary = import(source, primary)
             assertEquals("ready", dictionary.state)
             assertTrue(dictionary.entryCount >= 2)
-            assertEquals("go", store.lookup(dictionary.id, "went").first().headword)
+            assertEquals(primary, "go", store.lookup(dictionary.id, "went", "en").first().headword)
             val chinese = store.lookup(dictionary.id, "學習").first()
             assertEquals("学习", chinese.headword)
             assertTrue(chinese.html.contains("知识"))

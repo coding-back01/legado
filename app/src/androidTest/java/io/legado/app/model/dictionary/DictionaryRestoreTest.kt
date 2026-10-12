@@ -21,8 +21,9 @@ class DictionaryRestoreTest {
     private val ids = linkedSetOf<String>()
     private val option = store.includeFilesInBackup
     private val selected = store.lastDictionaryId
+    private val settings = store.querySettings
 
-    @After fun cleanup() = runBlocking { ids.forEach { store.delete(it) }; store.includeFilesInBackup = option; store.lastDictionaryId = selected; root.deleteRecursively(); Unit }
+    @After fun cleanup() = runBlocking { ids.forEach { store.delete(it) }; store.includeFilesInBackup = option; store.lastDictionaryId = selected; store.querySettings = settings; root.deleteRecursively(); Unit }
 
     private suspend fun dictionary(name: String, vararg companions: String) = run {
         val source = File(root, UUID.randomUUID().toString()).apply { mkdirs() }
@@ -104,5 +105,60 @@ class DictionaryRestoreTest {
         assertTrue(outOfSpace.restore(backup).isNotEmpty())
         assertTrue(store.lookup(existing.id, "学习").isNotEmpty())
         assertEquals("ready", appDb.localDictionaryDao.get(existing.id)?.state)
+    }
+
+    @Test fun failedBatchRestoreRevertsEarlierSortingAndPreservesPreferences() = runBlocking {
+        val existing = dictionary("legacy.mdx")
+        val incoming = dictionary("sample.mdx")
+        store.querySettings = store.querySettings.withLanguage(existing.id, "en").withPrimary("en", existing.id)
+        store.includeFilesInBackup = true
+        val backup = File(root, "batch")
+        store.backup(backup)
+        val file = File(backup, LocalDictionaryStore.MANIFEST)
+        val json = JsonParser.parseString(file.readText()).asJsonObject
+        json.getAsJsonArray("dictionaries").forEach { element ->
+            if (element.asJsonObject.get("id").asString == existing.id) element.asJsonObject.addProperty("sortNumber", 77)
+        }
+        file.writeText(json.toString())
+        store.delete(incoming.id)
+        File(backup, "${LocalDictionaryStore.FILES}/${incoming.id}/sample.mdx").appendBytes(byteArrayOf(1))
+        val rows = store.all
+        val settings = store.querySettings
+        assertTrue(store.restore(backup).isNotEmpty())
+        assertEquals(rows, store.all)
+        assertEquals(settings, store.querySettings)
+        assertEquals("go", store.lookup(existing.id, "go").single().headword)
+    }
+
+    @Test fun cancelledAndFullStorageBatchRestorePreserveRowsAndPreferences() = runBlocking {
+        val existing = dictionary("legacy.mdx")
+        val incoming = dictionary("sample.mdx")
+        store.includeFilesInBackup = true
+        val backup = File(root, "batch-interruption")
+        store.backup(backup)
+        val file = File(backup, LocalDictionaryStore.MANIFEST)
+        val json = JsonParser.parseString(file.readText()).asJsonObject
+        json.getAsJsonArray("dictionaries").forEach { element ->
+            if (element.asJsonObject.get("id").asString == existing.id) element.asJsonObject.addProperty("sortNumber", 99)
+        }
+        file.writeText(json.toString())
+        store.delete(incoming.id)
+        val rows = store.all
+        val preferences = store.querySettings
+        for (cancel in listOf(true, false)) {
+            val failing = LocalDictionaryStore(context) {
+                if (it == DictionaryOperation.BEFORE_PUBLISH) {
+                    if (cancel) throw CancellationException("cancelled batch")
+                    else throw android.database.sqlite.SQLiteFullException("full batch")
+                }
+            }
+            if (cancel) {
+                try { failing.restore(backup); fail("应响应取消") } catch (_: CancellationException) { }
+            } else assertTrue(failing.restore(backup).isNotEmpty())
+            assertEquals(rows, store.all)
+            assertEquals(preferences, store.querySettings)
+            assertFalse(store.directory(incoming.id).exists())
+            assertEquals("go", store.lookup(existing.id, "go").single().headword)
+        }
     }
 }

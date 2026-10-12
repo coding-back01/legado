@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="dictionary_set_primary">设为首选</string>
+    <string name="dictionary_instant_source">%1$s · %2$s</string>
+    <string name="dictionary_instant_mode">本书即时查词</string>
+    <string name="dictionary_query_language">查询语言</string>
+    <string name="dictionary_language_en">英文</string>
+    <string name="dictionary_language_zh">中文</string>
+    <string name="dictionary_language_unknown">请选择查询语言或词典</string>
+    <string name="dictionary_full_entry">完整词条</string>
+    <string name="dictionary_original_preview">原词条预览，排版和资源可在完整词条中查看。</string>
+    <string name="dictionary_summary_truncated">部分内容已省略，可展开查看完整词条。</string>
+    <string name="dictionary_association_required">请先确认词典的资源关联，再备份词典文件。</string>
     <string name="local_dictionary">本地词典</string>
     <string name="dictionary_manage">管理词典</string>
     <string name="dictionary_import_files">导入词典文件</string>
@@ -19,7 +30,6 @@
     <string name="dictionary_invalid_path">词典包含无效或越界的文件路径，无法导入。</string>
     <string name="dictionary_missing_resource">部分图片、样式或声音缺失，仍可查看已有释义。</string>
     <string name="dictionary_missing_state">待重新导入</string>
-    <string name="dictionary_set_current">设为上次使用的词典</string>
     <string name="dictionary_rebuild">重建查询索引</string>
     <string name="dictionary_rebuilt">查询索引已重建</string>
     <string name="dictionary_move_up">上移</string>
@@ -35,4 +45,24 @@
     <string name="dictionary_restore_incomplete">部分词典未恢复，请重新导入。其他备份内容仍可恢复。</string>
     <string name="dictionary_layout_limit">部分词库交互排版可能无法还原。词库脚本不执行。</string>
     <string name="dictionary_details">词典信息</string>
+    <string name="dictionary_set_language">设置词库语言</string>
+    <string name="dictionary_toggle_fallback">加入或移出候补</string>
+    <string name="dictionary_fallback_up">候补顺序上移</string>
+    <string name="dictionary_fallback_down">候补顺序下移</string>
+    <string name="dictionary_associate_pending">重新关联待导入词典</string>
+    <string name="dictionary_confirm_resources">确认资源关联</string>
+    <string name="dictionary_association_complete">词典关联已确认</string>
+    <string name="dictionary_not_pending">仅待导入词典需要重新关联</string>
+    <string name="dictionary_associate_resources">选择属于 %1$s 的资源</string>
+    <string name="dictionary_associate_confirm">将 %1$s 关联到待导入的 %2$s？将保留原名称、排序和查询设置。</string>
+    <string name="dictionary_language_override_info">查询语言：%1$s</string>
+    <string name="dictionary_unclassified">未分类</string>
+    <string name="dictionary_language_ja">日语</string>
+    <string name="dictionary_language_ko">韩语</string>
+    <string name="dictionary_language_de">德语</string>
+    <string name="dictionary_language_fr">法语</string>
+    <string name="dictionary_match_mapping">词库映射</string>
+    <string name="dictionary_match_normalized">规范化匹配</string>
+    <string name="dictionary_match_chinese_variant">繁简候选</string>
+    <string name="dictionary_match_english_form">英文词形</string>
 </resources>

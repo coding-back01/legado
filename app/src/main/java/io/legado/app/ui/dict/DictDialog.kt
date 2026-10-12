@@ -20,16 +20,18 @@ import androidx.lifecycle.lifecycleScope
 import io.legado.app.R
 import io.legado.app.base.BaseDialogFragment
 import io.legado.app.databinding.DialogDictBinding
-import io.legado.app.help.config.AppConfig
 import io.legado.app.model.dictionary.DictionaryEntry
 import io.legado.app.model.dictionary.DictionaryHtml
+import io.legado.app.model.dictionary.DictionaryDisplay
+import io.legado.app.model.dictionary.DictionaryLookupResult
+import io.legado.app.model.dictionary.DictionaryQueryPlan
+import io.legado.app.model.dictionary.DictionaryLanguages
 import io.legado.app.model.dictionary.LocalDictionaryStore
 import io.legado.app.ui.dict.local.LocalDictionaryActivity
 import io.legado.app.utils.setHtml
 import io.legado.app.utils.setLayout
 import io.legado.app.utils.toastOnUi
 import io.legado.app.utils.viewbindingdelegate.viewBinding
-import org.jsoup.nodes.Entities
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -42,10 +44,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
-    constructor(word: String) : this() { arguments = Bundle().apply { putString("word", word) } }
+    constructor(word: String, language: String? = null, dictionaryId: String? = null, bookUrl: String? = null) : this() {
+        arguments = Bundle().apply { putString("word", word); putString("language", language); putString("dictionaryId", dictionaryId); putString("bookUrl", bookUrl) }
+    }
     private val viewModel by viewModels<DictViewModel>()
     private val binding by viewBinding(DialogDictBinding::bind)
     private var word = ""
+    private var queryLanguage: String? = null
+    private var automatic = true
+    private var sourceEpoch = 0L
     private var sources: List<DictSource> = emptyList()
     private var selected: DictSource? = null
     private var loaded = false
@@ -58,6 +65,7 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
     @Volatile private var resourceRequest = 0L
     private var missingResource = false
     private var limitedLayout = false
+    private var currentDisplay: DictionaryDisplay? = null
     private val history = java.util.ArrayDeque<Query>()
 
     override fun onStart() {
@@ -68,10 +76,22 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
     override fun onFragmentCreated(view: View, savedInstanceState: Bundle?) {
         expanded = savedInstanceState?.getBoolean("expanded") == true
         word = arguments?.getString("word").orEmpty()
+        queryLanguage = DictionaryLanguages.canonical(arguments?.getString("language"))
+        automatic = arguments?.getString("dictionaryId") == null
         if (word.isBlank()) { toastOnUi(R.string.cannot_empty); dismiss(); return }
         binding.tvQuery.text = word
         binding.tvDict.movementMethod = LinkMovementMethod.getInstance()
         binding.btnDictionary.setOnClickListener { choose() }
+        binding.btnDictionaryLanguage.setOnClickListener { chooseLanguage() }
+        binding.btnDictionaryPrimary.setOnClickListener {
+            val source = selected?.local ?: return@setOnClickListener
+            val language = queryLanguage ?: return@setOnClickListener chooseLanguage()
+            val store = LocalDictionaryStore.instance
+            store.querySettings = store.querySettings.withLanguage(source.id, language).withPrimary(language, source.id)
+            automatic = true
+            history.clear()
+            lookupAutomatic()
+        }
         binding.btnManage.setOnClickListener { startActivity(Intent(requireContext(), LocalDictionaryActivity::class.java)) }
         binding.btnBack.setOnClickListener {
             if (history.isNotEmpty()) {
@@ -84,6 +104,7 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
             expanded = !expanded
             resizeContent()
             binding.btnExpand.setText(if (expanded) R.string.dictionary_collapse else R.string.dictionary_expand)
+            currentDisplay?.let { bindDisplay(it) }
         }
         binding.btnExpand.setText(if (expanded) R.string.dictionary_collapse else R.string.dictionary_expand)
         binding.webView.settings.apply {
@@ -118,33 +139,77 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
     }
 
     private fun refresh() {
+        val epoch = ++sourceEpoch
         viewModel.initData { list ->
-            if (view == null) return@initData
+            if (view == null || epoch != sourceEpoch) return@initData
             sources = list
             loaded = true
-            val last = LocalDictionaryStore.instance.lastDictionaryId
-            val locals = list.filter { it.local != null }
-            val source = when {
-                last != null -> locals.firstOrNull { it.local?.id == last }
-                locals.size == 1 -> locals.first()
-                locals.isEmpty() -> selected?.takeIf { it.online != null }?.let { previous -> list.firstOrNull { it.online?.name == previous.online?.name } }
-                else -> null
-            }
-            if (source != null) select(source)
+            if (automatic) lookupAutomatic()
             else {
-                viewModel.cancelQuery()
-                stopAudio()
-                selected = null
-                shownDictionaryId = null
-                binding.webView.stopLoading()
-                binding.btnDictionary.setText(R.string.dictionary_select)
-                message(getString(when {
-                last != null -> R.string.dictionary_previous_unavailable
-                locals.isEmpty() -> R.string.dictionary_empty
-                else -> R.string.dictionary_select_prompt
-                }))
+                val id = selected?.local?.id ?: arguments?.getString("dictionaryId")
+                val source = list.firstOrNull { id != null && it.local?.id == id }
+                    ?: selected?.online?.name?.let { name -> list.firstOrNull { it.online?.name == name } }
+                if (source != null) select(source) else message(getString(R.string.dictionary_previous_unavailable))
             }
         }
+    }
+
+    private fun chooseLanguage() {
+        AlertDialog.Builder(requireContext()).setTitle(R.string.dictionary_query_language)
+            .setItems(arrayOf(getString(R.string.dictionary_language_en), getString(R.string.dictionary_language_zh))) { _, index ->
+                queryLanguage = if (index == 0) "en" else "zh"
+                arguments?.getString("bookUrl")?.let { url ->
+                    io.legado.app.model.ReadBook.book?.takeIf { it.bookUrl == url }?.config?.dictionaryQueryLanguage = queryLanguage
+                    val language = queryLanguage
+                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                        io.legado.app.data.appDb.bookDao.getBook(url)?.let { book -> book.config.dictionaryQueryLanguage = language; book.save() }
+                    }
+                }
+                automatic = true
+                history.clear()
+                lookupAutomatic()
+            }.show()
+    }
+
+    private fun prepareQuery() {
+        resourceRequest++
+        currentDisplay = null
+        shownDictionaryId = null
+        stopAudio()
+        binding.webView.stopLoading()
+        binding.rotateLoading.isVisible = true
+        binding.webView.isVisible = false
+        binding.tvDict.isVisible = false
+        binding.tvWarning.isVisible = false
+        missingResource = false
+        limitedLayout = false
+    }
+
+    private fun lookupAutomatic() {
+        prepareQuery()
+        selected = null
+        currentQuery = Query(word)
+        binding.btnDictionaryPrimary.isVisible = false
+        viewModel.lookupLocal(word, queryLanguage, "", 0, sourceEpoch, { result ->
+            if (view == null) return@lookupLocal
+            binding.rotateLoading.isVisible = false
+            when (val lookup = result.lookup) {
+                is DictionaryLookupResult.Hit -> {
+                    selected = DictSource(local = lookup.source)
+                    binding.btnDictionaryPrimary.isVisible = queryLanguage != null
+                    binding.btnDictionary.text = lookup.source.name
+                    display(lookup.entries, requireNotNull(result.display))
+                }
+                is DictionaryLookupResult.NotFound -> message(getString(R.string.dictionary_not_found))
+                is DictionaryLookupResult.Failure -> message(requireContext().dictionaryMessage(lookup.error))
+                is DictionaryLookupResult.NeedChoice -> message(getString(when (lookup.plan) {
+                    DictionaryQueryPlan.ChooseLanguage -> R.string.dictionary_language_unknown
+                    is DictionaryQueryPlan.Unavailable -> R.string.dictionary_previous_unavailable
+                    else -> R.string.dictionary_select_prompt
+                }))
+                null -> message(getString(R.string.dictionary_select_prompt))
+            }
+        }, { if (view != null) message(requireContext().dictionaryMessage(it)) })
     }
 
     private fun choose() {
@@ -155,7 +220,9 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
 
     private fun select(source: DictSource) {
         selected = source
-        source.local?.let { LocalDictionaryStore.instance.lastDictionaryId = it.id }
+        automatic = false
+        source.local?.let { if (queryLanguage == null) queryLanguage = LocalDictionaryStore.instance.querySettings.languageOf(it) }
+        binding.btnDictionaryPrimary.isVisible = source.local != null && queryLanguage != null
         binding.btnDictionary.text = source.name
         history.clear()
         stopAudio()
@@ -164,6 +231,7 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
 
     private fun query(text: String, entryId: Long? = null) {
         val source = selected ?: return
+        currentDisplay = null
         resourceRequest++
         currentQuery = Query(text, entryId)
         binding.rotateLoading.isVisible = true
@@ -179,7 +247,7 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
             binding.rotateLoading.isVisible = false
             if (source.local != null) {
                 if (result.entries.isEmpty()) message(getString(R.string.dictionary_not_found)) else {
-                    runCatching { display(result.entries) }.onFailure { message(requireContext().dictionaryMessage(it)) }
+                    runCatching { display(result.entries, requireNotNull(result.display)) }.onFailure { message(requireContext().dictionaryMessage(it)) }
                 }
             } else {
                 binding.webView.isVisible = false
@@ -187,22 +255,42 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
                 binding.tvDict.setHtml(result.onlineHtml.orEmpty())
                 binding.tvQuery.text = word
             }
-        }, { error -> if (view != null) message(requireContext().dictionaryMessage(error)) }, entryId)
+        }, { error -> if (view != null) message(requireContext().dictionaryMessage(error)) }, entryId, queryLanguage)
     }
 
-    private fun display(entries: List<DictionaryEntry>) {
+    private fun display(entries: List<DictionaryEntry>, display: DictionaryDisplay) {
         val id = selected?.local?.id ?: return
         shownDictionaryId = id
         binding.btnBack.isVisible = history.isNotEmpty()
-        binding.tvDict.isVisible = false
-        binding.webView.isVisible = true
         val displayed = if (currentQuery.entryId == null) currentQuery.word else entries.first().headword
-        binding.tvQuery.text = getString(R.string.dictionary_match, displayed, entries.first().headword)
-        val html = entries.joinToString("<hr>") { "<h3>${Entities.escape(it.headword)}</h3>${it.html}" }
-        limitedLayout = html.contains("<script", true) || html.contains("onclick", true)
+        binding.tvQuery.text = buildList {
+            add(if (displayed == entries.first().headword) displayed else
+                getString(R.string.dictionary_match, displayed, entries.first().headword))
+            entries.forEach { entry -> requireContext().dictionaryMatchMessage(entry)?.let { add("${entry.headword} · $it") } }
+        }.joinToString("\n")
+        currentDisplay = display
+        limitedLayout = display.limitedLayout
+        bindDisplay(display)
+    }
+
+    private fun bindDisplay(display: DictionaryDisplay) {
+        val id = selected?.local?.id ?: return
+        val short = !expanded && display.previews.isNotEmpty() && display.previews.all { it.summary != null }
+        binding.tvDict.isVisible = short
+        binding.webView.isVisible = !short
+        if (short) {
+            binding.tvDict.text = display.previews.joinToString("\n\n") { preview ->
+                val summary = requireNotNull(preview.summary)
+                buildList {
+                    if (display.previews.size > 1) add(preview.entry.headword)
+                    summary.pronunciation?.let(::add)
+                    summary.partOfSpeech?.let(::add)
+                    add(summary.definition)
+                    addAll(summary.examples)
+                }.joinToString("\n")
+            }
+        } else binding.webView.loadDataWithBaseURL("https://${DictionaryHtml.HOST}/$id/", display.html, "text/html", "UTF-8", null)
         updateWarning()
-        binding.webView.loadDataWithBaseURL("https://${DictionaryHtml.HOST}/$id/",
-            DictionaryHtml.render(html, id, AppConfig.isNightTheme, (18 * resources.configuration.fontScale).toInt()), "text/html", "UTF-8", null)
     }
 
     private fun message(text: String) {
@@ -296,12 +384,16 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
         val messages = buildList {
             if (missingResource) add(getString(R.string.dictionary_missing_resource))
             if (limitedLayout) add(getString(R.string.dictionary_layout_limit))
+            if (!expanded && currentDisplay?.previews?.any { it.summary?.truncated == true } == true)
+                add(getString(R.string.dictionary_summary_truncated))
         }
         binding.tvWarning.text = messages.joinToString("\n")
         binding.tvWarning.isVisible = messages.isNotEmpty()
     }
 
     override fun onDestroyView() {
+        sourceEpoch++
+        currentDisplay = null
         viewModel.cancelQuery()
         stopAudio()
         binding.webView.stopLoading()

@@ -11,7 +11,7 @@ object DictionaryMarkup {
         document.select("kref").forEach { it.tagName("a").attr("href", dictionaryLink(it.text())) }
         document.select("rref").forEach { it.tagName("img").attr("src", it.text()).empty() }
         document.select("tr").forEach { it.tagName("span").addClass("pronunciation") }
-        document.select("def").forEach { it.tagName("div") }
+        document.select("def").forEach { it.tagName("div").addClass("definition") }
         return document.html()
     }
 

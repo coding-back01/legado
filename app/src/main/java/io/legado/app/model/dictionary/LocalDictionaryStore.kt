@@ -18,11 +18,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CancellationException
 import splitties.init.appCtx
 import java.io.File
-import java.security.MessageDigest
 import java.util.Locale
 import java.util.UUID
 
-enum class DictionaryOperation { BEFORE_PUBLISH, BEFORE_REGISTER, BEFORE_REBUILD_SWAP, OLD_INDEX_MOVED, NEW_INDEX_PUBLISHED }
+enum class DictionaryOperation { BEFORE_PUBLISH, BEFORE_REGISTER, BEFORE_REBUILD_SWAP, OLD_INDEX_MOVED, NEW_INDEX_PUBLISHED, IDENTITY_METADATA_PUBLISHED }
 
 class LocalDictionaryStore(
     private val context: Context,
@@ -39,6 +38,20 @@ class LocalDictionaryStore(
                 preparedDirectories.add(root.path)
             }
         }
+        val settingsJson = preferences.getString("query_settings", null)
+        val settings = DictionaryQuerySettings.decode(settingsJson)
+        if ((settingsJson == null || settings != null) && settings?.legacyMigrated != true) {
+            importMutex.withLock { migrateQuerySettingsLocked() }
+        }
+    }
+
+    private fun migrateQuerySettingsLocked() {
+        val json = preferences.getString("query_settings", null)
+        val decoded = DictionaryQuerySettings.decode(json)
+        if (json != null && decoded == null) return
+        val current = decoded ?: DictionaryQuerySettings()
+        val migrated = current.migrateLegacy(lastDictionaryId, all)
+        if (migrated != current) querySettings = migrated
     }
 
     suspend fun recover() = withContext(Dispatchers.IO) {
@@ -69,6 +82,16 @@ class LocalDictionaryStore(
         get() = preferences.getString("last", null)
         set(value) { preferences.edit { putString("last", value) } }
 
+    var querySettings: DictionaryQuerySettings
+        get() = DictionaryQuerySettings.decode(preferences.getString("query_settings", null)) ?: DictionaryQuerySettings()
+        set(value) {
+            val previous = DictionaryQuerySettings.decode(preferences.getString("query_settings", null))
+            val saved = if (!value.legacyMigrated && previous?.legacyMigrated == true) {
+                value.copy(legacyMigrated = true, legacySelectedId = previous.legacySelectedId)
+            } else value
+            preferences.edit { putString("query_settings", saved.encode()) }
+        }
+
     val all: List<LocalDictionary> get() = appDb.localDictionaryDao.all
 
     fun directory(id: String): File {
@@ -79,7 +102,8 @@ class LocalDictionaryStore(
     suspend fun importDocuments(
         uris: List<Uri>,
         onProgress: (String) -> Unit = {},
-        choose: suspend (List<String>) -> Set<String> = { it.toSet() }
+        choose: suspend (List<String>) -> Set<String> = { it.toSet() },
+        chooseResources: suspend (String, List<String>) -> Set<String> = { _, _ -> emptySet() }
     ): List<LocalDictionary> =
         withContext(Dispatchers.IO) {
             prepare()
@@ -144,7 +168,11 @@ class LocalDictionaryStore(
                     candidates.filter { it.relativeTo(sources).invariantSeparatorsPath in selected }.map { source ->
                         checkpoint()
                         onProgress(source.name)
-                        importSource(requireNotNull(source.parentFile), source.name, checkpoint)
+                        val parent = requireNotNull(source.parentFile)
+                        val plan = DictionaryFileGroups.plan(parent, source.name, checkpoint = checkpoint)
+                        val resources = if (plan.unassignedResources.isEmpty()) emptySet() else
+                            chooseResources(source.name, plan.unassignedResources)
+                        importSource(parent, source.name, checkpoint, resources)
                     }
                 } finally {
                     folder.deleteRecursively()
@@ -152,31 +180,51 @@ class LocalDictionaryStore(
             }
         }
 
-    suspend fun importFiles(sources: File, sourceFile: String): LocalDictionary = withContext(Dispatchers.IO) {
+    suspend fun importFiles(sources: File, sourceFile: String, linkedResources: Set<String> = emptySet()): LocalDictionary = withContext(Dispatchers.IO) {
         prepare()
         importMutex.withLock {
             val coroutine = currentCoroutineContext()
-            importSource(sources, sourceFile) { coroutine.ensureActive() }
+            importSource(sources, sourceFile, { coroutine.ensureActive() }, linkedResources)
         }
     }
 
-    private fun importSource(sources: File, sourceFile: String, checkpoint: () -> Unit): LocalDictionary {
-        val fingerprint = fingerprint(sources, sourceFile, checkpoint)
-        appDb.localDictionaryDao.findFingerprint(fingerprint)?.let {
-            val marker = File(directory(it.id), "ready")
-            if (!marker.isFile || marker.readText().trim() != DictionaryIndex.VERSION.toString()) rebuildLocked(it.id, checkpoint)
-            return it
-        }
-        val pending = all.firstOrNull { it.fingerprint == fingerprint && it.state != "ready" }
-        val id = pending?.id ?: UUID.randomUUID().toString()
+    private fun importSource(sources: File, sourceFile: String, checkpoint: () -> Unit, linkedResources: Set<String> = emptySet(),
+        restoredIdentity: DictionaryBackupIdentity? = null): LocalDictionary {
+        val legacyRestore = restoredIdentity?.dictionary?.identityVersion == 1 && restoredIdentity.record == null
+        val group = restoredIdentity?.record?.group ?: DictionaryFileGroups.plan(sources, sourceFile, linkedResources, checkpoint)
         val staging = File(root, "staging").apply { mkdirs() }
         val folder = File(staging, "build-${UUID.randomUUID()}").apply { mkdirs() }
         try {
-            copyTree(sources, File(folder, "sources"), checkpoint)
+            val copiedSources = File(folder, "sources")
+            if (legacyRestore) copyTree(sources, copiedSources, checkpoint)
+            else DictionaryFileGroups.copy(sources, group, copiedSources, checkpoint)
+            val publishedGroup = group.copy(unassignedResources = emptyList())
+            val fingerprint = if (legacyRestore) DictionaryIdentity.legacy(copiedSources, sourceFile, checkpoint)
+                else DictionaryIdentity.calculate(copiedSources, publishedGroup, checkpoint)
+            if (restoredIdentity != null) DictionaryLimits.check(fingerprint == restoredIdentity.dictionary.fingerprint)
+            val aliases = (listOf(DictionaryIdentity.legacy(copiedSources, sourceFile, checkpoint)) +
+                restoredIdentity?.verifiedAliases.orEmpty()).distinct()
+            for (old in all.filter { restoredIdentity == null && it.identityVersion == 1 && it.state == "ready" && it.sourceFile == sourceFile }) {
+                try { upgradeIdentityLocked(old.id, null, checkpoint) }
+                catch (error: CancellationException) { throw error }
+                catch (_: DictionaryException) { /* 保留无法验证的旧数据；不按名称关联。 */ }
+            }
+            appDb.localDictionaryDao.findFingerprint(fingerprint)?.let {
+                val marker = File(directory(it.id), "ready")
+                if (!marker.isFile || marker.readText().trim() != DictionaryIndex.VERSION.toString()) rebuildLocked(it.id, checkpoint)
+                return it
+            }
+            val pending = all.firstOrNull { it.state != "ready" && (it.fingerprint == fingerprint ||
+                it.identityVersion == 1 && it.fingerprint in aliases) }
+            val restored = restoredIdentity?.dictionary
+            val id = pending?.id ?: restored?.id?.takeIf { appDb.localDictionaryDao.get(it) == null } ?: UUID.randomUUID().toString()
             val built = build(folder, sourceFile, checkpoint)
-            val title = pending?.name ?: uniqueName(built.first.title)
+            val title = pending?.name ?: uniqueName(restored?.name ?: built.first.title)
             val dictionary = LocalDictionary(id, title, built.first.format.name, sourceFile, fingerprint,
-                built.first.inputLanguage, built.first.outputLanguage, pending?.sortNumber ?: all.size, "ready", built.second, built.third)
+                built.first.inputLanguage, built.first.outputLanguage, pending?.sortNumber ?: restored?.sortNumber ?: all.size,
+                "ready", built.second, built.third, if (legacyRestore) 1 else 2)
+            if (!legacyRestore) writeIdentityRecord(File(folder, "identity.json"), DictionaryIdentityRecord(publishedGroup,
+                (aliases + restoredIdentity?.record?.legacyFingerprints.orEmpty() + listOfNotNull(pending?.fingerprint)).distinct()))
             checkpoint()
             val published = directory(id)
             DictionaryLimits.check(published.parentFile?.mkdirs() == true || published.parentFile?.isDirectory == true)
@@ -196,8 +244,9 @@ class LocalDictionaryStore(
         }
     }
 
-    private fun build(folder: File, sourceFile: String, checkpoint: () -> Unit): Triple<DictionaryMetadata, Long, Int> {
-        val source = DictionaryPaths.file(File(folder, "sources"), sourceFile)
+    private fun build(folder: File, sourceFile: String, checkpoint: () -> Unit,
+        sources: File = File(folder, "sources")): Triple<DictionaryMetadata, Long, Int> {
+        val source = DictionaryPaths.file(sources, sourceFile)
         val format = DictionaryFormat.detect(source) ?: throw DictionaryException(DictionaryProblem.UNSUPPORTED)
         val parser: DictionaryParser = when (format) {
             DictionaryFormat.MDICT -> MdictParser()
@@ -280,16 +329,19 @@ class LocalDictionaryStore(
         }
     }
 
-    suspend fun lookup(id: String, word: String): List<DictionaryEntry> = withContext(Dispatchers.IO) {
+    suspend fun lookup(id: String, word: String, language: String? = null): List<DictionaryEntry> = withContext(Dispatchers.IO) {
         prepare()
         DictionaryLimits.check(word.length <= DictionaryLimits.MAX_WORD_BYTES, DictionaryProblem.LIMIT)
-        DictionaryLimits.check(appDb.localDictionaryDao.get(id)?.state == "ready", DictionaryProblem.MISSING_FILE)
+        val dictionary = appDb.localDictionaryDao.get(id)
+        DictionaryLimits.check(dictionary?.state == "ready", DictionaryProblem.MISSING_FILE)
+        val queryLanguage = language ?: dictionary?.let { querySettings.languageOf(it) }
+        val cacheKey = "${queryLanguage.orEmpty()}\u0000$word"
         val coroutine = currentCoroutineContext()
         val marker = File(directory(id), "ready")
         if (marker.isFile && marker.readText().trim() == DictionaryIndex.VERSION.toString()) {
-            queryCache.get(id, word)?.let { return@withContext it }
+            queryCache.get(id, cacheKey)?.let { return@withContext it }
         }
-        DictionaryIndex(directory(id)).use { it.lookup(word) { coroutine.ensureActive() } }.also { queryCache.put(id, word, it) }
+        DictionaryIndex(directory(id)).use { it.lookup(word, queryLanguage) { coroutine.ensureActive() } }.also { queryCache.put(id, cacheKey, it) }
     }
 
     suspend fun byId(id: String, entryId: Long): DictionaryEntry? = withContext(Dispatchers.IO) {
@@ -304,6 +356,7 @@ class LocalDictionaryStore(
         importMutex.withLock {
             appDb.localDictionaryDao.delete(id)
             directory(id).deleteRecursively()
+            pendingIdentityFile(id).delete()
             queryCache.remove(id)
         }
     }
@@ -326,18 +379,131 @@ class LocalDictionaryStore(
         }
     }
 
+    suspend fun upgradeIdentity(id: String, linkedResources: Set<String>? = null): Boolean = withContext(Dispatchers.IO) {
+        prepare()
+        importMutex.withLock {
+            val coroutine = currentCoroutineContext()
+            upgradeIdentityLocked(id, linkedResources) { coroutine.ensureActive() }
+        }
+    }
+
+    suspend fun associatePending(pendingId: String, importedId: String): Boolean = withContext(Dispatchers.IO) {
+        prepare()
+        importMutex.withLock {
+            val pending = appDb.localDictionaryDao.get(pendingId) ?: throw DictionaryException(DictionaryProblem.MISSING_FILE)
+            val imported = appDb.localDictionaryDao.get(importedId) ?: throw DictionaryException(DictionaryProblem.MISSING_FILE)
+            val linked = DictionaryIdentity.relinkPending(pending, imported)
+            val coroutine = currentCoroutineContext()
+            val checkpoint = { coroutine.ensureActive() }
+            val source = directory(importedId)
+            val sources = File(source, "sources")
+            val fingerprint = if (imported.identityVersion == 2) DictionaryIdentity.calculate(sources, identityRecord(imported).group, checkpoint)
+                else DictionaryIdentity.legacy(sources, imported.sourceFile, checkpoint)
+            DictionaryLimits.check(fingerprint == imported.fingerprint)
+            val target = directory(pendingId)
+            DictionaryLimits.check(!target.exists())
+            val settingsJson = preferences.getString("query_settings", null)
+            val selected = lastDictionaryId
+            checkpoint()
+            DictionaryLimits.check(source.renameTo(target))
+            try {
+                checkpoint()
+                beforeOperation(DictionaryOperation.BEFORE_REGISTER)
+                appDb.runInTransaction {
+                    appDb.localDictionaryDao.insert(linked)
+                    appDb.localDictionaryDao.delete(importedId)
+                }
+                DictionaryQuerySettings.decode(settingsJson)?.let { previous ->
+                    val remapped = previous.remap(mapOf(importedId to pendingId))
+                    val language = previous.languageOverrides[pendingId]
+                    querySettings = if (language == null) remapped else remapped.withLanguage(pendingId, language)
+                }
+                if (selected == importedId) lastDictionaryId = pendingId
+                queryCache.remove(importedId); queryCache.remove(pendingId)
+                true
+            } catch (error: Exception) {
+                DictionaryLimits.check(target.renameTo(source))
+                appDb.runInTransaction { appDb.localDictionaryDao.insert(pending, imported) }
+                preferences.edit { putString("query_settings", settingsJson); putString("last", selected) }
+                throw error
+            }
+        }
+    }
+
+    private fun upgradeIdentityLocked(id: String, linkedResources: Set<String>?, checkpoint: () -> Unit): Boolean {
+        val dictionary = appDb.localDictionaryDao.get(id) ?: throw DictionaryException(DictionaryProblem.MISSING_FILE)
+        DictionaryLimits.check(dictionary.state == "ready", DictionaryProblem.MISSING_FILE)
+        val current = directory(id)
+        val upgrade = DictionaryIdentity.upgrade(File(current, "sources"), dictionary, linkedResources, checkpoint) ?: return false
+        val identity = File(current, "identity.json")
+        DictionaryLimits.check(!identity.exists() || identity.length() <= DictionaryLimits.MAX_ENTRY_BYTES, DictionaryProblem.LIMIT)
+        val previous = identity.takeIf { it.isFile }?.readBytes()
+        val next = File(current, "identity-${UUID.randomUUID()}.tmp")
+        try {
+            writeIdentityRecord(next, upgrade.record)
+            checkpoint()
+            DictionaryLimits.check(next.renameTo(identity))
+            beforeOperation(DictionaryOperation.IDENTITY_METADATA_PUBLISHED)
+            checkpoint()
+            appDb.localDictionaryDao.insert(upgrade.dictionary)
+            return true
+        } catch (error: Exception) {
+            if (previous == null) identity.delete() else identity.writeBytes(previous)
+            appDb.localDictionaryDao.insert(dictionary)
+            throw error
+        } finally {
+            next.delete()
+        }
+    }
+
+    private fun writeIdentityRecord(file: File, record: DictionaryIdentityRecord) {
+        val estimated = record.group.files.sumOf { it.length.toLong() * 6 + 4 } + 1024
+        DictionaryLimits.check(estimated <= DictionaryLimits.MAX_ENTRY_BYTES, DictionaryProblem.LIMIT)
+        val bytes = GSON.toJson(record).toByteArray(Charsets.UTF_8)
+        DictionaryLimits.check(bytes.size <= DictionaryLimits.MAX_ENTRY_BYTES, DictionaryProblem.LIMIT)
+        java.io.FileOutputStream(file).use { stream -> stream.write(bytes); stream.fd.sync() }
+    }
+
+    private fun identityRecord(dictionary: LocalDictionary): DictionaryIdentityRecord {
+        val file = if (dictionary.state == "missing") pendingIdentityFile(dictionary.id) else File(directory(dictionary.id), "identity.json")
+        DictionaryLimits.check(file.isFile, DictionaryProblem.MISSING_FILE)
+        DictionaryLimits.check(file.length() <= DictionaryLimits.MAX_ENTRY_BYTES, DictionaryProblem.LIMIT)
+        return try {
+            val record = GSON.fromJson(file.readText(), DictionaryIdentityRecord::class.java)
+            DictionaryLimits.check(record.group.identityVersion == 2 && record.group.sourceFile == dictionary.sourceFile)
+            DictionaryLimits.check(record.legacyFingerprints.size <= DictionaryLimits.MAX_CANDIDATES, DictionaryProblem.LIMIT)
+            DictionaryLimits.check(record.legacyFingerprints.all { Regex("[0-9a-f]{64}").matches(it) })
+            record
+        } catch (error: DictionaryException) { throw error }
+        catch (error: Exception) { throw DictionaryException(DictionaryProblem.CORRUPT, "identity", error) }
+    }
+
+    private fun pendingIdentityFile(id: String): File {
+        directory(id)
+        return DictionaryPaths.file(File(root, "pending-identities"), "$id.json")
+    }
+
     private fun rebuildLocked(id: String, checkpoint: () -> Unit) {
             val dictionary = appDb.localDictionaryDao.get(id) ?: throw DictionaryException(DictionaryProblem.MISSING_FILE)
             val current = directory(id)
-            DictionaryLimits.check(fingerprint(File(current, "sources"), dictionary.sourceFile, checkpoint) == dictionary.fingerprint)
+            val source = File(current, "sources")
+            val record = if (dictionary.identityVersion == 2) identityRecord(dictionary) else null
+            val actual = if (record == null) fingerprint(source, dictionary.sourceFile, checkpoint)
+                else DictionaryIdentity.calculate(source, record.group, checkpoint)
+            DictionaryLimits.check(actual == dictionary.fingerprint)
             val staging = File(root, "staging").apply { mkdirs() }
             val next = File(staging, "rebuild-${UUID.randomUUID()}").apply { mkdirs() }
             val recovery = File(root, "recovery").apply { mkdirs() }
             val previous = DictionaryPaths.file(recovery, id)
             DictionaryLimits.check(!previous.exists())
             try {
-                copyTree(File(current, "sources"), File(next, "sources"), checkpoint)
-                build(next, dictionary.sourceFile, checkpoint)
+                copyTree(source, File(next, "sources"), checkpoint)
+                val selected = if (record == null) File(next, "sources") else File(next, "build-sources").also {
+                    DictionaryFileGroups.copy(source, record.group, it, checkpoint)
+                    writeIdentityRecord(File(next, "identity.json"), record)
+                }
+                build(next, dictionary.sourceFile, checkpoint, selected)
+                if (record != null) selected.deleteRecursively()
                 checkpoint()
                 beforeOperation(DictionaryOperation.BEFORE_REBUILD_SWAP)
                 DictionaryLimits.check(current.renameTo(previous))
@@ -381,10 +547,12 @@ class LocalDictionaryStore(
     }
 
     data class BackupManifest(
-        val version: Int = 1,
+        val version: Int = 2,
         val selectedId: String?,
         val includesFiles: Boolean,
-        val dictionaries: List<LocalDictionary>
+        val dictionaries: List<LocalDictionary>,
+        val querySettings: DictionaryQuerySettings? = null,
+        val identities: Map<String, DictionaryIdentityRecord> = emptyMap()
     )
 
     suspend fun backup(target: File): List<File> = withContext(Dispatchers.IO) {
@@ -392,17 +560,31 @@ class LocalDictionaryStore(
         importMutex.withLock {
             val coroutine = currentCoroutineContext()
             val checkpoint = { coroutine.ensureActive() }
-            val dictionaries = all
             val included = includeFilesInBackup
+            if (included) {
+                for (old in all.filter { it.state == "ready" && it.identityVersion == 1 }) {
+                    checkpoint()
+                    DictionaryLimits.check(upgradeIdentityLocked(old.id, null, checkpoint), DictionaryProblem.ASSOCIATION_REQUIRED)
+                }
+            }
+            val dictionaries = all
             val manifestFile = File(target, MANIFEST)
             target.mkdirs()
-            manifestFile.writeText(GSON.toJson(BackupManifest(1, lastDictionaryId, included, dictionaries)))
+            val records = dictionaries.filter { it.identityVersion == 2 &&
+                (it.state == "ready" || pendingIdentityFile(it.id).isFile) }.associate {
+                it.id to identityRecord(it)
+            }
+            manifestFile.writeText(DictionaryCatalogCodec.encodeBackup(
+                BackupManifest(selectedId = lastDictionaryId, includesFiles = included, dictionaries = dictionaries), querySettings, records))
             val output = arrayListOf(manifestFile)
             if (included) {
                 val files = File(target, FILES).apply { mkdirs() }
                 for (dictionary in dictionaries.filter { it.state == "ready" }) {
                     checkpoint()
-                    copyTree(File(directory(dictionary.id), "sources"), File(files, dictionary.id), checkpoint)
+                    val record = requireNotNull(records[dictionary.id])
+                    val sources = File(directory(dictionary.id), "sources")
+                    DictionaryLimits.check(DictionaryIdentity.calculate(sources, record.group, checkpoint) == dictionary.fingerprint)
+                    DictionaryFileGroups.copy(sources, record.group, File(files, dictionary.id), checkpoint)
                 }
                 output.add(files)
             }
@@ -417,7 +599,7 @@ class LocalDictionaryStore(
             if (!file.isFile) return@withLock emptyList()
             DictionaryLimits.check(file.length() <= DictionaryLimits.MAX_ENTRY_BYTES, DictionaryProblem.LIMIT)
             val json = file.reader().use { com.google.gson.JsonParser.parseReader(it).asJsonObject }
-            if (json.get("version")?.asInt != 1) return@withLock listOf("version")
+            if (json.get("version")?.asInt !in 1..2) return@withLock listOf("version")
             val included = json.get("includesFiles")?.asBoolean == true
             val list = json.getAsJsonArray("dictionaries") ?: throw DictionaryException(DictionaryProblem.CORRUPT)
             DictionaryLimits.check(list.size() <= DictionaryLimits.MAX_FILES, DictionaryProblem.LIMIT)
@@ -431,14 +613,7 @@ class LocalDictionaryStore(
                 for (key in listOf("id", "name", "format", "sourceFile", "fingerprint", "state")) {
                     DictionaryLimits.check(item.get(key)?.isJsonPrimitive == true)
                 }
-                val dictionary = LocalDictionary(
-                    item.get("id").asString, item.get("name").asString, item.get("format").asString,
-                    item.get("sourceFile").asString, item.get("fingerprint").asString,
-                    item.get("inputLanguage")?.takeUnless { it.isJsonNull }?.asString.orEmpty(),
-                    item.get("outputLanguage")?.takeUnless { it.isJsonNull }?.asString.orEmpty(),
-                    item.get("sortNumber")?.asInt ?: 0, item.get("state").asString,
-                    item.get("entryCount")?.asLong ?: 0, item.get("warningCount")?.asInt ?: 0
-                )
+                val dictionary = DictionaryCatalogCodec.decodeDictionary(item)
                 DictionaryLimits.check(dictionary.name.isNotBlank() && dictionary.name.length <= DictionaryLimits.MAX_WORD_BYTES)
                 DictionaryLimits.check(dictionary.state in setOf("ready", "missing") && dictionary.sortNumber >= 0)
                 directory(dictionary.id)
@@ -449,76 +624,92 @@ class LocalDictionaryStore(
                 dictionary
             }
             DictionaryLimits.check(dictionaries.map { it.id }.distinct().size == dictionaries.size)
-            for (dictionary in dictionaries) {
-                checkpoint()
-                appDb.localDictionaryDao.findFingerprint(dictionary.fingerprint)?.let {
-                    mapping[dictionary.id] = it.id
-                    appDb.localDictionaryDao.sort(it.id, dictionary.sortNumber)
-                    continue
+            val manifest = DictionaryCatalogCodec.decodeBackup(json.toString()) ?: return@withLock listOf("version")
+            val restoreKey = DictionaryCatalogCodec.restoreKey(json.toString())
+            val restoredKeys = preferences.getStringSet("restored_manifests", emptySet()).orEmpty()
+            val repeated = restoreKey in restoredKeys
+            val originalRows = all
+            val originalIds = originalRows.map { it.id }.toSet()
+            val data = File(root, "data")
+            val originalDirectories = data.listFiles()?.map { it.name }?.toSet().orEmpty()
+            val originalSettings = preferences.getString("query_settings", null)
+            val originalSelected = lastDictionaryId
+            var preferencesChanged = false
+            val pendingBefore = linkedMapOf<File, ByteArray?>()
+            fun rollback() {
+                val currentRows = all
+                data.listFiles()?.filter { it.name !in originalDirectories }?.forEach { it.deleteRecursively() }
+                appDb.runInTransaction {
+                    currentRows.filter { it.id !in originalIds }.forEach { appDb.localDictionaryDao.delete(it.id) }
+                    appDb.localDictionaryDao.insert(*originalRows.toTypedArray())
                 }
-                if (included && dictionary.state == "ready") {
-                    try {
-                        val sources = DictionaryPaths.file(File(target, FILES), dictionary.id)
-                        DictionaryLimits.check(fingerprint(sources, dictionary.sourceFile, checkpoint) == dictionary.fingerprint)
-                        val restored = importSource(sources, dictionary.sourceFile, checkpoint)
-                        appDb.localDictionaryDao.sort(restored.id, dictionary.sortNumber)
-                        mapping[dictionary.id] = restored.id
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (_: Exception) {
-                        failures.add(dictionary.name)
-                    }
-                } else {
-                    val existing = appDb.localDictionaryDao.get(dictionary.id)
-                    val id = if (existing == null || existing.fingerprint == dictionary.fingerprint) dictionary.id else UUID.randomUUID().toString()
-                    appDb.localDictionaryDao.insert(dictionary.copy(id = id, state = "missing", entryCount = 0))
-                    mapping[dictionary.id] = id
+                (currentRows + originalRows).forEach { queryCache.remove(it.id) }
+                pendingBefore.forEach { (file, bytes) -> if (bytes == null) file.delete() else file.writeBytes(bytes) }
+                if (preferencesChanged) preferences.edit {
+                    putString("query_settings", originalSettings)
+                    putString("last", originalSelected)
+                    putStringSet("restored_manifests", restoredKeys)
                 }
             }
-            val selected = json.get("selectedId")?.takeUnless { it.isJsonNull }?.asString
-            lastDictionaryId = if (selected == null) null else mapping[selected] ?: lastDictionaryId
-            failures
+            try {
+                for (dictionary in dictionaries) {
+                    checkpoint()
+                    if (included && dictionary.state == "ready") {
+                        try {
+                            val sources = DictionaryPaths.file(File(target, FILES), dictionary.id)
+                            val identity = DictionaryIdentity.fromBackup(sources, dictionary, manifest.identities[dictionary.id], checkpoint)
+                            val restored = appDb.localDictionaryDao.findFingerprint(identity.dictionary.fingerprint)
+                                ?: appDb.localDictionaryDao.findFingerprint(dictionary.fingerprint)
+                                ?: importSource(sources, dictionary.sourceFile, checkpoint, restoredIdentity = identity)
+                            appDb.localDictionaryDao.sort(restored.id, dictionary.sortNumber)
+                            mapping[dictionary.id] = restored.id
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (_: Exception) {
+                            failures.add(dictionary.name)
+                        }
+                    } else {
+                        appDb.localDictionaryDao.findFingerprint(dictionary.fingerprint)?.let {
+                            mapping[dictionary.id] = it.id
+                            appDb.localDictionaryDao.sort(it.id, dictionary.sortNumber)
+                            continue
+                        }
+                        val existing = appDb.localDictionaryDao.get(dictionary.id)
+                        val id = if (existing == null || existing.fingerprint == dictionary.fingerprint) dictionary.id else UUID.randomUUID().toString()
+                        appDb.localDictionaryDao.insert(dictionary.copy(id = id, state = "missing", entryCount = 0))
+                        manifest.identities[dictionary.id]?.let { record ->
+                            DictionaryLimits.check(record.group.sourceFile == dictionary.sourceFile && record.group.identityVersion == 2)
+                            record.group.files.forEach { DictionaryPaths.file(File(root, "validation"), it) }
+                            val pendingFile = pendingIdentityFile(id)
+                            DictionaryLimits.check(!pendingFile.exists() || pendingFile.length() <= DictionaryLimits.MAX_ENTRY_BYTES, DictionaryProblem.LIMIT)
+                            if (pendingFile !in pendingBefore) pendingBefore[pendingFile] = pendingFile.takeIf { it.isFile }?.readBytes()
+                            pendingFile.parentFile?.mkdirs()
+                            writeIdentityRecord(pendingFile, record)
+                        }
+                        mapping[dictionary.id] = id
+                    }
+                }
+                val selected = json.get("selectedId")?.takeUnless { it.isJsonNull }?.asString
+                if (failures.isEmpty()) {
+                    if (!repeated) {
+                        preferencesChanged = true
+                        lastDictionaryId = if (selected == null) null else mapping[selected] ?: lastDictionaryId
+                        querySettings = if (manifest.querySettings != null) querySettings.restored(manifest.querySettings, mapping, false)
+                            else querySettings.copy(legacyMigrated = false).migrateLegacy(lastDictionaryId, all)
+                        preferences.edit { putStringSet("restored_manifests", restoredKeys + restoreKey) }
+                    }
+                }
+                if (failures.isNotEmpty()) rollback()
+                failures
+            } catch (error: Exception) {
+                rollback()
+                throw error
+            }
         }
     }
 
-    private fun fingerprint(sources: File, sourceFile: String, checkpoint: () -> Unit): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        fun name(value: String) {
-            val bytes = value.toByteArray(Charsets.UTF_8)
-            digest.update(java.nio.ByteBuffer.allocate(8).putLong(bytes.size.toLong()).array())
-            digest.update(bytes)
-        }
-        name(sourceFile)
-        var count = 0
-        var total = 0L
-        val files = sources.walkTopDown().onEnter { folder ->
-            if (folder != sources) {
-                val relative = folder.relativeTo(sources).invariantSeparatorsPath
-                DictionaryLimits.check(relative.count { it == '/' } < 64, DictionaryProblem.LIMIT)
-                DictionaryPaths.file(sources, relative)
-            }
-            true
-        }.filter { it.isFile }.onEach { file ->
-            DictionaryPaths.file(sources, file.relativeTo(sources).invariantSeparatorsPath)
-            total += file.length()
-            DictionaryLimits.check(++count <= DictionaryLimits.MAX_FILES && total <= DictionaryLimits.MAX_TOTAL_BYTES, DictionaryProblem.LIMIT)
-        }.sortedBy { it.relativeTo(sources).path }
-        files.forEach { file ->
-            checkpoint()
-            name(file.relativeTo(sources).invariantSeparatorsPath)
-            digest.update(java.nio.ByteBuffer.allocate(8).putLong(file.length()).array())
-            file.inputStream().buffered().use { input ->
-                val bytes = ByteArray(DEFAULT_BUFFER_SIZE)
-                while (true) {
-                    checkpoint()
-                    val size = input.read(bytes)
-                    if (size < 0) break
-                    digest.update(bytes, 0, size)
-                }
-            }
-        }
-        return digest.digest().joinToString("") { "%02x".format(Locale.ROOT, it) }
-    }
+    private fun fingerprint(sources: File, sourceFile: String, checkpoint: () -> Unit): String =
+        DictionaryIdentity.legacy(sources, sourceFile, checkpoint)
 
     private fun copyTree(source: File, target: File, checkpoint: () -> Unit) {
         DictionaryLimits.check(source.isDirectory, DictionaryProblem.MISSING_FILE)

@@ -405,6 +405,8 @@ data class Book(
         var startChapter: Int? = null,     // 用户设置的起始章节
         var dailyChapters: Int = 3,    // 用户设置的每日更新章节数
         var readingTimeState: ReadingTimeState? = null,
+        var dictionaryInstantLookup: Boolean = false,
+        var dictionaryQueryLanguage: String? = null,
     ) : Parcelable
 
     class Converters {

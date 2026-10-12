@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="dictionary_set_primary">Set as primary</string>
+    <string name="dictionary_instant_source">%1$s · %2$s</string>
+    <string name="dictionary_instant_mode">Instant lookup for this book</string>
+    <string name="dictionary_query_language">Query language</string>
+    <string name="dictionary_language_en">English</string>
+    <string name="dictionary_language_zh">Chinese</string>
+    <string name="dictionary_language_unknown">Choose a language or dictionary</string>
+    <string name="dictionary_full_entry">Full entry</string>
+    <string name="dictionary_original_preview">Original entry preview; open the full entry for layout and resources.</string>
+    <string name="dictionary_summary_truncated">Some content is omitted. Expand to read the full entry.</string>
+    <string name="dictionary_association_required">Confirm dictionary resource associations before including its files in backup.</string>
     <string name="local_dictionary">Local dictionaries</string>
     <string name="dictionary_manage">Manage dictionaries</string>
     <string name="dictionary_import_files">Import dictionary files</string>
@@ -19,7 +30,6 @@
     <string name="dictionary_invalid_path">The dictionary contains an invalid or out-of-bounds path.</string>
     <string name="dictionary_missing_resource">Some images, styles or sounds are missing. Available definitions remain readable.</string>
     <string name="dictionary_missing_state">Import required</string>
-    <string name="dictionary_set_current">Use this dictionary next time</string>
     <string name="dictionary_rebuild">Rebuild query index</string>
     <string name="dictionary_rebuilt">Query index rebuilt</string>
     <string name="dictionary_move_up">Move up</string>
@@ -35,4 +45,24 @@
     <string name="dictionary_restore_incomplete">Some dictionaries could not be restored. Import them again. Other backup content can still be restored.</string>
     <string name="dictionary_layout_limit">Some interactive layouts may differ. Dictionary scripts are disabled.</string>
     <string name="dictionary_details">Dictionary details</string>
+    <string name="dictionary_set_language">Set dictionary language</string>
+    <string name="dictionary_toggle_fallback">Add or remove fallback</string>
+    <string name="dictionary_fallback_up">Move fallback earlier</string>
+    <string name="dictionary_fallback_down">Move fallback later</string>
+    <string name="dictionary_associate_pending">Associate pending dictionary</string>
+    <string name="dictionary_confirm_resources">Confirm resource associations</string>
+    <string name="dictionary_association_complete">Dictionary associations confirmed</string>
+    <string name="dictionary_not_pending">Only pending dictionaries can be reassociated</string>
+    <string name="dictionary_associate_resources">Choose resources belonging to %1$s</string>
+    <string name="dictionary_associate_confirm">Use %1$s for pending %2$s? Its original name, order and preferences will be retained.</string>
+    <string name="dictionary_language_override_info">Query language: %1$s</string>
+    <string name="dictionary_unclassified">Unclassified</string>
+    <string name="dictionary_language_ja">Japanese</string>
+    <string name="dictionary_language_ko">Korean</string>
+    <string name="dictionary_language_de">German</string>
+    <string name="dictionary_language_fr">French</string>
+    <string name="dictionary_match_mapping">Dictionary mapping</string>
+    <string name="dictionary_match_normalized">Normalized match</string>
+    <string name="dictionary_match_chinese_variant">Chinese character variant</string>
+    <string name="dictionary_match_english_form">English word form</string>
 </resources>

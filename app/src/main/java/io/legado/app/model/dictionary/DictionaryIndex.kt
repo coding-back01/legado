@@ -9,7 +9,10 @@ import java.io.RandomAccessFile
 import java.text.Normalizer
 import java.util.Locale
 
-data class DictionaryEntry(val id: Long, val headword: String, val html: String)
+enum class DictionaryMatch { EXACT, DICTIONARY_MAPPING, NORMALIZED, CHINESE_VARIANT, ENGLISH_FORM }
+
+data class DictionaryEntry(val id: Long, val headword: String, val html: String,
+    val match: DictionaryMatch = DictionaryMatch.EXACT)
 
 internal class DictionaryIndex(
     private val directory: File,
@@ -132,36 +135,40 @@ internal class DictionaryIndex(
         return count
     }
 
-    fun lookup(word: String, checkpoint: () -> Unit): List<DictionaryEntry> {
-        fun find(column: String, value: String): List<Long> = database.rawQuery(
-            "SELECT entryId FROM words WHERE $column=? AND alias=(SELECT min(alias) FROM words WHERE $column=?) ORDER BY entryId LIMIT ${DictionaryLimits.MAX_CANDIDATES + 1}",
+    fun lookup(word: String, language: String? = null, checkpoint: () -> Unit): List<DictionaryEntry> {
+        fun find(column: String, value: String, match: DictionaryMatch): List<Pair<Long, DictionaryMatch>> = database.rawQuery(
+            "SELECT entryId,alias FROM words WHERE $column=? AND alias=(SELECT min(alias) FROM words WHERE $column=?) ORDER BY entryId LIMIT ${DictionaryLimits.MAX_CANDIDATES + 1}",
             arrayOf(value, value)
         ).use { cursor ->
             buildList {
-                while (cursor.moveToNext()) add(cursor.getLong(0))
+                while (cursor.moveToNext()) add(cursor.getLong(0) to
+                    if (match == DictionaryMatch.EXACT && cursor.getInt(1) != 0) DictionaryMatch.DICTIONARY_MAPPING else match)
                 DictionaryLimits.check(size <= DictionaryLimits.MAX_CANDIDATES, DictionaryProblem.LIMIT)
             }
         }
-        var ids = find("word", word)
-        if (ids.isEmpty()) ids = find("normalized", normalize(word))
-        if (ids.isEmpty() && word.any { it.code > 127 }) ids = find("simplified", simplified(word))
+        var ids = find("word", word, DictionaryMatch.EXACT)
+        if (ids.isEmpty()) ids = find("normalized", normalize(word), DictionaryMatch.NORMALIZED)
+        if (ids.isEmpty() && word.any { it.code > 127 }) ids = find("simplified", simplified(word), DictionaryMatch.CHINESE_VARIANT)
         if (ids.isEmpty()) {
-            for (candidate in EnglishDictionaryForms.candidates(word)) {
+            val candidates = linkedMapOf<Long, DictionaryMatch>()
+            for (candidate in EnglishDictionaryForms.candidates(word, language)) {
                 checkpoint()
-                ids = find("word", candidate)
-                if (ids.isEmpty()) ids = find("normalized", normalize(candidate))
-                if (ids.isNotEmpty()) break
+                val exact = find("word", candidate, DictionaryMatch.ENGLISH_FORM)
+                for ((id, match) in exact.ifEmpty { find("normalized", normalize(candidate), DictionaryMatch.ENGLISH_FORM) })
+                    if (id !in candidates) candidates[id] = match
+                DictionaryLimits.check(candidates.size <= DictionaryLimits.MAX_CANDIDATES, DictionaryProblem.LIMIT)
             }
+            ids = candidates.map { it.key to it.value }
         }
         var size = 0L
         val entries = linkedMapOf<Long, DictionaryEntry>()
-        for (id in ids.distinct()) {
+        for ((id, match) in ids.distinctBy { it.first }) {
             checkpoint()
             val entry = resolve(id, linkedSetOf(), checkpoint) ?: continue
             if (entry.id !in entries) {
                 size += entry.html.length * 2L + entry.headword.length * 2L
                 DictionaryLimits.check(size <= DictionaryLimits.MAX_ENTRY_BYTES, DictionaryProblem.LIMIT)
-                entries[entry.id] = entry
+                entries[entry.id] = if (entry.match == DictionaryMatch.DICTIONARY_MAPPING) entry else entry.copy(match = match)
             }
         }
         return entries.values.toList()
@@ -194,7 +201,7 @@ internal class DictionaryIndex(
                 val next = database.rawQuery("SELECT entryId FROM words WHERE word=? ORDER BY alias,entryId LIMIT 1", arrayOf(target))
                     .use { if (it.moveToFirst()) it.getLong(0) else null }
                     ?: throw DictionaryException(DictionaryProblem.CORRUPT, "missing alias target")
-                return resolve(next, visited, checkpoint)
+                return resolve(next, visited, checkpoint)?.copy(match = DictionaryMatch.DICTIONARY_MAPPING)
             }
             val html = body.readDictionaryBytes(cursor.getLong(1), cursor.getLong(2)).toString(Charsets.UTF_8)
             return DictionaryEntry(id, cursor.getString(0), html)
