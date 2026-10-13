@@ -367,7 +367,8 @@ class DictionaryCardTest {
         waitUntil {
             var rendered = false
             scenario.onActivity {
-                val view = card(scenario).requireView()
+                val view = it.supportFragmentManager.fragments.filterIsInstance<DictDialog>().lastOrNull()?.view
+                    ?: return@onActivity
                 val web = view.findViewById<WebView>(R.id.web_view)
                 rendered = view.findViewById<TextView>(R.id.tv_query).text.toString() == word && web.isShown && web.contentHeight > 0
             }

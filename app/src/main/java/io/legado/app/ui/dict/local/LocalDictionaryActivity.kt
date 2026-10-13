@@ -41,6 +41,9 @@ class LocalDictionaryActivity : BaseActivity<ActivityLocalDictionaryBinding>() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
+        binding.recyclerView.addItemDecoration(androidx.recyclerview.widget.DividerItemDecoration(this,
+            androidx.recyclerview.widget.DividerItemDecoration.VERTICAL))
+        binding.importButton.setOnClickListener { files.launch(arrayOf("*/*")) }
         binding.progressCancel.setOnClickListener { viewModel.cancelImport() }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -132,7 +135,7 @@ class LocalDictionaryActivity : BaseActivity<ActivityLocalDictionaryBinding>() {
                 R.string.delete -> AlertDialog.Builder(this).setMessage(getString(R.string.dictionary_delete_confirm, dictionary.name))
                     .setNegativeButton(R.string.cancel, null).setPositiveButton(R.string.ok) { _, _ -> viewModel.delete(dictionary.id) }.show()
             }
-            adapter.notifyItemChanged(adapter.items.indexOfFirst { it.id == dictionary.id }.coerceAtLeast(0))
+            adapter.notifyItemRangeChanged(0, adapter.itemCount)
         }.show()
     }
 
@@ -185,10 +188,17 @@ class LocalDictionaryActivity : BaseActivity<ActivityLocalDictionaryBinding>() {
         override fun onBindViewHolder(holder: Holder, position: Int) {
             val item = items[position]
             holder.binding.nameView.text = item.name
-            holder.binding.infoView.text = if (item.state == "ready") {
-                getString(R.string.dictionary_info, item.format, item.entryCount, item.inputLanguage, item.outputLanguage) + "\n" +
-                    getString(R.string.dictionary_language_override_info, LocalDictionaryStore.instance.querySettings.languageOf(item).orEmpty())
-            } else getString(R.string.dictionary_missing_state)
+            val settings = LocalDictionaryStore.instance.querySettings
+            val language = settings.languageOf(item)
+            val preferences = settings.languages[language]
+            holder.binding.roleView.text = buildList {
+                add(language?.let { java.util.Locale.forLanguageTag(it).displayLanguage }
+                    ?: getString(R.string.dictionary_unclassified))
+                if (preferences?.primaryId == item.id) add(getString(R.string.dictionary_primary_role))
+                if (item.id in preferences?.fallbackIds.orEmpty()) add(getString(R.string.dictionary_fallback_role))
+                if (item.state != "ready") add(getString(R.string.dictionary_missing_state))
+            }.joinToString(" · ")
+            holder.binding.infoView.text = resources.getQuantityString(R.plurals.dictionary_entry_count, item.entryCount.toInt(), item.format, item.entryCount)
             holder.binding.root.setOnClickListener { actions(item) }
         }
     }

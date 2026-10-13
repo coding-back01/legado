@@ -83,11 +83,134 @@ class DictionaryInstantReadingTest {
         }
     }
 
+    private fun screenshot(label: String) {
+        instrumentation.waitForIdleSync()
+        SystemClock.sleep(200)
+        val bitmap = instrumentation.uiAutomation.takeScreenshot()
+        File(context.filesDir, "dictionary-instant-$label.png").outputStream().use {
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+        }
+        bitmap.recycle()
+    }
+
     private fun initReader() {
         LocalConfig.privacyPolicyOk = true; LocalConfig.password = ""; LocalConfig.versionCode = BuildConfig.VERSION_CODE.toLong()
         LocalConfig.edit().putBoolean("firstOpen", false).putBoolean("firstRead", false).putInt("readHelpVersion", 1).apply()
         context.putPrefBoolean(PreferKey.autoRefresh, false); context.putPrefBoolean(PreferKey.syncBookProgress, false)
         context.putPrefBoolean(PreferKey.syncBookProgressPlus, false); context.putPrefBoolean(PreferKey.textSelectAble, true)
+    }
+
+    @Test fun readingPresentationScrollsAndOpensSourceAndFullEntryWithoutChangingPosition() = runBlocking {
+        initReader()
+        val originalNight = io.legado.app.help.config.AppConfig.isNightTheme
+        val originalScale = context.getPrefInt(PreferKey.fontScale)
+        context.putPrefInt(PreferKey.fontScale, 10)
+        try {
+            File(root, "reading.xdxf").writeText("""
+                <xdxf lang_from="en" lang_to="en"><full_name>Reading dictionary</full_name>
+                <ar><k>go</k><tr>/ɡəʊ/</tr><span class="pos">verb</span>
+                <def>1. To move or travel from one place to another.</def>
+                <span class="example">We go along the river before the sun sets.</span>
+                <def>2. To continue along a path or make progress.</def>
+                <span class="example">The story goes on beyond the old bridge.</span>
+                <def>3. To leave the place where you are now.</def></ar></xdxf>
+            """.trimIndent())
+            val dictionary = store.importFiles(root, "reading.xdxf").also { ids.add(it.id) }
+            store.querySettings = store.querySettings.withLanguage(dictionary.id, "en").withPrimary("en", dictionary.id)
+            val file = File(root, "阅读排版验证.txt").apply {
+                writeText(("go 学习 — We followed the river in the evening and watched the light on the water.\n").repeat(100))
+            }
+            val book = LocalBook.importFile(Uri.fromFile(file)).also { books.add(it.bookUrl) }
+            book.config.dictionaryInstantLookup = true
+            book.config.dictionaryQueryLanguage = "en"
+            appDb.bookDao.insert(book)
+            for (dark in listOf(false, true)) {
+                io.legado.app.help.config.AppConfig.isNightTheme = dark
+                ActivityScenario.launch<ReadBookActivity>(Intent(context, ReadBookActivity::class.java)
+                    .putExtra("bookUrl", book.bookUrl).putExtra("inBookshelf", true)).use { scenario ->
+                    waitUntil { ReadBook.curTextChapter?.isCompleted == true && ReadBook.book?.bookUrl == book.bookUrl }
+                    longPress(scenario, "g")
+                    waitUntil {
+                        var shown = false
+                        scenario.onActivity { shown = it.findViewById<TextView>(R.id.instant_dictionary_text).text.contains("travel") }
+                        shown
+                    }
+                    val position = ReadBook.durChapterPos
+                    screenshot(if (dark) "night" else "day")
+                    scenario.onActivity { activity ->
+                        val scroll = activity.findViewById<android.widget.ScrollView>(R.id.instant_dictionary_scroll)
+                        assertTrue(scroll.isShown)
+                        assertTrue(scroll.canScrollVertically(1))
+                        val full = activity.findViewById<View>(R.id.instant_dictionary_full)
+                        val bounds = android.graphics.Rect().also(full::getGlobalVisibleRect)
+                        val window = android.graphics.Rect().also(activity.window.decorView::getWindowVisibleDisplayFrame)
+                        assertTrue("全文入口不得被导航栏遮挡", window.contains(bounds))
+                    }
+                    val scrollBounds = android.graphics.Rect()
+                    scenario.onActivity { it.findViewById<View>(R.id.instant_dictionary_scroll).getGlobalVisibleRect(scrollBounds) }
+                    val down = SystemClock.uptimeMillis()
+                    for (step in 0..10) {
+                        val action = when (step) { 0 -> MotionEvent.ACTION_DOWN; 10 -> MotionEvent.ACTION_UP; else -> MotionEvent.ACTION_MOVE }
+                        val y = scrollBounds.bottom - 12f - step * (scrollBounds.height() - 24f) / 10
+                        val event = MotionEvent.obtain(down, SystemClock.uptimeMillis(), action, scrollBounds.exactCenterX(), y, 0)
+                        event.source = android.view.InputDevice.SOURCE_TOUCHSCREEN
+                        instrumentation.uiAutomation.injectInputEvent(event, true)
+                        event.recycle()
+                        SystemClock.sleep(20)
+                    }
+                    waitUntil { var scrolled = false; scenario.onActivity { scrolled = it.findViewById<View>(R.id.instant_dictionary_scroll).scrollY > 0 }; scrolled }
+                    assertEquals(position, ReadBook.durChapterPos)
+                    scenario.onActivity { it.findViewById<View>(R.id.instant_dictionary_source).performClick() }
+                    SystemClock.sleep(300)
+                    screenshot(if (dark) "source-night" else "source-day")
+                    androidx.test.espresso.Espresso.onView(androidx.test.espresso.matcher.ViewMatchers.withText(dictionary.name))
+                        .inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog())
+                        .perform(androidx.test.espresso.action.ViewActions.click())
+                    waitUntil {
+                        var ready = false
+                        scenario.onActivity { activity ->
+                            val dialog = activity.supportFragmentManager.fragments.filterIsInstance<io.legado.app.ui.dict.DictDialog>().lastOrNull()
+                            ready = dialog?.view?.findViewById<TextView>(R.id.tv_dict)?.text?.contains("travel") == true
+                        }
+                        ready
+                    }
+                    screenshot(if (dark) "detail-night" else "detail-day")
+                    scenario.onActivity { activity ->
+                        val dialog = activity.supportFragmentManager.fragments.filterIsInstance<io.legado.app.ui.dict.DictDialog>().last()
+                        dialog.requireView().findViewById<View>(R.id.btn_expand).performClick()
+                    }
+                    waitUntil {
+                        var rendered = false
+                        scenario.onActivity { activity ->
+                            val web = activity.supportFragmentManager.fragments.filterIsInstance<io.legado.app.ui.dict.DictDialog>()
+                                .last().requireView().findViewById<android.webkit.WebView>(R.id.web_view)
+                            rendered = web.isShown && web.contentHeight > 0
+                        }
+                        rendered
+                    }
+                    val painted = java.util.concurrent.CountDownLatch(1)
+                    scenario.onActivity { activity ->
+                        val web = activity.supportFragmentManager.fragments.filterIsInstance<io.legado.app.ui.dict.DictDialog>()
+                            .last().requireView().findViewById<android.webkit.WebView>(R.id.web_view)
+                        if (android.os.Build.VERSION.SDK_INT >= 23) web.postVisualStateCallback(1,
+                            object : android.webkit.WebView.VisualStateCallback() {
+                                override fun onComplete(id: Long) { painted.countDown() }
+                            }) else web.postDelayed({ painted.countDown() }, 500)
+                    }
+                    assertTrue("完整词条须完成绘制", painted.await(10, java.util.concurrent.TimeUnit.SECONDS))
+                    screenshot(if (dark) "full-night" else "full-day")
+                    scenario.onActivity { activity ->
+                        activity.supportFragmentManager.fragments.filterIsInstance<io.legado.app.ui.dict.DictDialog>().last().dismiss()
+                    }
+                    assertEquals(dictionary.id, store.querySettings.languages["en"]?.primaryId)
+                    assertEquals(position, ReadBook.durChapterPos)
+                }
+            }
+        } finally {
+            io.legado.app.help.config.AppConfig.isNightTheme = originalNight
+            context.putPrefInt(PreferKey.fontScale, originalScale)
+        }
+        Unit
     }
 
     @Test fun chineseSelectionAndDisabledOtherBookKeepIndependentModesAndCopyRemovesCard() = runBlocking {
@@ -150,6 +273,7 @@ class DictionaryInstantReadingTest {
                 waitUntil { ReadBook.curTextChapter?.isCompleted == true }
                 longPress(scenario, "g")
                 waitUntil { var card = false; scenario.onActivity { card = it.findViewById<View>(R.id.instant_dictionary_card).isShown }; card }
+                screenshot("landscape-large-font")
                 scenario.onActivity { activity ->
                     val card = activity.findViewById<View>(R.id.instant_dictionary_card)
                     val full = activity.findViewById<View>(R.id.instant_dictionary_full)
@@ -206,6 +330,7 @@ class DictionaryInstantReadingTest {
                     shown = text?.isShown == true && text.text.contains("移动")
                 }; shown
             }
+            screenshot("reading")
             scenario.onActivity { activity ->
                 assertEquals("go", activity.selectedText.trim())
                 assertTrue(activity.textActionMenu.isShowing)

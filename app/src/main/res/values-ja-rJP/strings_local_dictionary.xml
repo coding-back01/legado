@@ -35,7 +35,6 @@
     <string name="dictionary_layout_limit">一部の操作可能な内容は静的な説明として表示されます。</string>
     <string name="dictionary_details">辞書情報</string>
     <string name="dictionary_set_primary">優先辞書に設定</string>
-    <string name="dictionary_instant_source">%1$s · %2$s</string>
     <string name="dictionary_instant_mode">この本で即時検索</string>
     <string name="dictionary_query_language">検索言語</string>
     <string name="dictionary_language_en">英語</string>
@@ -65,4 +64,10 @@
     <string name="dictionary_match_normalized">正規化による一致</string>
     <string name="dictionary_match_chinese_variant">繁体字・簡体字の候補</string>
     <string name="dictionary_match_english_form">英語の語形</string>
+    <string name="dictionary_options">辞書のオプション</string>
+    <string name="dictionary_primary_role">優先</string>
+    <string name="dictionary_fallback_role">補助</string>
+    <plurals name="dictionary_entry_count">
+        <item quantity="other">%1$s · %2$d 項目</item>
+    </plurals>
 </resources>

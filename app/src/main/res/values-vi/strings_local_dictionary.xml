@@ -35,7 +35,6 @@
     <string name="dictionary_layout_limit">Một số nội dung tương tác được hiển thị dưới dạng định nghĩa tĩnh.</string>
     <string name="dictionary_details">Thông tin từ điển</string>
     <string name="dictionary_set_primary">Đặt làm từ điển chính</string>
-    <string name="dictionary_instant_source">%1$s · %2$s</string>
     <string name="dictionary_instant_mode">Tra ngay trong sách này</string>
     <string name="dictionary_query_language">Ngôn ngữ tra cứu</string>
     <string name="dictionary_language_en">Tiếng Anh</string>
@@ -65,4 +64,10 @@
     <string name="dictionary_match_normalized">Khớp sau chuẩn hóa</string>
     <string name="dictionary_match_chinese_variant">Biến thể chữ Hán</string>
     <string name="dictionary_match_english_form">Dạng từ tiếng Anh</string>
+    <string name="dictionary_options">Tùy chọn từ điển</string>
+    <string name="dictionary_primary_role">Ưu tiên</string>
+    <string name="dictionary_fallback_role">Dự phòng</string>
+    <plurals name="dictionary_entry_count">
+        <item quantity="other">%1$s · %2$d mục từ</item>
+    </plurals>
 </resources>

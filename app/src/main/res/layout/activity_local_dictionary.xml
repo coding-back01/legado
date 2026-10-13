@@ -11,6 +11,11 @@
         android:layout_height="wrap_content"
         app:title="@string/local_dictionary" />
 
+    <Button android:id="@+id/import_button" style="@style/DictionaryAction"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginStart="4dp" android:layout_marginEnd="4dp"
+        android:gravity="start|center_vertical" android:text="@string/dictionary_import_files" />
+
     <TextView
         android:id="@+id/empty_view"
         android:layout_width="match_parent"

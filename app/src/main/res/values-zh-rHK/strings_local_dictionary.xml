@@ -35,7 +35,6 @@
     <string name="dictionary_layout_limit">部分詞庫互動排版可能無法還原。詞庫指令碼不執行。</string>
     <string name="dictionary_details">詞典資訊</string>
     <string name="dictionary_set_primary">設為首選</string>
-    <string name="dictionary_instant_source">%1$s · %2$s</string>
     <string name="dictionary_instant_mode">本書即時查詞</string>
     <string name="dictionary_query_language">查詢語言</string>
     <string name="dictionary_language_en">英文</string>
@@ -65,4 +64,10 @@
     <string name="dictionary_match_normalized">正規化比對</string>
     <string name="dictionary_match_chinese_variant">繁簡候選</string>
     <string name="dictionary_match_english_form">英文詞形</string>
+    <string name="dictionary_options">詞典選項</string>
+    <string name="dictionary_primary_role">首選</string>
+    <string name="dictionary_fallback_role">候補</string>
+    <plurals name="dictionary_entry_count">
+        <item quantity="other">%1$s · %2$d 個詞條</item>
+    </plurals>
 </resources>

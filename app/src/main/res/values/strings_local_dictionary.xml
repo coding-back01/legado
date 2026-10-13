@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="dictionary_set_primary">Set as primary</string>
-    <string name="dictionary_instant_source">%1$s · %2$s</string>
     <string name="dictionary_instant_mode">Instant lookup for this book</string>
     <string name="dictionary_query_language">Query language</string>
     <string name="dictionary_language_en">English</string>
@@ -65,4 +64,11 @@
     <string name="dictionary_match_normalized">Normalized match</string>
     <string name="dictionary_match_chinese_variant">Chinese character variant</string>
     <string name="dictionary_match_english_form">English word form</string>
+    <string name="dictionary_options">Dictionary options</string>
+    <string name="dictionary_primary_role">Primary</string>
+    <string name="dictionary_fallback_role">Fallback</string>
+    <plurals name="dictionary_entry_count">
+        <item quantity="one">%1$s · %2$d entry</item>
+        <item quantity="other">%1$s · %2$d entries</item>
+    </plurals>
 </resources>

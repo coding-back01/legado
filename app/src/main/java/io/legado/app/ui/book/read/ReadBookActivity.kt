@@ -94,6 +94,7 @@ import io.legado.app.ui.book.source.edit.BookSourceEditActivity
 import io.legado.app.ui.book.toc.TocActivityResult
 import io.legado.app.ui.book.toc.rule.TxtTocRuleDialog
 import io.legado.app.ui.browser.WebViewActivity
+import io.legado.app.ui.dict.DictionaryPresentation
 import io.legado.app.ui.dict.DictDialog
 import io.legado.app.ui.dict.DictViewModel
 import io.legado.app.model.dictionary.InstantDictionaryController
@@ -282,6 +283,10 @@ class ReadBookActivity : BaseReadBookActivity(),
         upScreenTimeOut()
         ReadBook.register(this)
         onBackPressedDispatcher.addCallback(this) {
+            if (instantDictionaryRequest != null) {
+                closeInstantDictionary()
+                return@addCallback
+            }
             if (isShowingSearchResult) {
                 exitSearchMenu()
                 restoreLastBookProcess()
@@ -789,17 +794,22 @@ class ReadBookActivity : BaseReadBookActivity(),
         instantDictionarySourceId = null
         val card = findViewById<View>(R.id.instant_dictionary_card)
         card.visibility = View.VISIBLE
+        val surface = DictionaryPresentation.readingSurface(ReadBookConfig.bgMeanColor)
+        DictionaryPresentation.surface(card, surface)
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_match).apply {
+            visibility = View.GONE
+            setTextColor(DictionaryPresentation.secondary(surface))
+        }
+        findViewById<View>(R.id.instant_dictionary_divider).setBackgroundColor(
+            androidx.core.graphics.ColorUtils.blendARGB(DictionaryPresentation.foreground(surface), surface, 0.84f))
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_source).setText(R.string.dictionary_select)
+        findViewById<android.widget.ScrollView>(R.id.instant_dictionary_scroll).scrollTo(0, 0)
         findViewById<android.widget.TextView>(R.id.instant_dictionary_title).text = text
         findViewById<android.widget.TextView>(R.id.instant_dictionary_text).text = getString(R.string.loading)
         findViewById<View>(R.id.instant_dictionary_close).setOnClickListener { closeInstantDictionary() }
         findViewById<View>(R.id.instant_dictionary_language).setOnClickListener { chooseInstantLanguage() }
-        findViewById<View>(R.id.instant_dictionary_full).setOnClickListener {
-            val request = instantDictionaryRequest ?: return@setOnClickListener
-            val language = ReadBook.book?.config?.dictionaryQueryLanguage
-            val source = instantDictionarySourceId
-            closeInstantDictionary()
-            showDialogFragment(DictDialog(request.first, language, source, ReadBook.book?.bookUrl))
-        }
+        findViewById<View>(R.id.instant_dictionary_source).setOnClickListener { openInstantDictionary(true) }
+        findViewById<View>(R.id.instant_dictionary_full).setOnClickListener { openInstantDictionary(false) }
         positionInstantDictionary()
         queryInstantDictionary()
     }
@@ -813,28 +823,56 @@ class ReadBookActivity : BaseReadBookActivity(),
         findViewById<View>(R.id.instant_dictionary_card)?.visibility = View.GONE
     }
 
+    private fun openInstantDictionary(chooseSource: Boolean) {
+        val request = instantDictionaryRequest ?: return
+        val language = ReadBook.book?.config?.dictionaryQueryLanguage
+        val source = instantDictionarySourceId
+        closeInstantDictionary()
+        showDialogFragment(DictDialog(request.first, language, source, ReadBook.book?.bookUrl).apply {
+            arguments?.putBoolean("chooseSource", chooseSource)
+            arguments?.putBoolean("fullEntry", !chooseSource)
+        })
+    }
+
     private fun positionInstantDictionary() {
         val card = findViewById<View>(R.id.instant_dictionary_card)
         card.post {
             if (instantDictionaryRequest == null) return@post
-            val height = binding.root.height
+            val density = resources.displayMetrics.density
+            val margin = (12 * density).toInt()
+            val visible = android.graphics.Rect().also(binding.root::getWindowVisibleDisplayFrame)
+            val location = IntArray(2).also(binding.root::getLocationOnScreen)
+            val topInset = (visible.top - location[1]).coerceAtLeast(0)
+            val bottomInset = (location[1] + binding.root.height - visible.bottom).coerceAtLeast(0)
+            val width = minOf(visible.width() - margin * 2, (560 * density).toInt()).coerceAtLeast(1)
             val top = binding.textMenuPosition.y.toInt()
             val bottom = maxOf(binding.cursorLeft.y + binding.cursorLeft.height, binding.cursorRight.y + binding.cursorRight.height).toInt()
-            val margin = (12 * resources.displayMetrics.density).toInt()
-            val text = findViewById<android.widget.TextView>(R.id.instant_dictionary_text)
-            text.visibility = View.VISIBLE
-            card.measure(View.MeasureSpec.makeMeasureSpec((binding.root.width - margin * 2).coerceAtLeast(1), View.MeasureSpec.EXACTLY),
+            val scroll = findViewById<android.widget.ScrollView>(R.id.instant_dictionary_scroll)
+            scroll.visibility = View.GONE
+            card.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
-            val placement = InstantDictionaryPlacements.plan(height, top, bottom, card.measuredHeight, margin)
-            text.visibility = if (placement.showText) View.VISIBLE else View.GONE
+            val chrome = card.measuredHeight
+            val placement = InstantDictionaryPlacements.plan(binding.root.height - topInset - bottomInset, top - topInset, bottom - topInset, chrome, margin)
+            val space = if (placement.above) top - topInset - margin * 2 else binding.root.height - bottomInset - bottom - margin * 2
+            val available = minOf((160 * density).toInt(), space - chrome).coerceAtLeast(0)
+            if (available >= (40 * density).toInt()) {
+                scroll.visibility = View.VISIBLE
+                scroll.layoutParams.height = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                scroll.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(available, View.MeasureSpec.AT_MOST))
+                scroll.layoutParams = scroll.layoutParams.apply { height = scroll.measuredHeight.coerceAtMost(available) }
+            }
             val params = card.layoutParams as android.widget.FrameLayout.LayoutParams
+            params.width = width
+            params.topMargin = margin + topInset
+            params.bottomMargin = margin + bottomInset
             params.gravity = (if (placement.above) Gravity.TOP else Gravity.BOTTOM) or Gravity.CENTER_HORIZONTAL
             card.layoutParams = params
         }
     }
 
     private fun chooseInstantLanguage() {
-        AlertDialog.Builder(this).setTitle(R.string.dictionary_query_language)
+        AlertDialog.Builder(DictionaryPresentation.dialogContext(this)).setTitle(R.string.dictionary_query_language)
             .setItems(arrayOf(getString(R.string.dictionary_language_en), getString(R.string.dictionary_language_zh))) { _, index ->
                 val book = ReadBook.book ?: return@setItems
                 book.config.dictionaryQueryLanguage = if (index == 0) "en" else "zh"
@@ -847,6 +885,11 @@ class ReadBookActivity : BaseReadBookActivity(),
         val request = instantDictionaryRequest ?: return
         val token = request.second
         val book = ReadBook.book ?: return
+        instantDictionarySourceId = null
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_title).text = request.first
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_source).setText(R.string.dictionary_select)
+        findViewById<View>(R.id.instant_dictionary_match).visibility = View.GONE
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_text).setText(R.string.loading)
         instantDictionaryModel.lookupLocal(request.first, book.config.dictionaryQueryLanguage, book.bookUrl, token.selection, token.view, { result ->
             if (!instantDictionaryController.isCurrent(token) || ReadBook.book?.bookUrl != token.book) return@lookupLocal
             val title = findViewById<android.widget.TextView>(R.id.instant_dictionary_title)
@@ -854,21 +897,20 @@ class ReadBookActivity : BaseReadBookActivity(),
             when (val lookup = result.lookup) {
                 is DictionaryLookupResult.Hit -> {
                     instantDictionarySourceId = lookup.source.id
-                    title.text = buildList {
-                        add(getString(R.string.dictionary_instant_source, request.first, lookup.source.name))
-                        lookup.entries.forEach { entry -> dictionaryMatchMessage(entry)?.let { add("${entry.headword} · $it") } }
-                    }.joinToString("\n")
-                    val display = requireNotNull(result.display)
-                    val reliable = display.previews.all { it.summary != null }
-                    text.text = if (reliable) display.previews.joinToString("\n\n") { preview ->
-                        val summary = requireNotNull(preview.summary)
-                        buildList {
-                            if (display.previews.size > 1 || preview.entry.headword != request.first) add(preview.entry.headword)
-                            summary.pronunciation?.let(::add); summary.partOfSpeech?.let(::add)
-                            add(summary.definition)
-                            if (summary.truncated) add(getString(R.string.dictionary_summary_truncated))
+                    title.text = lookup.entries.first().headword
+                    findViewById<android.widget.TextView>(R.id.instant_dictionary_source).text = lookup.source.name
+                    findViewById<android.widget.TextView>(R.id.instant_dictionary_match).apply {
+                        this.text = buildList {
+                            if (request.first != lookup.entries.first().headword) add(getString(R.string.dictionary_match, request.first, lookup.entries.first().headword))
+                            lookup.entries.forEach { entry -> dictionaryMatchMessage(entry)?.let { add("${entry.headword} · $it") } }
                         }.joinToString("\n")
-                    } else getString(R.string.dictionary_original_preview) + "\n" + display.originalText
+                        visibility = if (this.text.isEmpty()) View.GONE else View.VISIBLE
+                    }
+                    val display = requireNotNull(result.display)
+                    val reliable = display.previews.isNotEmpty() && display.previews.all { it.summary != null }
+                    text.text = if (reliable) DictionaryPresentation.summary(this, display,
+                        DictionaryPresentation.secondary(DictionaryPresentation.readingSurface(ReadBookConfig.bgMeanColor)))
+                    else getString(R.string.dictionary_original_preview) + "\n\n" + display.originalText
                 }
                 is DictionaryLookupResult.NotFound -> text.setText(R.string.dictionary_not_found)
                 is DictionaryLookupResult.Failure -> text.text = dictionaryMessage(lookup.error)

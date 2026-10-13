@@ -59,6 +59,17 @@ class DictionaryManagementTest {
             onView(withText(text("dictionary_toggle_fallback"))).perform(click())
             waitUntil { store.querySettings.languages["en"]?.fallbackIds == listOf(second.id) }
             assertEquals(first.id, store.querySettings.languages["en"]?.primaryId)
+            onView(withText(org.hamcrest.Matchers.containsString(text("dictionary_primary_role"))))
+                .inRoot(withDecorView(`is`(window)))
+                .check(androidx.test.espresso.assertion.ViewAssertions.matches(androidx.test.espresso.matcher.ViewMatchers.isDisplayed()))
+            onView(withText(org.hamcrest.Matchers.containsString(text("dictionary_fallback_role"))))
+                .inRoot(withDecorView(`is`(window)))
+                .check(androidx.test.espresso.assertion.ViewAssertions.matches(androidx.test.espresso.matcher.ViewMatchers.isDisplayed()))
+            val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+            File(context.filesDir, "dictionary-management.png").outputStream().use {
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+            }
+            bitmap.recycle()
         }
     }
 

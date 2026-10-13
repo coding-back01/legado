@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="dictionary_set_primary">设为首选</string>
-    <string name="dictionary_instant_source">%1$s · %2$s</string>
     <string name="dictionary_instant_mode">本书即时查词</string>
     <string name="dictionary_query_language">查询语言</string>
     <string name="dictionary_language_en">英文</string>
@@ -65,4 +64,10 @@
     <string name="dictionary_match_normalized">规范化匹配</string>
     <string name="dictionary_match_chinese_variant">繁简候选</string>
     <string name="dictionary_match_english_form">英文词形</string>
+    <string name="dictionary_options">词典选项</string>
+    <string name="dictionary_primary_role">首选</string>
+    <string name="dictionary_fallback_role">候补</string>
+    <plurals name="dictionary_entry_count">
+        <item quantity="other">%1$s · %2$d 个词条</item>
+    </plurals>
 </resources>

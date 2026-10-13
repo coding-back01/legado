@@ -35,7 +35,6 @@
     <string name="dictionary_layout_limit">Parte do conteúdo interativo é exibida como definições estáticas.</string>
     <string name="dictionary_details">Informações do dicionário</string>
     <string name="dictionary_set_primary">Definir como principal</string>
-    <string name="dictionary_instant_source">%1$s · %2$s</string>
     <string name="dictionary_instant_mode">Consulta imediata neste livro</string>
     <string name="dictionary_query_language">Idioma da consulta</string>
     <string name="dictionary_language_en">Inglês</string>
@@ -65,4 +64,12 @@
     <string name="dictionary_match_normalized">Correspondência normalizada</string>
     <string name="dictionary_match_chinese_variant">Variante de caracteres chineses</string>
     <string name="dictionary_match_english_form">Forma de palavra inglesa</string>
+    <string name="dictionary_options">Opções do dicionário</string>
+    <string name="dictionary_primary_role">Principal</string>
+    <string name="dictionary_fallback_role">Alternativo</string>
+    <plurals name="dictionary_entry_count">
+        <item quantity="one">%1$s · %2$d entrada</item>
+        <item quantity="many">%1$s · %2$d entradas</item>
+        <item quantity="other">%1$s · %2$d entradas</item>
+    </plurals>
 </resources>

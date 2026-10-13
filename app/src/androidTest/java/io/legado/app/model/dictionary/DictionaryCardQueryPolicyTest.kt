@@ -52,10 +52,11 @@ class DictionaryCardQueryPolicyTest {
             assertEquals(primary.id, store.querySettings.languages["en"]?.primaryId)
             scenario.onActivity { activity ->
                 val dialog = activity.supportFragmentManager.fragments.filterIsInstance<DictDialog>().last()
-                val id = context.resources.getIdentifier("btn_dictionary_primary", "id", context.packageName)
-                assertNotEquals(0, id)
-                dialog.requireView().findViewById<View>(id).performClick()
+                dialog.requireView().findViewById<View>(R.id.btn_more).performClick()
             }
+            androidx.test.espresso.Espresso.onView(androidx.test.espresso.matcher.ViewMatchers.withText(R.string.dictionary_set_primary))
+                .inRoot(androidx.test.espresso.matcher.RootMatchers.isPlatformPopup())
+                .perform(androidx.test.espresso.action.ViewActions.click())
             waitUntil { store.querySettings.languages["en"]?.primaryId == fallback.id }
         }
     }
@@ -93,7 +94,7 @@ class DictionaryCardQueryPolicyTest {
             assertNotEquals("词形匹配需要可见说明", 0, label)
             scenario.onActivity { activity ->
                 val view = activity.supportFragmentManager.fragments.filterIsInstance<DictDialog>().last().requireView()
-                val title = view.findViewById<TextView>(R.id.tv_query).text.toString()
+                val title = view.findViewById<TextView>(R.id.tv_query).text.toString() + view.findViewById<TextView>(R.id.tv_match).text.toString()
                 assertTrue(title.contains("gone")); assertTrue(title.contains("go"))
                 assertTrue(title.contains(context.getString(label)))
             }

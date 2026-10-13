@@ -40,10 +40,11 @@ object DictionaryHtml {
                 append("<link rel=\"stylesheet\" href=\"").append(Entities.escape(it)).append("\">")
             }
             append("<style>body{background:").append(background).append("!important;color:").append(text)
-            append("!important;font-size:").append(fontSize.coerceIn(12, 40)).append("px!important;line-height:1.55;padding:12px;overflow-wrap:anywhere}")
-            append("p,div,span,td,th,li{font-size:inherit!important}img{max-width:100%;height:auto}table{max-width:100%}")
+            append("!important;font-size:").append(fontSize.coerceIn(12, 40)).append("px!important;line-height:1.55;font-family:serif;margin:0;padding:16px;overflow-wrap:anywhere}")
+            append("p,div,span,td,th,li{font-size:inherit!important}img{max-width:100%;height:auto}table{max-width:100%;display:block;overflow-x:auto}p{margin:0 0 0.8em}hr{border:0;border-top:1px solid #888;margin:1em 0}")
             if (night) append("body *{color:").append(text).append("!important;background-color:transparent!important}")
-            append("a{color:#448aff!important}</style>")
+            append(".pronunciation,.phonetic{margin-right:.75em}.pos{font-style:italic}.example{display:block;font-style:italic;margin:.6em 0}.definition{margin:.6em 0}")
+            append("a{color:#448aff!important;text-decoration:underline}</style>")
             append("</head><body>").append(content.body().html()).append("</body></html>")
         }
     }

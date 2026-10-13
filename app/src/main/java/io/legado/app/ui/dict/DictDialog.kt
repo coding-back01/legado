@@ -6,7 +6,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.View
-import android.view.ViewGroup
+import android.view.WindowManager
+import android.graphics.Color
+import androidx.core.graphics.drawable.toDrawable
+import androidx.appcompat.widget.PopupMenu
+import io.legado.app.lib.theme.ThemeStore
+import io.legado.app.help.config.AppConfig
 import android.webkit.MimeTypeMap
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -67,14 +72,21 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
     private var limitedLayout = false
     private var currentDisplay: DictionaryDisplay? = null
     private val history = java.util.ArrayDeque<Query>()
+    private val surfaceColor: Int
+        get() = if (AppConfig.isNightTheme) 0xff202020.toInt() else ThemeStore.backgroundColor()
 
     override fun onStart() {
         super.onStart()
-        setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        dialog?.window?.apply {
+            setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            attributes = attributes.apply { dimAmount = 0.12f }
+        }
+        resizeContent()
     }
 
     override fun onFragmentCreated(view: View, savedInstanceState: Bundle?) {
-        expanded = savedInstanceState?.getBoolean("expanded") == true
+        expanded = savedInstanceState?.getBoolean("expanded") ?: (arguments?.getBoolean("fullEntry") == true)
         word = arguments?.getString("word").orEmpty()
         queryLanguage = DictionaryLanguages.canonical(arguments?.getString("language"))
         automatic = arguments?.getString("dictionaryId") == null
@@ -82,17 +94,15 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
         binding.tvQuery.text = word
         binding.tvDict.movementMethod = LinkMovementMethod.getInstance()
         binding.btnDictionary.setOnClickListener { choose() }
-        binding.btnDictionaryLanguage.setOnClickListener { chooseLanguage() }
-        binding.btnDictionaryPrimary.setOnClickListener {
-            val source = selected?.local ?: return@setOnClickListener
-            val language = queryLanguage ?: return@setOnClickListener chooseLanguage()
-            val store = LocalDictionaryStore.instance
-            store.querySettings = store.querySettings.withLanguage(source.id, language).withPrimary(language, source.id)
-            automatic = true
-            history.clear()
-            lookupAutomatic()
+        binding.btnClose.setOnClickListener { dismiss() }
+        binding.btnMore.setOnClickListener { showActions() }
+        val background = surfaceColor
+        DictionaryPresentation.surface(binding.root, background)
+        binding.tvMatch.setTextColor(DictionaryPresentation.secondary(background))
+        binding.tvWarning.setTextColor(DictionaryPresentation.secondary(background))
+        listOf(binding.dictionaryDivider, binding.dictionaryFooterDivider).forEach {
+            it.setBackgroundColor(androidx.core.graphics.ColorUtils.blendARGB(DictionaryPresentation.foreground(background), background, 0.84f))
         }
-        binding.btnManage.setOnClickListener { startActivity(Intent(requireContext(), LocalDictionaryActivity::class.java)) }
         binding.btnBack.setOnClickListener {
             if (history.isNotEmpty()) {
                 stopAudio()
@@ -107,6 +117,7 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
             currentDisplay?.let { bindDisplay(it) }
         }
         binding.btnExpand.setText(if (expanded) R.string.dictionary_collapse else R.string.dictionary_expand)
+        binding.webView.setBackgroundColor(surfaceColor)
         binding.webView.settings.apply {
             javaScriptEnabled = false
             allowFileAccess = false
@@ -132,10 +143,39 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
     override fun onResume() { super.onResume(); if (loaded) refresh() }
 
     private fun resizeContent() {
-        val reserve = (200 * resources.displayMetrics.density).toInt()
-        val height = ((resources.displayMetrics.heightPixels * if (expanded) 0.90 else 0.65).toInt() - reserve)
-            .coerceAtLeast((72 * resources.displayMetrics.density).toInt())
-        binding.contentFrame.layoutParams = binding.contentFrame.layoutParams.apply { this.height = height }
+        val host = activity?.window?.decorView ?: return
+        val visible = android.graphics.Rect().also(host::getWindowVisibleDisplayFrame)
+        val density = resources.displayMetrics.density
+        val width = minOf((visible.width() - 24 * density).toInt(), (640 * density).toInt()).coerceAtLeast(1)
+        val fraction = if (expanded || visible.width() > visible.height()) 0.92 else 0.70
+        setLayout(width, (visible.height() * fraction).toInt().coerceAtLeast(1))
+    }
+
+    private fun showActions() {
+        PopupMenu(DictionaryPresentation.dialogContext(requireContext()), binding.btnMore).apply {
+            menu.add(0, R.string.dictionary_query_language, 0, R.string.dictionary_query_language)
+            if (selected?.local != null) menu.add(0, R.string.dictionary_set_primary, 1, R.string.dictionary_set_primary)
+            menu.add(0, R.string.dictionary_manage, 2, R.string.dictionary_manage)
+            setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.string.dictionary_query_language -> chooseLanguage()
+                    R.string.dictionary_set_primary -> setPrimary()
+                    R.string.dictionary_manage -> startActivity(Intent(requireContext(), LocalDictionaryActivity::class.java))
+                }
+                true
+            }
+            show()
+        }
+    }
+
+    private fun setPrimary() {
+        val source = selected?.local ?: return
+        val language = queryLanguage ?: return chooseLanguage()
+        val store = LocalDictionaryStore.instance
+        store.querySettings = store.querySettings.withLanguage(source.id, language).withPrimary(language, source.id)
+        automatic = true
+        history.clear()
+        lookupAutomatic()
     }
 
     private fun refresh() {
@@ -151,11 +191,15 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
                     ?: selected?.online?.name?.let { name -> list.firstOrNull { it.online?.name == name } }
                 if (source != null) select(source) else message(getString(R.string.dictionary_previous_unavailable))
             }
+            if (arguments?.getBoolean("chooseSource") == true) {
+                arguments?.remove("chooseSource")
+                choose()
+            }
         }
     }
 
     private fun chooseLanguage() {
-        AlertDialog.Builder(requireContext()).setTitle(R.string.dictionary_query_language)
+        AlertDialog.Builder(DictionaryPresentation.dialogContext(requireContext())).setTitle(R.string.dictionary_query_language)
             .setItems(arrayOf(getString(R.string.dictionary_language_en), getString(R.string.dictionary_language_zh))) { _, index ->
                 queryLanguage = if (index == 0) "en" else "zh"
                 arguments?.getString("bookUrl")?.let { url ->
@@ -174,6 +218,10 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
     private fun prepareQuery() {
         resourceRequest++
         currentDisplay = null
+        binding.tvQuery.text = currentQuery.word.ifBlank { word }
+        binding.tvMatch.isVisible = false
+        binding.tvDict.scrollTo(0, 0)
+        binding.webView.scrollTo(0, 0)
         shownDictionaryId = null
         stopAudio()
         binding.webView.stopLoading()
@@ -186,17 +234,16 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
     }
 
     private fun lookupAutomatic() {
+        currentQuery = Query(word)
         prepareQuery()
         selected = null
-        currentQuery = Query(word)
-        binding.btnDictionaryPrimary.isVisible = false
+        binding.btnDictionary.setText(R.string.dictionary_select)
         viewModel.lookupLocal(word, queryLanguage, "", 0, sourceEpoch, { result ->
             if (view == null) return@lookupLocal
             binding.rotateLoading.isVisible = false
             when (val lookup = result.lookup) {
                 is DictionaryLookupResult.Hit -> {
                     selected = DictSource(local = lookup.source)
-                    binding.btnDictionaryPrimary.isVisible = queryLanguage != null
                     binding.btnDictionary.text = lookup.source.name
                     display(lookup.entries, requireNotNull(result.display))
                 }
@@ -214,15 +261,17 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
 
     private fun choose() {
         if (sources.isEmpty()) { startActivity(Intent(requireContext(), LocalDictionaryActivity::class.java)); return }
-        AlertDialog.Builder(requireContext()).setTitle(R.string.dictionary_select)
-            .setItems(sources.map { it.name }.toTypedArray()) { _, index -> select(sources[index]) }.show()
+        AlertDialog.Builder(DictionaryPresentation.dialogContext(requireContext())).setTitle(R.string.dictionary_select)
+            .setSingleChoiceItems(sources.map { it.name }.toTypedArray(), sources.indexOf(selected)) { dialog, index ->
+                dialog.dismiss()
+                select(sources[index])
+            }.show()
     }
 
     private fun select(source: DictSource) {
         selected = source
         automatic = false
         source.local?.let { if (queryLanguage == null) queryLanguage = LocalDictionaryStore.instance.querySettings.languageOf(it) }
-        binding.btnDictionaryPrimary.isVisible = source.local != null && queryLanguage != null
         binding.btnDictionary.text = source.name
         history.clear()
         stopAudio()
@@ -234,6 +283,10 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
         currentDisplay = null
         resourceRequest++
         currentQuery = Query(text, entryId)
+        binding.tvQuery.text = text
+        binding.tvMatch.isVisible = false
+        binding.tvDict.scrollTo(0, 0)
+        binding.webView.scrollTo(0, 0)
         binding.rotateLoading.isVisible = true
         binding.webView.isVisible = false
         binding.tvDict.isVisible = false
@@ -263,11 +316,12 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
         shownDictionaryId = id
         binding.btnBack.isVisible = history.isNotEmpty()
         val displayed = if (currentQuery.entryId == null) currentQuery.word else entries.first().headword
-        binding.tvQuery.text = buildList {
-            add(if (displayed == entries.first().headword) displayed else
-                getString(R.string.dictionary_match, displayed, entries.first().headword))
+        binding.tvQuery.text = entries.first().headword
+        binding.tvMatch.text = buildList {
+            if (displayed != entries.first().headword) add(getString(R.string.dictionary_match, displayed, entries.first().headword))
             entries.forEach { entry -> requireContext().dictionaryMatchMessage(entry)?.let { add("${entry.headword} · $it") } }
         }.joinToString("\n")
+        binding.tvMatch.isVisible = binding.tvMatch.text.isNotEmpty()
         currentDisplay = display
         limitedLayout = display.limitedLayout
         bindDisplay(display)
@@ -279,16 +333,8 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
         binding.tvDict.isVisible = short
         binding.webView.isVisible = !short
         if (short) {
-            binding.tvDict.text = display.previews.joinToString("\n\n") { preview ->
-                val summary = requireNotNull(preview.summary)
-                buildList {
-                    if (display.previews.size > 1) add(preview.entry.headword)
-                    summary.pronunciation?.let(::add)
-                    summary.partOfSpeech?.let(::add)
-                    add(summary.definition)
-                    addAll(summary.examples)
-                }.joinToString("\n")
-            }
+            binding.tvDict.text = DictionaryPresentation.summary(requireContext(), display,
+                DictionaryPresentation.secondary(surfaceColor), showOmission = false)
         } else binding.webView.loadDataWithBaseURL("https://${DictionaryHtml.HOST}/$id/", display.html, "text/html", "UTF-8", null)
         updateWarning()
     }
