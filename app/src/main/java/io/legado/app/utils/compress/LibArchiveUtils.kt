@@ -135,7 +135,7 @@ object LibArchiveUtils {
 
 
     @Throws(ArchiveException::class)
-    private fun openArchive(
+    internal fun openArchive(
         pfd: ParcelFileDescriptor,
         useCb: Boolean = true
     ): Long {

@@ -3,6 +3,21 @@
 
     <application>
         <activity
+            android:name="io.legado.app.model.dictionary.DictionaryGrantActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay" />
+        <provider
+            android:name="io.legado.app.model.dictionary.DictionaryFixtureProvider"
+            android:authorities="${applicationId}.dictionaryFixture"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+        <activity
             android:name="io.legado.app.release.ReleaseSmokeFixtureDispatchActivity"
             android:excludeFromRecents="true"
             android:exported="true"

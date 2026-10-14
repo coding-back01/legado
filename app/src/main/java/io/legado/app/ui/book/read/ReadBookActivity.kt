@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import androidx.activity.addCallback
+import androidx.activity.viewModels
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
@@ -93,7 +94,17 @@ import io.legado.app.ui.book.source.edit.BookSourceEditActivity
 import io.legado.app.ui.book.toc.TocActivityResult
 import io.legado.app.ui.book.toc.rule.TxtTocRuleDialog
 import io.legado.app.ui.browser.WebViewActivity
+import io.legado.app.ui.dict.DictionaryPresentation
 import io.legado.app.ui.dict.DictDialog
+import io.legado.app.ui.dict.DictViewModel
+import io.legado.app.model.dictionary.InstantDictionaryController
+import io.legado.app.model.dictionary.InstantDictionaryPlacements
+import io.legado.app.model.dictionary.DictionaryRequestToken
+import io.legado.app.model.dictionary.DictionaryLookupResult
+import io.legado.app.model.dictionary.DictionaryQueryPlan
+import io.legado.app.model.dictionary.LocalDictionaryStore
+import io.legado.app.ui.dict.dictionaryMessage
+import io.legado.app.ui.dict.dictionaryMatchMessage
 import io.legado.app.ui.file.HandleFileContract
 import io.legado.app.ui.login.SourceLoginActivity
 import io.legado.app.ui.replace.ReplaceRuleActivity
@@ -155,6 +166,11 @@ class ReadBookActivity : BaseReadBookActivity(),
     TxtTocRuleDialog.CallBack,
     ColorPickerDialogListener,
     LayoutProgressListener {
+
+    private val instantDictionaryModel by viewModels<DictViewModel>()
+    private val instantDictionaryController = InstantDictionaryController()
+    private var instantDictionaryRequest: Pair<String, DictionaryRequestToken>? = null
+    private var instantDictionarySourceId: String? = null
 
     private val tocActivity =
         registerForActivityResult(TocActivityResult()) {
@@ -267,6 +283,10 @@ class ReadBookActivity : BaseReadBookActivity(),
         upScreenTimeOut()
         ReadBook.register(this)
         onBackPressedDispatcher.addCallback(this) {
+            if (instantDictionaryRequest != null) {
+                closeInstantDictionary()
+                return@addCallback
+            }
             if (isShowingSearchResult) {
                 exitSearchMenu()
                 restoreLastBookProcess()
@@ -306,6 +326,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     override fun onNewIntent(intent: Intent) {
+        closeInstantDictionary()
         super.onNewIntent(intent)
         setIntent(intent)
         viewModel.initData(intent) {
@@ -373,6 +394,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     override fun onPause() {
+        closeInstantDictionary()
         super.onPause()
         autoPageStop()
         backupJob?.cancel()
@@ -443,6 +465,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                 R.id.menu_group_text -> item.isVisible = book.isLocalTxt
                 R.id.menu_group_epub -> item.isVisible = book.isEpub
                 else -> when (item.itemId) {
+                    R.id.menu_dictionary_instant -> item.isChecked = book.config.dictionaryInstantLookup
                     R.id.menu_enable_replace -> item.isChecked = book.getUseReplaceRule()
                     R.id.menu_re_segment -> item.isChecked = book.getReSegment()
 //                    R.id.menu_enable_review -> {
@@ -539,6 +562,12 @@ class ReadBookActivity : BaseReadBookActivity(),
                 loadChapterList(it)
             }
 
+            R.id.menu_dictionary_instant -> ReadBook.book?.let { book ->
+                book.config.dictionaryInstantLookup = !book.config.dictionaryInstantLookup
+                item.isChecked = book.config.dictionaryInstantLookup
+                closeInstantDictionary()
+                lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) { book.save() }
+            }
             R.id.menu_enable_replace -> changeReplaceRuleState()
             R.id.menu_re_segment -> ReadBook.book?.let {
                 it.setReSegment(!it.getReSegment())
@@ -757,12 +786,150 @@ class ReadBookActivity : BaseReadBookActivity(),
      * view触摸,文字选择
      */
     @SuppressLint("ClickableViewAccessibility")
+    override fun onStableDictionarySelection(text: String, generation: Long) {
+        val book = ReadBook.book ?: return
+        instantDictionaryController.configure(book.bookUrl, book.config.dictionaryInstantLookup)
+        val token = instantDictionaryController.stable(generation, text) ?: return
+        instantDictionaryRequest = text to token
+        instantDictionarySourceId = null
+        val card = findViewById<View>(R.id.instant_dictionary_card)
+        card.visibility = View.VISIBLE
+        val surface = DictionaryPresentation.readingSurface(ReadBookConfig.bgMeanColor)
+        DictionaryPresentation.surface(card, surface)
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_match).apply {
+            visibility = View.GONE
+            setTextColor(DictionaryPresentation.secondary(surface))
+        }
+        findViewById<View>(R.id.instant_dictionary_divider).setBackgroundColor(
+            androidx.core.graphics.ColorUtils.blendARGB(DictionaryPresentation.foreground(surface), surface, 0.84f))
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_source).setText(R.string.dictionary_select)
+        findViewById<android.widget.ScrollView>(R.id.instant_dictionary_scroll).scrollTo(0, 0)
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_title).text = text
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_text).text = getString(R.string.loading)
+        findViewById<View>(R.id.instant_dictionary_close).setOnClickListener { closeInstantDictionary() }
+        findViewById<View>(R.id.instant_dictionary_language).setOnClickListener { chooseInstantLanguage() }
+        findViewById<View>(R.id.instant_dictionary_source).setOnClickListener { openInstantDictionary(true) }
+        findViewById<View>(R.id.instant_dictionary_full).setOnClickListener { openInstantDictionary(false) }
+        positionInstantDictionary()
+        queryInstantDictionary()
+    }
+
+    override fun onDictionarySelectionInvalidated() { closeInstantDictionary() }
+
+    private fun closeInstantDictionary() {
+        instantDictionaryController.invalidate()
+        instantDictionaryModel.cancelQuery()
+        instantDictionaryRequest = null
+        findViewById<View>(R.id.instant_dictionary_card)?.visibility = View.GONE
+    }
+
+    private fun openInstantDictionary(chooseSource: Boolean) {
+        val request = instantDictionaryRequest ?: return
+        val language = ReadBook.book?.config?.dictionaryQueryLanguage
+        val source = instantDictionarySourceId
+        closeInstantDictionary()
+        showDialogFragment(DictDialog(request.first, language, source, ReadBook.book?.bookUrl).apply {
+            arguments?.putBoolean("chooseSource", chooseSource)
+            arguments?.putBoolean("fullEntry", !chooseSource)
+        })
+    }
+
+    private fun positionInstantDictionary() {
+        val card = findViewById<View>(R.id.instant_dictionary_card)
+        card.post {
+            if (instantDictionaryRequest == null) return@post
+            val density = resources.displayMetrics.density
+            val margin = (12 * density).toInt()
+            val visible = android.graphics.Rect().also(binding.root::getWindowVisibleDisplayFrame)
+            val location = IntArray(2).also(binding.root::getLocationOnScreen)
+            val topInset = (visible.top - location[1]).coerceAtLeast(0)
+            val bottomInset = (location[1] + binding.root.height - visible.bottom).coerceAtLeast(0)
+            val width = minOf(visible.width() - margin * 2, (560 * density).toInt()).coerceAtLeast(1)
+            val top = binding.textMenuPosition.y.toInt()
+            val bottom = maxOf(binding.cursorLeft.y + binding.cursorLeft.height, binding.cursorRight.y + binding.cursorRight.height).toInt()
+            val scroll = findViewById<android.widget.ScrollView>(R.id.instant_dictionary_scroll)
+            scroll.visibility = View.GONE
+            card.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+            val chrome = card.measuredHeight
+            val placement = InstantDictionaryPlacements.plan(binding.root.height - topInset - bottomInset, top - topInset, bottom - topInset, chrome, margin)
+            val space = if (placement.above) top - topInset - margin * 2 else binding.root.height - bottomInset - bottom - margin * 2
+            val available = minOf((160 * density).toInt(), space - chrome).coerceAtLeast(0)
+            if (available >= (40 * density).toInt()) {
+                scroll.visibility = View.VISIBLE
+                scroll.layoutParams.height = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                scroll.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(available, View.MeasureSpec.AT_MOST))
+                scroll.layoutParams = scroll.layoutParams.apply { height = scroll.measuredHeight.coerceAtMost(available) }
+            }
+            val params = card.layoutParams as android.widget.FrameLayout.LayoutParams
+            params.width = width
+            params.topMargin = margin + topInset
+            params.bottomMargin = margin + bottomInset
+            params.gravity = (if (placement.above) Gravity.TOP else Gravity.BOTTOM) or Gravity.CENTER_HORIZONTAL
+            card.layoutParams = params
+        }
+    }
+
+    private fun chooseInstantLanguage() {
+        AlertDialog.Builder(DictionaryPresentation.dialogContext(this)).setTitle(R.string.dictionary_query_language)
+            .setItems(arrayOf(getString(R.string.dictionary_language_en), getString(R.string.dictionary_language_zh))) { _, index ->
+                val book = ReadBook.book ?: return@setItems
+                book.config.dictionaryQueryLanguage = if (index == 0) "en" else "zh"
+                lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) { book.save() }
+                queryInstantDictionary()
+            }.show()
+    }
+
+    private fun queryInstantDictionary() {
+        val request = instantDictionaryRequest ?: return
+        val token = request.second
+        val book = ReadBook.book ?: return
+        instantDictionarySourceId = null
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_title).text = request.first
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_source).setText(R.string.dictionary_select)
+        findViewById<View>(R.id.instant_dictionary_match).visibility = View.GONE
+        findViewById<android.widget.TextView>(R.id.instant_dictionary_text).setText(R.string.loading)
+        instantDictionaryModel.lookupLocal(request.first, book.config.dictionaryQueryLanguage, book.bookUrl, token.selection, token.view, { result ->
+            if (!instantDictionaryController.isCurrent(token) || ReadBook.book?.bookUrl != token.book) return@lookupLocal
+            val title = findViewById<android.widget.TextView>(R.id.instant_dictionary_title)
+            val text = findViewById<android.widget.TextView>(R.id.instant_dictionary_text)
+            when (val lookup = result.lookup) {
+                is DictionaryLookupResult.Hit -> {
+                    instantDictionarySourceId = lookup.source.id
+                    title.text = lookup.entries.first().headword
+                    findViewById<android.widget.TextView>(R.id.instant_dictionary_source).text = lookup.source.name
+                    findViewById<android.widget.TextView>(R.id.instant_dictionary_match).apply {
+                        this.text = buildList {
+                            if (request.first != lookup.entries.first().headword) add(getString(R.string.dictionary_match, request.first, lookup.entries.first().headword))
+                            lookup.entries.forEach { entry -> dictionaryMatchMessage(entry)?.let { add("${entry.headword} · $it") } }
+                        }.joinToString("\n")
+                        visibility = if (this.text.isEmpty()) View.GONE else View.VISIBLE
+                    }
+                    val display = requireNotNull(result.display)
+                    val reliable = display.previews.isNotEmpty() && display.previews.all { it.summary != null }
+                    text.text = if (reliable) DictionaryPresentation.summary(this, display,
+                        DictionaryPresentation.secondary(DictionaryPresentation.readingSurface(ReadBookConfig.bgMeanColor)))
+                    else getString(R.string.dictionary_original_preview) + "\n\n" + display.originalText
+                }
+                is DictionaryLookupResult.NotFound -> text.setText(R.string.dictionary_not_found)
+                is DictionaryLookupResult.Failure -> text.text = dictionaryMessage(lookup.error)
+                is DictionaryLookupResult.NeedChoice -> text.setText(if (lookup.plan is DictionaryQueryPlan.ChooseLanguage)
+                    R.string.dictionary_language_unknown else R.string.dictionary_select_prompt)
+                null -> text.setText(R.string.dictionary_not_found)
+            }
+            positionInstantDictionary()
+        }, { error ->
+            if (instantDictionaryController.isCurrent(token)) findViewById<android.widget.TextView>(R.id.instant_dictionary_text).text = dictionaryMessage(error)
+        })
+    }
+
     override fun onTouch(v: View, event: MotionEvent): Boolean = binding.run {
         if (!binding.readView.isTextSelected) {
             return false
         }
         when (event.action) {
-            MotionEvent.ACTION_DOWN -> textActionMenu.dismiss()
+            MotionEvent.ACTION_DOWN -> { closeInstantDictionary(); textActionMenu.dismiss() }
             MotionEvent.ACTION_MOVE -> {
                 when (v.id) {
                     R.id.cursor_left -> if (!readView.curPage.getReverseStartCursor()) {
@@ -792,6 +959,7 @@ class ReadBookActivity : BaseReadBookActivity(),
             }
 
             MotionEvent.ACTION_UP -> {
+                v.performClick()
                 readView.curPage.resetReverseCursor()
                 showTextActionMenu()
             }
@@ -823,6 +991,7 @@ class ReadBookActivity : BaseReadBookActivity(),
      * 取消文字选择
      */
     override fun onCancelSelect() = binding.run {
+        closeInstantDictionary()
         cursorLeft.invisible()
         cursorRight.invisible()
         textActionMenu.dismiss()
@@ -904,7 +1073,7 @@ class ReadBookActivity : BaseReadBookActivity(),
             }
 
             R.id.menu_dict -> {
-                showDialogFragment(DictDialog(selectedText))
+                showDialogFragment(DictDialog(selectedText, ReadBook.book?.config?.dictionaryQueryLanguage, bookUrl = ReadBook.book?.bookUrl))
                 return true
             }
         }
@@ -915,6 +1084,7 @@ class ReadBookActivity : BaseReadBookActivity(),
      * 文本选择菜单操作完成
      */
     override fun onMenuActionFinally() = binding.run {
+        closeInstantDictionary()
         textActionMenu.dismiss()
         readView.cancelSelect()
     }
@@ -1065,6 +1235,7 @@ class ReadBookActivity : BaseReadBookActivity(),
      * 页面改变
      */
     override fun pageChanged() {
+        closeInstantDictionary()
         pageChanged = true
         binding.readView.onPageChange()
         handler.post {
@@ -1630,6 +1801,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     override fun onDestroy() {
+        closeInstantDictionary()
         super.onDestroy()
         tts?.clearTts()
         textActionMenu.dismiss()

@@ -2,6 +2,13 @@
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <androidx.preference.SwitchPreferenceCompat
+        android:key="backupLocalDictionaryFiles"
+        android:title="@string/dictionary_backup_files"
+        android:summary="@string/dictionary_backup_summary"
+        android:defaultValue="false"
+        app:iconSpaceReserved="false" />
+
     <io.legado.app.lib.prefs.PreferenceCategory
         android:title="@string/web_dav_set"
         app:allowDividerAbove="false"

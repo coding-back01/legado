@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ui.main.MainActivity"
     tools:ignore="AlwaysShowAction">
+    <item android:id="@+id/menu_dictionary_instant" android:title="@string/dictionary_instant_mode"
+        android:checkable="true" app:showAsAction="never" />
 
     <group android:id="@+id/menu_group_on_line">
         <item

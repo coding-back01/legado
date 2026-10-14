@@ -1,0 +1,6 @@
+StarDict's dict ifo file
+version=3.0.0
+bookname=宽偏移词库
+wordcount=2
+idxoffsetbits=64
+sametypesequence=h

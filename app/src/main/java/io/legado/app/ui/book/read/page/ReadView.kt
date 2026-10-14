@@ -92,6 +92,8 @@ class ReadView(context: Context, attrs: AttributeSet) :
         onLongPress()
     }
     var isTextSelected = false
+    private var initialDictionarySelection = false
+    private var dictionarySelectionGeneration = 0L
     private var pressOnTextSelected = false
     private val initialTextPos = TextPos(0, 0, 0)
 
@@ -191,6 +193,7 @@ class ReadView(context: Context, attrs: AttributeSet) :
         }
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                initialDictionarySelection = false
                 callBack.screenOffTimerStart()
                 if (isTextSelected) {
                     curPage.cancelSelect()
@@ -216,6 +219,8 @@ class ReadView(context: Context, attrs: AttributeSet) :
                     isMove = absX > slopSquare || absY > slopSquare
                 }
                 if (isMove) {
+                    initialDictionarySelection = false
+                    callBack.onDictionarySelectionInvalidated()
                     longPressed = false
                     removeCallbacks(longPressRunnable)
                     if (isTextSelected) {
@@ -241,6 +246,10 @@ class ReadView(context: Context, attrs: AttributeSet) :
                 }
                 if (isTextSelected) {
                     callBack.showTextActionMenu()
+                    if (initialDictionarySelection) {
+                        initialDictionarySelection = false
+                        callBack.onStableDictionarySelection(getSelectText(), ++dictionarySelectionGeneration)
+                    }
                 } else if (pageDelegate!!.isMoved) {
                     pageDelegate?.onTouch(event)
                 }
@@ -381,6 +390,7 @@ class ReadView(context: Context, attrs: AttributeSet) :
                 }
                 curPage.selectStartMoveIndex(startPos)
                 curPage.selectEndMoveIndex(endPos)
+                initialDictionarySelection = true
             }
         }
     }
@@ -743,6 +753,8 @@ class ReadView(context: Context, attrs: AttributeSet) :
     }
 
     interface CallBack {
+        fun onStableDictionarySelection(text: String, generation: Long) = Unit
+        fun onDictionarySelectionInvalidated() = Unit
         val isInitFinish: Boolean
         fun showActionMenu()
         fun screenOffTimerStart()

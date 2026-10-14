@@ -317,6 +317,10 @@
             android:hardwareAccelerated="true" />
         <!-- 字典管理 -->
         <activity
+            android:name=".ui.dict.local.LocalDictionaryActivity"
+            android:exported="false"
+            android:hardwareAccelerated="true" />
+        <activity
             android:name=".ui.dict.rule.DictRuleActivity"
             android:configChanges="orientation|screenSize"
             android:hardwareAccelerated="true" />

@@ -1,0 +1,1 @@
+<!DOCTYPE xdxf [<!ENTITY remote SYSTEM "file:///etc/passwd">]><xdxf><ar><k>bad</k><def>&remote;</def></ar></xdxf>

@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "selectedId": "00000000-0000-0000-0000-000000000001",
+  "includesFiles": false,
+  "dictionaries": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "自建示例",
+      "format": "MDICT",
+      "sourceFile": "first.mdx",
+      "fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+      "inputLanguage": "",
+      "outputLanguage": "",
+      "sortNumber": 3,
+      "state": "missing",
+      "entryCount": 0,
+      "warningCount": 0
+    }
+  ]
+}
